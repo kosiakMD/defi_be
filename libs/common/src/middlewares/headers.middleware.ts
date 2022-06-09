@@ -6,7 +6,8 @@ import { Injectable, NestMiddleware } from '@nestjs/common';
 import { HEADER_REQUEST_ID, HEADER_TIMESTAMP_ENTRY } from '@app/common/constant';
 
 export function headersMiddleware(req: Request, res: Response, next: NextFunction): void {
-  req.headers[HEADER_TIMESTAMP_ENTRY] = Date.now().toString();
+  const date = new Date();
+  req.headers[HEADER_TIMESTAMP_ENTRY] = date.getTime().toString();
 
   let reqId = req.header(HEADER_REQUEST_ID);
   if (!reqId) {

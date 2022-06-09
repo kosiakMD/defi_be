@@ -7,10 +7,12 @@ import { tap } from 'rxjs/operators';
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 import { HttpArgumentsHost } from '@nestjs/common/interfaces/features/arguments-host.interface';
 
+import { ResponseMetaDto } from '@app/common';
 import {
   HEADER_PROTOCOL,
   HEADER_REQUEST_ID,
   HEADER_SESSION_ID,
+  HEADER_TIME_ENTRY,
   HEADER_TIME_EXECUTE,
   HEADER_TIMESTAMP_ENTRY,
   HEADER_TIMESTAMP_EXIT,
@@ -47,6 +49,10 @@ interface SentryEntry {
   body: any;
   origin: any;
   action: any;
+}
+
+interface SentryMeta extends ResponseMetaDto {
+  [key: string]: string;
 }
 
 @Injectable()
@@ -89,6 +95,7 @@ export class SentryLogInterceptor implements NestInterceptor {
             reqId: string,
             sessionId: string,
             path: string,
+            timeEntry: string,
             timestampEntry: string,
             timestampExit: string,
             timeExecute: string,
@@ -104,19 +111,21 @@ export class SentryLogInterceptor implements NestInterceptor {
             path = request.originalUrl;
             reqId = response.get(HEADER_REQUEST_ID);
             sessionId = response.get(HEADER_SESSION_ID);
+            timeEntry = response.get(HEADER_TIME_ENTRY);
             timestampEntry = response.get(HEADER_TIMESTAMP_ENTRY);
             timestampExit = response.get(HEADER_TIMESTAMP_EXIT);
             timeExecute = response.get(HEADER_TIME_EXECUTE);
             protocolName = response.get(HEADER_PROTOCOL);
           }
 
-          const sentryMeta = {
+          const sentryMeta: SentryMeta = {
             path,
             controllerName,
             reqId,
             sessionId,
             timestampEntry,
             timestampExit,
+            timeEntry,
             timeExecute,
             protocolName,
           };

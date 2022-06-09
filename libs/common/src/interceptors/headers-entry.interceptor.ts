@@ -9,7 +9,7 @@ import {
   HEADER_PROTOCOL,
   HEADER_REQUEST_ID,
   HEADER_SESSION_ID,
-  HEADER_TIMESTAMP_ENTRY,
+  HEADER_TIME_ENTRY,
 } from '@app/common/constant';
 import { ctx } from '@app/common/helpers/context';
 
@@ -31,7 +31,8 @@ export class HeadersEntryInterceptor<T = any, R = any> implements NestIntercepto
       const request: Request = httpContext.getRequest<Request>();
       const reqId = request.header(HEADER_REQUEST_ID);
       const sessionId = request.header(HEADER_SESSION_ID);
-      const timestampEntry = request.header(HEADER_TIMESTAMP_ENTRY);
+      const timeEntry = request.header(HEADER_TIME_ENTRY);
+
       // Add to Execute Context
       const exContext = ctx();
       if (exContext) {
@@ -42,7 +43,8 @@ export class HeadersEntryInterceptor<T = any, R = any> implements NestIntercepto
       const response: Response<any> = httpContext.getResponse<Response<any>>();
       response.header(HEADER_REQUEST_ID, reqId);
       response.header(HEADER_SESSION_ID, sessionId || '0');
-      response.header(HEADER_TIMESTAMP_ENTRY, timestampEntry);
+      response.header(HEADER_TIME_ENTRY, timeEntry);
+
       // get Protocol name
       const args = context.getArgs();
       const protocolName = args?.[0]?.params?.protocolName;

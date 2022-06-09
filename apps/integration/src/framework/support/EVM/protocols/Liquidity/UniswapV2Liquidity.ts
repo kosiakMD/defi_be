@@ -1,15 +1,22 @@
 import { UniswapV2AssetService } from 'apps/integration/src/modules/microservices/uniswap.asset.service';
 import { Cache } from 'cache-manager';
+import { cloneDeep } from 'lodash';
 import { firstValueFrom, map, mergeMap, toArray } from 'rxjs';
 
 import { HttpService } from '@nestjs/axios';
 import { CACHE_MANAGER, Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Address, FeatureEnum, Logger } from '@app/common';
+import { FeatureEnum, Logger } from '@app/common';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
-import { IProtocolMeta, IRootProtocol, IUserDataProtocolResponse } from '../../../interfaces';
+import { MissingTokenException, MissingUnderlyingException } from '../../../exceptions';
+import {
+  IProtocolMeta,
+  IRootProtocol,
+  IUserDataProtocolResponse,
+  TokenMap,
+} from '../../../interfaces';
 import {
   IPoolFeatureMinimal,
   IPoolFeatureOpportunity,
@@ -17,7 +24,6 @@ import {
 } from '../../../interfaces/feature.pool.interface';
 import { ERC20Token } from '../../../interfaces/tokens.common.interface';
 import {
-  ISupplyTokenMinimal,
   ISupplyTokenOpportunity,
   ISupplyTokenUserEntry,
 } from '../../../interfaces/tokens.supplied.interface';
@@ -25,7 +31,6 @@ import { EVMCore } from '../../EVMCore';
 import {
   BALANCES_QUERY,
   IUniswapBalanceSubgraphResponse,
-  POOLS_DATA_QUERY,
   POOLS_QUERY,
 } from '../../Subgraphs/UniswapSubgraph';
 
@@ -76,70 +81,49 @@ export class UniswapV2Liquidity
     };
   }
 
-  protected async updateRealTimeData(
-    opportunities: IPoolFeatureMinimal[],
-  ): Promise<IPoolFeatureMinimal[]> {
-    const $data = this.httpService
-      .post(this.meta.ammSubgraphUrl, {
-        query: POOLS_DATA_QUERY,
-        variables: {
-          pairs: opportunities.map((o) => o.id),
-        },
-      })
-      .pipe(
-        mergeMap((rsp) => rsp.data.data.pairs),
-        toArray(),
-      );
-    const poolsArray = await firstValueFrom($data);
-
-    const pools = new Map(poolsArray.map((p: any) => [p.address, p]));
-    return opportunities.map((opportunity) => {
-      const pool = pools.get(opportunity.id);
-      const reserves = [pool.reserve0, pool.reserve1];
-      return {
-        ...opportunity,
-        supplied: opportunity.supplied.map((supplied, idx) => {
-          const totalSupplied = reserves[idx];
-          return {
-            token: supplied.token,
-            totalSupplied,
-          };
-        }),
-      };
-    });
-  }
-
-  protected formatOpportunityReceiptToken(
+  formatOpportunity(
     opportunity: IPoolFeatureMinimal,
-    token: ERC20Token,
-    tokens: Map<Address, ERC20Token>,
-  ) {
-    if (!token) return null;
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { underlying, ...rest } = token;
-
-    // TODO: totalSupply & price should come from asset service making this function unnecessary
-    const tvl = opportunity.supplied.reduce(
-      (total, cur) => total + Number(cur.totalSupplied) * tokens.get(cur.token.address).price,
-      0,
+    tokens: TokenMap,
+  ): void | IPoolFeatureOpportunity {
+    const receipt = this.formatOpportunityReceiptToken(
+      opportunity,
+      tokens.get(opportunity.id),
+      tokens,
     );
-
-    return {
-      ...opportunity.token, // merge in totalSupply
-      ...rest,
-      price: tvl / token.totalSupply,
+    if (!receipt) {
+      throw new MissingTokenException(opportunity.token, opportunity, this.meta.chain);
+    }
+    const base: any = {
+      feature: opportunity.feature,
+      id: opportunity.id,
+      chain: opportunity.chain,
+      links: this.generateLinks(opportunity),
+      meta: opportunity.meta,
+      token: receipt,
     };
+
+    const supplied = tokens.get(opportunity.id).underlying;
+    if (!supplied || supplied.length < 2) {
+      throw new MissingUnderlyingException(opportunity.token, this.meta.chain);
+    }
+    base.supplied = supplied.map((poolToken) => {
+      return this.formatOpportunitySuppliedSingleToken(poolToken);
+    });
+    return base;
   }
 
-  protected formatOpportunitySuppliedToken(
-    poolToken: ISupplyTokenMinimal,
-    token: ERC20Token,
-  ): ISupplyTokenOpportunity {
+  protected formatOpportunitySuppliedSingleToken(token: ERC20Token): ISupplyTokenOpportunity {
+    if (!token) {
+      return undefined;
+    }
+    const formattedToken = cloneDeep(token);
+    delete formattedToken.totalSupply;
+    delete formattedToken.reserve;
+    delete formattedToken.position;
     return {
-      token,
-      totalSupplied: Number(poolToken.totalSupplied),
-      tvl: Number(poolToken.totalSupplied) * token.price,
+      token: formattedToken,
+      totalSupplied: Number(token.reserve),
+      tvl: Number(token.reserve) * token.price,
     };
   }
 

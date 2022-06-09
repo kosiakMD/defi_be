@@ -17,7 +17,7 @@ export class MissingOpportunityException extends Error {
  */
 export class MissingTokenException extends Error {
   constructor(token: ERC20TokenMinimal, opportunity: IWalletMinimal, chain: number) {
-    super(`Failed to find token: ${chain}/${token.address} from pool ${chain}/${opportunity.id}`);
+    super(`Failed to find token: ${chain}/${token?.address} from pool ${chain}/${opportunity.id}`);
   }
 }
 
@@ -26,7 +26,7 @@ export class MissingTokenException extends Error {
  */
 export class MissingUnderlyingException extends Error {
   constructor(token: ERC20TokenMinimal, chain: number) {
-    super(`Failed to to find underlying tokens for lp token: ${chain}/${token.address}`);
+    super(`Failed to to find underlying tokens for lp token: ${chain}/${token?.address}`);
   }
 }
 

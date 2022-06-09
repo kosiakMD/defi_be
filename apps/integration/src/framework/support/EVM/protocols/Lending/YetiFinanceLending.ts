@@ -206,11 +206,7 @@ export class YetiFinanceLending
   }
 
   protected formatSupplyApy(supplied: ISupplyTokenMinimal): any {
-    return {
-      supplyApy: {
-        year: supplied.rate?.apy || 0,
-      },
-    };
+    return { supplyApy: supplied.rate?.apy || 0 };
   }
 
   protected async fetchUserData(

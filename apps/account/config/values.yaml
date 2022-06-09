@@ -72,7 +72,7 @@ configMaps:
     #NEAR_URL: http://rpc/v1/rpc-call/18
     TERRA_URL: https://lcd.terra.dev
     #TERRA_URL: http://rpc/v1/rpc-call/19
-    METIS_URL: https://andromeda-rpc-call.metis.io/
+    METIS_URL: https://andromeda-rpc.metis.io/
     #METIS_URL: http://rpc/v1/rpc-call/23
     RONIN_URL: https://api.roninchain.com/rpc-call
     #RONIN_URL: http://rpc/v1/rpc-call/24

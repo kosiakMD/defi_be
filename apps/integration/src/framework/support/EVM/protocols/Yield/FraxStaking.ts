@@ -1,3 +1,4 @@
+import { FakeAssetService } from 'apps/integration/src/modules/microservices/fake.asset.service';
 import BigNumber from 'bignumber.js';
 import { Cache } from 'cache-manager';
 import { plainToClass } from 'class-transformer';
@@ -19,8 +20,6 @@ import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregat
 import { CurrentPricesPayload } from '../../../../../common/dto';
 import { toDecimals } from '../../../../../common/utils/util';
 
-import { AccountService } from '../../../../../modules/microservices/account.service';
-import { PriceService } from '../../../../../modules/microservices/price.service';
 import { Puppeteer } from '../../../../../modules/microservices/puppeteer';
 import UniswapProtocolV3 from '../../../../../modules/protocols/protocols/uniswapProtocolV3';
 import { FeatureEnum } from '../../../enums';
@@ -65,8 +64,7 @@ export class FraxStaking extends EVMCore<
     protected multicall: MulticallAggregator,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected logger: Logger,
     @Inject(CACHE_MANAGER) protected cache: Cache,
-    protected accountService: AccountService,
-    protected priceService: PriceService,
+    protected assetService: FakeAssetService,
     @Inject(Puppeteer) protected readonly browser: Puppeteer,
     protected uniswapV3: UniswapProtocolV3,
   ) {

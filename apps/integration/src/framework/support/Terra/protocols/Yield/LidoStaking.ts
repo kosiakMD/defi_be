@@ -1,4 +1,5 @@
 import { LCDClient } from '@terra-money/terra.js';
+import { FakeAssetService } from 'apps/integration/src/modules/microservices/fake.asset.service';
 import { Cache } from 'cache-manager';
 import { cloneDeep } from 'lodash';
 import { firstValueFrom } from 'rxjs';
@@ -12,7 +13,6 @@ import { aprToApy, apyToApr, normalizeDecimals } from '@app/common/utils';
 import { Web3ProviderService } from '@app/common/web3provider';
 
 import { AccountService } from '../../../../../modules/microservices/account.service';
-import { PriceService } from '../../../../../modules/microservices/price.service';
 import { FeatureEnum } from '../../../enums';
 import { IProtocolMeta, IRootProtocol, IUserDataProtocolResponse } from '../../../interfaces';
 import {
@@ -42,15 +42,11 @@ export class LidoStaking
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected logger: Logger,
     @Inject(CACHE_MANAGER) protected cache: Cache,
     protected accountService: AccountService,
-    protected priceService: PriceService,
+    protected assetService: FakeAssetService,
     protected httpService: HttpService,
     protected web3Service: Web3ProviderService,
   ) {
     super();
-  }
-
-  async initialize(): Promise<void> {
-    //
   }
 
   async getCacheableOpportunityData(): Promise<IStakingFeatureMinimal[]> {

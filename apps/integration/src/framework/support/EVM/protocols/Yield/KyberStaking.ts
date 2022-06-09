@@ -1,30 +1,8 @@
-import { Cache } from 'cache-manager';
-
-import { CACHE_MANAGER, Inject } from '@nestjs/common';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-
-import { Logger } from '@app/common';
-import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
-
-import { AccountService } from '../../../../../modules/microservices/account.service';
-import { PriceService } from '../../../../../modules/microservices/price.service';
 import { INamedFunctionPredicates } from '../../../interfaces';
 import { IStakingFeatureMinimal } from '../../../interfaces/feature.staking.interface';
-import { AbiService } from '../../AbiModule/AbiService';
 import { MasterChef } from './MasterChef';
 
 export class KyberStaking extends MasterChef {
-  constructor(
-    protected abiService: AbiService,
-    protected multicall: MulticallAggregator,
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) protected logger: Logger,
-    @Inject(CACHE_MANAGER) protected cache: Cache,
-    protected accountService: AccountService,
-    protected priceService: PriceService,
-  ) {
-    super(abiService, multicall, logger, cache, accountService, priceService);
-  }
-
   functionPredicates: INamedFunctionPredicates = {
     poolInfo: () => (item) => item.name === 'getPoolInfo',
     poolLength: () => (item) => item.name === 'poolLength',

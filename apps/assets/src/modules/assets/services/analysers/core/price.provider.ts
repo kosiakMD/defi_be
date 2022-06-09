@@ -2,7 +2,7 @@ import { AssetReference } from '../../../../../common/types';
 
 export interface AssetPriceProvider {
   canHandleCategory(code: string): boolean;
-  getPrices(chainId: number, assets: ComplexAsset[]): Promise<AssetPrice[]>;
+  getPrices(chainId: number, assets: ComplexAsset[]): Promise<AssetPriceWithUnderlyingReserves[]>;
 }
 
 export type ComplexAsset = {
@@ -17,7 +17,8 @@ export type UnderlyingAsset = {
   price: number;
 };
 
-export type AssetPrice = {
+export type AssetPriceWithUnderlyingReserves = {
   asset: AssetReference;
   price: number;
+  reserves?: string[];
 };

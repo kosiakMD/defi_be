@@ -1,3 +1,4 @@
+import { FakeAssetService } from 'apps/integration/src/modules/microservices/fake.asset.service';
 import { Cache } from 'cache-manager';
 import { ethers } from 'ethers';
 import { firstValueFrom } from 'rxjs';
@@ -12,8 +13,6 @@ import { chunk, normalizeDecimals } from '@app/common/utils';
 import { DynamicContract } from '@app/common/web3provider/contracts/DynamicContract';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
-import { AccountService } from '../../../../../modules/microservices/account.service';
-import { PriceService } from '../../../../../modules/microservices/price.service';
 import { FailedCacheDataException } from '../../../exceptions';
 import { INamedFunctionPredicates, IProtocolMeta } from '../../../interfaces';
 import { BaseWithTokens } from '../../../interfaces/new.interfaces';
@@ -86,8 +85,7 @@ export class MakerVault extends EVMCore<
     protected multicall: MulticallAggregator,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected logger: Logger,
     @Inject(CACHE_MANAGER) protected cache: Cache,
-    protected accountService: AccountService,
-    protected priceService: PriceService,
+    protected assetService: FakeAssetService,
     protected httpService: HttpService,
     protected configService: ConfigService,
   ) {
@@ -214,7 +212,6 @@ export class MakerVault extends EVMCore<
 
     return { data: results, errors: [] };
   }
-
   private async getUrns(cdps: Map<Address, RawVaultInterface[]>) {
     try {
       const { functions } = await this.getContract(VAT, {

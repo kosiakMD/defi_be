@@ -1,20 +1,15 @@
+import { SynapseAssetService } from 'apps/integration/src/modules/microservices/synapse.asset.service';
 import { Cache } from 'cache-manager';
 
 import { HttpService } from '@nestjs/axios';
 import { CACHE_MANAGER, Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Address, ChainIdEnum, CurrentPricesPayload, FeatureEnum, Logger } from '@app/common';
+import { Address, FeatureEnum, Logger } from '@app/common';
 import { normalizeDecimals } from '@app/common/utils';
-import { DynamicContract } from '@app/common/web3provider/contracts/DynamicContract';
 import { ERC20 } from '@app/common/web3provider/contracts/ERC20';
-import { Ownable } from '@app/common/web3provider/contracts/Ownable';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
-import { toDecimals } from '../../../../../common/utils/util';
-
-import { AccountService } from '../../../../../modules/microservices/account.service';
-import { PriceService } from '../../../../../modules/microservices/price.service';
 import { INamedFunctionPredicates } from '../../../interfaces';
 import {
   IPoolFeatureMinimal,
@@ -38,8 +33,7 @@ export class SynapseLiquidity extends SingleContractProtocol<
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected logger: Logger,
     @Inject(CACHE_MANAGER) protected cache: Cache,
-    protected accountService: AccountService,
-    protected priceService: PriceService,
+    protected assetService: SynapseAssetService,
     protected httpService: HttpService,
     protected abiService: AbiService,
     protected multicall: MulticallAggregator,
@@ -69,30 +63,6 @@ export class SynapseLiquidity extends SingleContractProtocol<
 
       return pools;
     }, []);
-  }
-
-  protected async updateTokenData(
-    tokens: any[],
-    prices: CurrentPricesPayload,
-  ): Promise<ERC20Token[]> {
-    try {
-      // Synapse use the sushiSwap token on ethereum
-      if (this.meta.chain === ChainIdEnum.eth) {
-        return await this.updateUniswapLikeTokensData(tokens, prices);
-      }
-
-      return await updateSynapseLpTokens(
-        tokens,
-        prices,
-        this.multicall,
-        this.logger,
-        this.abiService,
-        this.meta.chain,
-      );
-    } catch (err) {
-      this.logger.error(err.message, err.stack, 'SynapseLiquidity');
-      return tokens;
-    }
   }
 
   protected formatOpportunitySuppliedToken(
@@ -185,78 +155,3 @@ export class SynapseLiquidity extends SingleContractProtocol<
     };
   }
 }
-
-export const updateSynapseLpTokens = async (
-  tokens: any[],
-  prices: CurrentPricesPayload,
-  multiCall: MulticallAggregator,
-  logger: Logger,
-  abiService: AbiService,
-  chain: ChainIdEnum,
-) => {
-  const lpContractCalls = new Map();
-  const lpTokensMap = new Map();
-  tokens?.forEach((token) => {
-    if (token.isLp) {
-      const owner = new Ownable(token.address);
-      const lpContract = new ERC20(token.address);
-      lpTokensMap.set(token.address, token);
-      lpContractCalls.set(token.address, owner.owner());
-      lpContractCalls.set(`${token.address}.totalSupply`, lpContract.totalSupply());
-      token.underlyingAssets.forEach((underlying) => {
-        if (underlying.isLp) {
-          const underlyingOwner = new Ownable(underlying.address);
-          lpContractCalls.set(underlying.address, underlyingOwner.owner());
-        }
-      });
-    }
-  });
-
-  const lpCallsResp = await multiCall.handleInBatches(lpContractCalls, chain);
-  const ownerAbi = await abiService.fetchAbi(
-    Array.from(lpCallsResp.values())[0]?.output.data,
-    chain,
-  );
-  const getVirtualPriceAbi = ownerAbi.find((item) => item.name === 'getVirtualPrice');
-  const getTokenBalanceAbi = ownerAbi.find((item) => item.name === 'getTokenBalance');
-  const calls = new Map();
-  Array.from(lpTokensMap.entries()).forEach(([key, value]) => {
-    const owner = lpCallsResp.get(key).output.data;
-    const ownerContract = new DynamicContract(owner);
-    value.totalSupply = toDecimals(
-      lpCallsResp.get(`${key}.totalSupply`).output.data,
-      value.decimals,
-    );
-    calls.set(`${key}.price`, ownerContract.createCall(getVirtualPriceAbi));
-    value.underlyingAssets.forEach((underlying) => {
-      if (underlying.isLp) {
-        const underlyingOwner = new DynamicContract(
-          lpCallsResp.get(underlying.address).output.data,
-        );
-        calls.set(`${underlying.address}.price`, underlyingOwner.createCall(getVirtualPriceAbi));
-      }
-      calls.set(
-        `${key}.${underlying.positionInPool}`,
-        ownerContract.createCall(getTokenBalanceAbi, underlying.positionInPool),
-      );
-    });
-  });
-
-  const results = await multiCall.handleInBatches(calls, chain);
-  Array.from(lpTokensMap.values()).forEach((token: any) => {
-    prices[token.address] = toDecimals(
-      results.get(`${token.address}.price`)?.output.data,
-      token.decimals,
-    );
-    token.underlyingAssets.forEach((underlying) => {
-      underlying.reserve = toDecimals(
-        results.get(`${token.address}.${underlying.positionInPool}`).output.data,
-        underlying.decimals,
-      );
-      prices[underlying.address] =
-        prices[underlying.address] ||
-        toDecimals(results.get(`${underlying.address}.price`)?.output.data, underlying.decimals);
-    });
-  });
-  return tokens;
-};

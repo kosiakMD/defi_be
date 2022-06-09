@@ -125,6 +125,11 @@ export class AssetAnalyserService {
     for (const dto of dtos) {
       const price = prices.find(({ asset }) => asset.address === dto.address);
       dto.price = price?.price;
+      if (dto.underlying?.length) {
+        dto.underlying.forEach((underlying, index) => {
+          underlying.reserve = price?.reserves[index];
+        });
+      }
     }
   }
 
@@ -166,7 +171,7 @@ function mergeAssetAnalysis(
     isTracked: one.isTracked || two.isTracked,
     metadata: { ...one.metadata, ...two.metadata },
     underlying: getNotEmptyArray(one.underlying, two.underlying),
-    categories: mergeArrays(one.categories, two.categories),
+    categories: [...new Set(mergeArrays(one.categories, two.categories))],
     icons: mergeArrays(one.icons, two.icons),
   };
 }

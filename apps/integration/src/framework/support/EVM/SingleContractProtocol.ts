@@ -126,20 +126,20 @@ export abstract class SingleContractProtocol<
       addresses.map((address) => [address, [] as TUserEntryType[]]),
     );
 
-    try {
-      await Promise.allSettled(
-        addresses.map(async (address) => {
+    await Promise.allSettled(
+      addresses.map(async (address) => {
+        try {
           const userPools = await this.fetchUserData(address, pools);
           // An array of undefined values can be obtained
           const filteredPools = userPools.filter((data) => data);
           if (filteredPools.length) {
             results.get(address).push(...filteredPools);
           }
-        }),
-      );
-    } catch (err) {
-      errors.push(err);
-    }
+        } catch (err) {
+          errors.push(err);
+        }
+      }),
+    );
 
     return { data: results, errors };
   }

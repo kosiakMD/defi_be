@@ -133,6 +133,15 @@ export class AssetsCachedRepository {
     );
     return saved;
   }
+
+  async update(asset: Partial<AssetEntity>): Promise<AssetEntity> {
+    await this.assetsRepository.update(asset.id, asset);
+    const saved = await this.assetsRepository.findOne({ id: asset.id });
+    this.saveAssetsToCache([saved]).catch((error) =>
+      this.logger.error(`Saving asset ${asset.address} to cache failed`, error),
+    );
+    return saved;
+  }
 }
 
 function getAssetCacheKey({ address, chainId }: { address: string; chainId: number }) {

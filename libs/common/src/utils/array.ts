@@ -29,3 +29,11 @@ export async function chunkRunAsync<T, R>(
   }
   return responses;
 }
+
+export function first(array) {
+  return array[0];
+}
+
+export function second(array) {
+  return array[1];
+}

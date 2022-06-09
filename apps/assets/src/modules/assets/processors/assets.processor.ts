@@ -180,16 +180,17 @@ export class AssetsProcessor {
   }
 
   private async updateAsset(asset: AssetEntity, request: AssetProcessingRequest) {
-    asset.metadata = {
+    const assetDataToUpdate: Partial<AssetEntity> = { id: asset.id };
+    assetDataToUpdate.metadata = {
       ...asset.metadata,
       ...request.metadata,
     };
 
-    asset.rank = this.calculateRank(asset.address, asset.metadata);
+    assetDataToUpdate.rank = this.calculateRank(asset.address, asset.metadata);
     // TODO: Handle case when asset should have price but not be shown in balances
     if (request.isTracked && !asset.isTracked) {
-      asset.isTracked = request.isTracked;
+      assetDataToUpdate.isTracked = request.isTracked;
     }
-    return await this.assetsRepository.save(asset);
+    return await this.assetsRepository.update(assetDataToUpdate);
   }
 }

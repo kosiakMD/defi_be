@@ -3,9 +3,9 @@ import { PublicKey } from '@solana/web3.js';
 import { BigNumber as BN } from 'bignumber.js';
 import { Cache } from 'cache-manager';
 import { firstValueFrom } from 'rxjs';
+import { HttpService } from '@nestjs/axios';
 
 import { CACHE_MANAGER, Inject } from '@nestjs/common';
-import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
@@ -13,8 +13,6 @@ import { ChainIdEnum, FeatureEnum, Logger } from '@app/common';
 import { normalizeDecimals } from '@app/common/utils';
 import { Web3SolanaProviderService } from '@app/common/web3provider';
 
-import { AccountService } from '../../../../../modules/microservices/account.service';
-import { PriceService } from '../../../../../modules/microservices/price.service';
 import {
   IPoolDataProtocolResponse,
   IProtocolMeta,
@@ -38,6 +36,8 @@ import { ReserveParser } from '../../Schemas/Solend/Reserve';
 import { SolanaCore } from '../../SolanaCore';
 import { BaseWithTokens } from '../../../interfaces/new.interfaces';
 
+import { SolanaAssetService } from 'apps/integration/src/modules/microservices/solana.asset.service';
+
 export interface ISolendingMeta extends IProtocolMeta {
   baseApiUrl: string,
   address: string
@@ -59,8 +59,7 @@ export class SoLending
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected logger: Logger,
     @Inject(CACHE_MANAGER) protected cache: Cache,
-    protected accountService: AccountService,
-    protected priceService: PriceService,
+    protected assetService: SolanaAssetService,
     protected web3Service: Web3SolanaProviderService,
     protected httpService: HttpService,
     protected configService: ConfigService
@@ -335,10 +334,10 @@ export class SoLending
                                                                                                     .toNumber()
               : normalizeDecimals(borrow.marketValue.toString(), 18);
 
-            totalValueBorrowed += valueBorrowed;
+            totalValueBorrowed += valueBorrowed
 
             borrowed.push({
-              apy: { variableApy: +borrowReserveDetailsFromApi?.rates?.borrowInterest },
+              apy: { year: +borrowReserveDetailsFromApi?.rates?.borrowInterest },
               tvl: borrowedOpportunity.tvl,
               token: borrowedOpportunity.token,
               amount: normalizedBorrowedAmount,
@@ -381,7 +380,7 @@ export class SoLending
             }
 
             supplied.push({
-              apy: { variableApy: +depositReserveDetailsFromApi?.rates?.supplyInterest },
+              apy: { year: +depositReserveDetailsFromApi?.rates?.supplyInterest },
               token: depositOpportunity.token,
               amount: normalizedDepositAmount,
               value: depositValue,

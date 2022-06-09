@@ -1,3 +1,4 @@
+import { FakeAssetService } from 'apps/integration/src/modules/microservices/fake.asset.service';
 import { Cache } from 'cache-manager';
 
 import { HttpService } from '@nestjs/axios';
@@ -8,8 +9,6 @@ import { Logger } from '@app/common';
 import { KyberLiquidityPair } from '@app/common/web3provider/contracts/protocols/kyberswap/kyberLiquidityPair';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
-import { AccountService } from '../../../../../modules/microservices/account.service';
-import { PriceService } from '../../../../../modules/microservices/price.service';
 import { AbiService } from '../../AbiModule/AbiService';
 import { LpFactoryLiquidity } from './LpFactoryLiquidity';
 
@@ -19,11 +18,10 @@ export class KyberLiquidity extends LpFactoryLiquidity {
     @Inject(CACHE_MANAGER) protected cache: Cache,
     protected abiService: AbiService,
     protected multicall: MulticallAggregator,
-    protected accountService: AccountService,
-    protected priceService: PriceService,
+    protected assetService: FakeAssetService,
     protected httpService: HttpService,
   ) {
-    super(logger, cache, abiService, multicall, accountService, priceService, httpService);
+    super();
   }
 
   protected getLpTokenContract(token: string) {

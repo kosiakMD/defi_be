@@ -1,3 +1,4 @@
+import { FakeAssetService } from 'apps/integration/src/modules/microservices/fake.asset.service';
 import { Cache } from 'cache-manager';
 
 import { HttpService } from '@nestjs/axios';
@@ -7,8 +8,6 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { Logger } from '@app/common';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
-import { AccountService } from '../../../../../modules/microservices/account.service';
-import { PriceService } from '../../../../../modules/microservices/price.service';
 import { INamedFunctionPredicates } from '../../../interfaces';
 import { AbiService } from '../../AbiModule/AbiService';
 import { LpFactoryLiquidity } from './LpFactoryLiquidity';
@@ -19,11 +18,10 @@ export class SpiritLiquidity extends LpFactoryLiquidity {
     @Inject(CACHE_MANAGER) protected cache: Cache,
     protected abiService: AbiService,
     protected multicall: MulticallAggregator,
-    protected accountService: AccountService,
-    protected priceService: PriceService,
+    protected assetService: FakeAssetService,
     protected httpService: HttpService,
   ) {
-    super(logger, cache, abiService, multicall, accountService, priceService, httpService);
+    super();
   }
 
   functionPredicates: INamedFunctionPredicates = {

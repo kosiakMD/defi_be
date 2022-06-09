@@ -1,4 +1,4 @@
-import { MuesliSwapAccountService } from 'apps/integration/src/modules/microservices/MuesliSwapAccountService';
+import { MuesliSwapAssetService } from 'apps/integration/src/modules/microservices/muesliswap.asset.service';
 import {
   IMuesliSwapStakingPool,
   IMuesliSwapStakingRewards,
@@ -13,7 +13,6 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { Logger } from '@app/common';
 import { stringToHex } from '@app/common/utils';
 
-import { MuesliSwapPriceService } from '../../../../modules/microservices/MuesliSwapPriceService';
 import { CardanoService } from '../../../../modules/protocols/helpers/cardano/cardano.service';
 import { IProtocolMeta } from '../../interfaces';
 import { BaseWithTokens } from '../../interfaces/new.interfaces';
@@ -73,8 +72,7 @@ export class MuesliSwapMilkPools extends CardanoCore<
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected logger: Logger,
     @Inject(CACHE_MANAGER) protected cache: Cache,
-    protected accountService: MuesliSwapAccountService,
-    protected priceService: MuesliSwapPriceService,
+    protected assetService: MuesliSwapAssetService,
     protected httpService: HttpService,
     private readonly cardanoUtils: CardanoService,
   ) {
@@ -83,6 +81,7 @@ export class MuesliSwapMilkPools extends CardanoCore<
 
   async getCacheableOpportunityData(): Promise<IFeatureEntryMinimal[]> {
     const pools = await this.fetchMilkPools();
+
     return pools.map(this.milkPoolToMinimalFeature.bind(this));
   }
 

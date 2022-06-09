@@ -41,7 +41,6 @@ import {
   OsmosisProtocolEnum,
   AaveV3ProtocolEnum,
   WingRidersProtocolEnum,
-  MuesliSwapProtocolEnum,
 } from '@app/common/enum';
 import { AccountBalance } from '@app/common/interfaces';
 
@@ -91,8 +90,7 @@ export type ProtocolName =
   | StaderProtocolEnum
   | OsmosisProtocolEnum
   | AaveV3ProtocolEnum
-  | WingRidersProtocolEnum
-  | MuesliSwapProtocolEnum;
+  | WingRidersProtocolEnum;
 
 export enum ColumnType {
   json = 'json',

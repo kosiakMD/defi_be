@@ -76,7 +76,7 @@ export class CurveAssetsManager implements IAssetsManager {
     });
   }
 
-  protected getLpTokenAddressesRecursively(lpToken): Set<string> {
+  private getLpTokenAddressesRecursively(lpToken): Set<string> {
     let addresses = new Set<string>();
     addresses.add(lpToken.address);
     lpToken.underlyingAssets?.forEach((ua) => {
@@ -87,7 +87,7 @@ export class CurveAssetsManager implements IAssetsManager {
     return addresses;
   }
 
-  protected getUnderlyingTokenAddressesRecursively(token): Set<string> {
+  private getUnderlyingTokenAddressesRecursively(token): Set<string> {
     let addresses = new Set<string>();
     if (!token.isLp) {
       addresses.add(token.address);
@@ -104,7 +104,7 @@ export class CurveAssetsManager implements IAssetsManager {
     return addresses;
   }
 
-  protected processTokenBalancesRecursively(token, prices, callsResult: Map<string, CallData>) {
+  private processTokenBalancesRecursively(token, prices, callsResult: Map<string, CallData>) {
     if (!token.isLp) {
       return Object.assign(token, {
         ...tokenFieldsToRemove,
@@ -154,7 +154,7 @@ export class CurveAssetsManager implements IAssetsManager {
     });
   }
 
-  protected buildCalls(lpTokens, mintersMap: Map<string, string>) {
+  private buildCalls(lpTokens, mintersMap: Map<string, string>) {
     let calls: Map<string, CallData> = new Map<string, CallData>();
     lpTokens.forEach((t) => {
       calls = new Map<string, CallData>([
@@ -165,7 +165,7 @@ export class CurveAssetsManager implements IAssetsManager {
     return calls;
   }
 
-  protected buildCallsForLpToken(lpToken, mintersMap: Map<string, string>) {
+  private buildCallsForLpToken(lpToken, mintersMap: Map<string, string>) {
     let callsMap: Map<string, CallData> = new Map<string, CallData>();
     callsMap.set(
       getTotalSupplyLabel(lpToken.address),

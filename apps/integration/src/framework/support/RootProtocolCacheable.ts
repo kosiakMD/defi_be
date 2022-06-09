@@ -3,8 +3,7 @@ import { Cache } from 'cache-manager';
 import { Address, Logger } from '@app/common';
 import { aprToApy, normalizeDecimals } from '@app/common/utils';
 
-import { AccountServiceInterface } from '../../modules/microservices/account.service.interface';
-import { PriceServiceInterface } from '../../modules/microservices/price.service.interface';
+import { AssetServiceInterface } from '../../modules/microservices/asset.service.interface';
 import { RootProtocol } from './RootProtocol';
 import { MissingOpportunityException, MissingTokenException } from './exceptions';
 import {
@@ -43,9 +42,7 @@ export abstract class RootProtocolCacheable<
   meta: TProtocolMeta;
   protected abstract logger: Logger;
   protected abstract cache: Cache;
-  // TODO: use new asset service :)
-  protected abstract accountService: AccountServiceInterface;
-  protected abstract priceService: PriceServiceInterface;
+  protected abstract assetService: AssetServiceInterface;
 
   // 1. get cacheable data
   // 2. cache above data
@@ -142,10 +139,14 @@ export abstract class RootProtocolCacheable<
    * Override if required.
    *
    * @param opportunities
+   * @param tokens
    * @returns
    */
   // TODO: rename fetchOpportunityData
-  protected updateRealTimeData?(opportunities: TMinimal[]): Promise<TMinimal[]>;
+  protected updateRealTimeData?(
+    opportunities: TMinimal[],
+    tokens?: Map<Address, any>,
+  ): Promise<TMinimal[]>;
 
   /**
    * Formats the output for listing all pools.
@@ -252,7 +253,7 @@ export abstract class RootProtocolCacheable<
     try {
       // fetch any extra required opportunity data not handled automatically
       updatedOpportunities = this.updateRealTimeData
-        ? await this.updateRealTimeData(opportunities)
+        ? await this.updateRealTimeData(opportunities, tokens)
         : opportunities;
     } catch (e) {
       if (e) {
@@ -345,6 +346,12 @@ export abstract class RootProtocolCacheable<
       single.forEach((featureName) => {
         if (pool?.[featureName]) {
           tokens.add(pool[featureName].token.address);
+
+          // TODO: This is only required if asset-service doesn't provide
+          // proper underlying token support (i.e. balancer, solana, etc)
+          if (pool[featureName].token?.underlying) {
+            pool[featureName].token?.underlying.map((token) => tokens.add(token.address));
+          }
         }
       });
     });
@@ -358,31 +365,9 @@ export abstract class RootProtocolCacheable<
    * @param addresses token addresses
    */
   protected async getTokens(addresses: Address[]): Promise<[Address, any][]> {
-    const { data: tokens } = await this.accountService.getAssets(addresses, [this.meta.chain]);
-
-    const { prices } = await this.priceService.getTokenPricesFetch(addresses, this.meta.chain);
-
-    return tokens.map((token: any) => [
-      token.address,
-      {
-        address: token.address,
-        name: token.name,
-        symbol: token.symbol,
-        chainId: token.chain,
-        decimals: token.decimals,
-        price: Number(prices[token.address]),
-        underlying: token.underlyingAssets?.map((u) => {
-          return {
-            address: u.address,
-            name: u.name,
-            symbol: u.symbol,
-            chainId: u.chainId,
-            decimals: u.decimals,
-            price: Number(prices[u.address]),
-          };
-        }),
-      },
-    ]);
+    return this.assetService.getAssets(
+      addresses.map((address) => ({ address, chainId: this.meta.chain })),
+    ); // TODO: Format and match token interfaces
   }
 
   /**

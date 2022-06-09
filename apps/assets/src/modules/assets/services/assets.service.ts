@@ -70,7 +70,7 @@ export class AssetsService extends CrudService<AssetsRepository> {
     );
     // TODO: improve this dependencies
     const dtosToUpdatePricesInCache = assetsUpdatedWithPrices //
-      .filter(({ underlying }) => underlying.some(({ reserve }) => reserve));
+      .filter(({ underlying }) => underlying?.some(({ reserve }) => reserve));
     this.priceService.saveSpecificAssetPrices(dtosToUpdatePricesInCache);
     return assetsUpdatedWithPrices;
   }

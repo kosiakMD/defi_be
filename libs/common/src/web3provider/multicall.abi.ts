@@ -22,4 +22,29 @@ export class MulticallAbi {
     stateMutability: 'view',
     type: 'function',
   };
+
+  static readonly tryAggregate: AbiItem = {
+    constant: true,
+    inputs: [
+      {
+        name: 'requireSuccess', type: 'address',
+      },
+      {
+        components: [
+          { name: 'target', type: 'address' },
+          { name: 'callData', type: 'bytes' },
+        ],
+        name: 'calls',
+        type: 'tuple[]',
+      },
+    ],
+    name: 'tryAggregate',
+    outputs: [
+      { name: 'blockNumber', type: 'uint256' },
+      { name: 'returnData', type: 'bytes[]' },
+    ],
+    payable: false,
+    stateMutability: 'view',
+    type: 'function',
+  };
 }

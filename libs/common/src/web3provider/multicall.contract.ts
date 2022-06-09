@@ -13,4 +13,8 @@ export class MulticallContract {
   async aggregate(data: string[][]): Promise<{ blockNumber: number; returnData: string[] }> {
     return await this.contract.methods.aggregate(data).call();
   }
+
+  async tryAggregate(data: string[][]): Promise<{ blockNumber: number; returnData: string[] }> {
+    return await this.contract.methods.tryAggregate(false, data).call();
+  }
 }

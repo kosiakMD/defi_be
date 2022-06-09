@@ -392,8 +392,6 @@ export abstract class RootProtocolCacheable<
    * @param tokens map of all tokens (and token details) keyed by token address
    */
   protected formatOpportunity(opportunity: TMinimal, tokens: TokenMap): void | TOpportunity {
-    const tvl = this.getOpportunityTVL(opportunity, tokens);
-
     // const base: Partial<TOpportunity> = { // TODO: 'token' isn't yet on TOpportunity
     const base: any = {
       feature: opportunity.feature,
@@ -433,6 +431,9 @@ export abstract class RootProtocolCacheable<
 
       base.supply = this.formatOpportunitySuppliedToken(opportunity.supply, token);
     }
+
+    // it is more safe to have it here
+    const tvl = this.getOpportunityTVL(opportunity, tokens);
 
     // fill & format reward tokens
     if ('rewarded' in opportunity) {

@@ -86,8 +86,8 @@ configMaps:
     #MRIVER_URL: http://rpc/v1/rpc-call/9
     XDAI_URL: https://rpc.xdaichain.com
     #XDAI_URL: http://rpc/v1/rpc-call/7
-    SOL_URL: https://solana-api.projectserum.com/
-    #SOL_URL: https://rpc.ankr.com/solana
+    #SOL_URL: https://solana-api.projectserum.com/
+    SOL_URL: https://rpc.ankr.com/solana
     BOBA_URL: https://lightning-replica.boba.network
     #BOBA_URL: http://rpc/v1/rpc-call/15
     CRONOS_URL: https://evm-cronos.crypto.org

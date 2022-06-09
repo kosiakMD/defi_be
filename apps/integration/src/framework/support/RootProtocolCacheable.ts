@@ -142,10 +142,14 @@ export abstract class RootProtocolCacheable<
    * Override if required.
    *
    * @param opportunities
+   * @param tokens
    * @returns
    */
   // TODO: rename fetchOpportunityData
-  protected updateRealTimeData?(opportunities: TMinimal[]): Promise<TMinimal[]>;
+  protected updateRealTimeData?(
+    opportunities: TMinimal[],
+    tokens?: Map<Address, any>,
+  ): Promise<TMinimal[]>;
 
   /**
    * Formats the output for listing all pools.
@@ -252,7 +256,7 @@ export abstract class RootProtocolCacheable<
     try {
       // fetch any extra required opportunity data not handled automatically
       updatedOpportunities = this.updateRealTimeData
-        ? await this.updateRealTimeData(opportunities)
+        ? await this.updateRealTimeData(opportunities, tokens)
         : opportunities;
     } catch (e) {
       if (e) {

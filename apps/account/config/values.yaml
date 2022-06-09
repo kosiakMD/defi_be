@@ -32,8 +32,8 @@ configMaps:
     FTM_URL: https://rpc.ftm.tools/
     #FANTOM_URL: http://rpc/v1/rpc-call/4
     #FTM_URL: http://rpc/v1/rpc-call/4
-    AVALANCHE_URL: https://avalanche--mainnet--rpc-call.datahub.figment.io/apikey/eb4092c651b0af2e17fd2ecb0f5966bd/ext/bc/C/rpc-call
-    AVAX_URL: https://avalanche--mainnet--rpc-call.datahub.figment.io/apikey/eb4092c651b0af2e17fd2ecb0f5966bd/ext/bc/C/rpc-call
+    AVALANCHE_URL: https://speedy-nodes-nyc.moralis.io/173c906bbd79b4c01dc6034b/avalanche/mainnet
+    AVAX_URL: https://speedy-nodes-nyc.moralis.io/173c906bbd79b4c01dc6034b/avalanche/mainnet
     #AVALANCHE_URL: http://rpc/v1/rpc-call/6
     #AVAX_URL: http://rpc/v1/rpc-call/6
     ARBITRUM_URL: https://rpc.ankr.com/arbitrum

@@ -125,6 +125,7 @@ export class AssetsService extends CrudService<AssetsRepository> {
 
   private isAssetOutdated(asset: AssetEntity): boolean {
     return (
+      this.config.get<number>('REPROCESS_ASSET_PERIOD_MS') > 0 &&
       Date.now() - asset.updatedAt.getTime() >= this.config.get<number>('REPROCESS_ASSET_PERIOD_MS')
     );
   }

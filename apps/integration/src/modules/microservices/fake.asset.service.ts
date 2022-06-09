@@ -39,7 +39,10 @@ export class FakeAssetService implements AssetServiceInterface {
         const { data: tokens } = await this.accountService.getAssets(addresses, [chain]);
 
         // fetch prices
-        const { prices } = await this.priceService.getTokenPricesFetch(addresses, chain);
+        const { prices } = await this.priceService.getTokenPricesFetch(
+          this.getAllAddresses(tokens),
+          chain,
+        );
 
         const { tokens: updatedTokens, prices: updatedPrices } = this.dataStrategy
           ? await this.dataStrategy.fillMissingData(tokens, prices, chain)
@@ -89,5 +92,19 @@ export class FakeAssetService implements AssetServiceInterface {
       //   historicalPrices?: AssetHistoricalPriceInterface[];
       underlying: token.underlyingAssets?.map((asset) => this.mapV2ToV3Interface(asset, prices)),
     }; // as any is needed as reserve & totalSupply are not in the interface yet
+  }
+
+  private getAllAddresses(tokens: any[]): string[] {
+    return Array.from(
+      tokens.reduce((res, t) => {
+        res.add(t.address);
+        if (t.underlyingAssets) {
+          t.underlyingAssets.forEach((ua) => {
+            res.add(ua.address);
+          });
+        }
+        return res;
+      }, new Set<string>()),
+    );
   }
 }

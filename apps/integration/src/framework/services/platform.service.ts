@@ -17,6 +17,7 @@ import { AlchemixV2 } from '../platforms/AlchemixV2';
 import { ApeSwap } from '../platforms/ApeSwap';
 import { BabySwap } from '../platforms/BabySwap';
 import { BalancerV2 } from '../platforms/BalancerV2';
+import { Bancor } from '../platforms/Bancor';
 import { Belt } from '../platforms/Belt';
 import { Benqi } from '../platforms/Benqi';
 import { BiSwap } from '../platforms/BiSwap';
@@ -39,7 +40,6 @@ import { KyberSwap } from '../platforms/KyberSwap';
 import { Lido } from '../platforms/Lido';
 import { Liquity } from '../platforms/Liquity';
 import { MakerDAO } from '../platforms/MakerDAO';
-// import { LimeSwap } from '../platforms/LimeSwap';
 import { MarsEcosystem } from '../platforms/MarsEcosystem';
 import { Mdex } from '../platforms/Mdex';
 import { Mojitoswap } from '../platforms/Mojitoswap';
@@ -134,6 +134,7 @@ export class PlatformService implements OnApplicationBootstrap {
       YelFinance,
       YetiFinance,
       Zenlink,
+      Bancor,
     });
   }
 

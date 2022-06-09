@@ -1,11 +1,12 @@
+import {
+  AssembledAssetInterface,
+  AssetRequestObjectInterface,
+  AssetServiceInterface,
+} from '@sdk/assets/interfaces';
+
 import { Injectable } from '@nestjs/common';
 
 import { CurveAssetsManager } from '../../framework/support/assets/curve.assets.manager';
-import {
-  AssembledAssetInterface,
-  AssetRequestInterface,
-  AssetServiceInterface,
-} from './asset.service.interface';
 
 @Injectable()
 export class EllipsisAssetService implements AssetServiceInterface {
@@ -16,7 +17,9 @@ export class EllipsisAssetService implements AssetServiceInterface {
     return asset;
   }
 
-  async getAssets(requests: AssetRequestInterface[]): Promise<[string, AssembledAssetInterface][]> {
+  async getAssets(
+    requests: AssetRequestObjectInterface[],
+  ): Promise<[string, AssembledAssetInterface][]> {
     const chains = [...new Set(requests.map((r) => r.chainId))];
     const results = await Promise.all(
       chains.map(async (chain) => {

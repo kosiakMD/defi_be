@@ -14,8 +14,8 @@ import { CardanoService } from '../protocols/helpers/cardano/cardano.service';
 import { MuesliSwapAccountService } from './MuesliSwapAccountService';
 import { MuesliSwapPriceService } from './MuesliSwapPriceService';
 import { AccountService } from './account.service';
+import { AssetService } from './asset.service';
 import { EllipsisAssetService } from './ellipsis.asset.service';
-// import { AssetService } from './asset.service';
 import { FakeAssetService } from './fake.asset.service';
 import { MuesliSwapAssetService } from './muesliswap.asset.service';
 import { PriceService } from './price.service';
@@ -46,8 +46,8 @@ import { YetiAssetService } from './yeti.asset.service';
     }),
   ],
   providers: [
-    // Asset Service
-    // AssetService,
+    AssetService,
+    // Fake Asset Service... externally sourced (account service or other)
     FakeAssetService,
     MuesliSwapAssetService,
     EllipsisAssetService,
@@ -76,7 +76,7 @@ import { YetiAssetService } from './yeti.asset.service';
     Web3ProviderService, // Required For EllipsisAssetService
   ],
   exports: [
-    // AssetService,
+    AssetService,
     FakeAssetService,
     AccountService,
     EllipsisAssetService,

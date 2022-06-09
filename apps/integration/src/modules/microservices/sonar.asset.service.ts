@@ -1,4 +1,8 @@
-/* eslint-disable max-classes-per-file */
+import {
+  AssembledAssetInterface,
+  AssetRequestObjectInterface,
+  AssetServiceInterface,
+} from '@sdk/assets/interfaces';
 import { filter, firstValueFrom, mergeMap, toArray } from 'rxjs';
 
 import { HttpService } from '@nestjs/axios';
@@ -8,11 +12,6 @@ import { ConfigService } from '@nestjs/config';
 import { ChainIdEnum } from '@app/common';
 
 import { AccountService } from './account.service';
-import {
-  AssembledAssetInterface,
-  AssetRequestInterface,
-  AssetServiceInterface,
-} from './asset.service.interface';
 import { FakeAssetService } from './fake.asset.service';
 import { PriceService } from './price.service';
 
@@ -32,7 +31,9 @@ export class SonarAssetService extends FakeAssetService implements AssetServiceI
     return asset;
   }
 
-  async getAssets(requests: AssetRequestInterface[]): Promise<[string, AssembledAssetInterface][]> {
+  async getAssets(
+    requests: AssetRequestObjectInterface[],
+  ): Promise<[string, AssembledAssetInterface][]> {
     return this.getSonarAssets(requests.map((a) => a.address));
   }
 

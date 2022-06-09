@@ -161,7 +161,6 @@ export abstract class RootPlatform implements IRootPlatform {
         errors.push(r.reason);
       }
     });
-    // errors.push(...(protocolErrors as any[]));
 
     this.logger.log(`Formatting fetched data for: ${this.meta.name}`);
 

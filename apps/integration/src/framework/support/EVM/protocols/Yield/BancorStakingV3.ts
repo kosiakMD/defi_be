@@ -15,7 +15,7 @@ import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregat
 
 import { AccountService } from '../../../../../modules/microservices/account.service';
 import { PriceService } from '../../../../../modules/microservices/price.service';
-import { MissingTokenException } from '../../../exceptions';
+import { MissingTokenException, MissingUnderlyingException } from '../../../exceptions';
 import {
   INamedFunctionPredicates,
   INamedFunctions,
@@ -294,6 +294,9 @@ export class BancorStakingV3 extends SingleContractProtocol<
     supplied: IBancorSupplyTokenMinimal,
     token: ERC20Token,
   ): ISupplyBancorTokenOpportunity {
+    if (!token.underlying) {
+      throw new MissingUnderlyingException(token, this.meta.chain);
+    }
     const underlyingToken = first(token.underlying);
     const price = underlyingToken.price / Number(supplied.extra.poolTokenRate);
     const balance = normalizeDecimals(toBN(supplied.extra.balance), token.decimals);

@@ -462,7 +462,12 @@ export class IntegrationsServiceV3Decorator {
     liquidityV2.stats.tvl = liquidityV3.supplied.reduce((p, c) => {
       return p + c.tvl;
     }, 0);
-    liquidityV2.stats.share = liquidityV3.token.amount / liquidityV3.token.totalSupply;
+    // for some integration we don't have this 'supplied' token
+    if (liquidityV3.token) {
+      liquidityV2.stats.share = liquidityV3.token.amount / liquidityV3.token.totalSupply;
+    } else {
+      liquidityV2.stats.share = null;
+    }
 
     liquidityV2.rewards = liquidityV3.rewarded?.map((v3RewardToken) => {
       const v2RewardToken = plainToClass(IntegrationClaimableTokenDto, {});

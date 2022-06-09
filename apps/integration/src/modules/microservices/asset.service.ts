@@ -49,7 +49,7 @@ export class AssetService implements AssetServiceInterface {
       `Get (POST) asset details for ${requests.length} requested assets`,
       () =>
         firstValueFrom(
-          this.httpService.post('http://assets-service:3005/v1/assets/get-bulk', {
+          this.httpService.post(this.getAssetsBulkURL, {
             assets: requests,
           }),
         ),

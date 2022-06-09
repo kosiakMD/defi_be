@@ -272,14 +272,21 @@ export class PlatformService implements OnApplicationBootstrap {
 
     if (debug) {
       const { data: pools, errors: poolErrors } = await platform.getPoolData(chains);
-
+      const flat = cached.flat();
       const poolErrorMessages = this.processErrors(poolErrors, platformName);
+      if (flat.length !== pools.length) {
+        errorMessages.push(
+          `Failed to hydrate some opportunities. Missing ${flat.length - pools.length}/${
+            flat.length
+          }`,
+        );
+      }
       return {
         errors: Array.from(new Set(errorMessages.concat(poolErrorMessages))),
         data: {
-          count: cached.flat().length,
-          message: `${platformName} opportunities have been cached`,
-          minimal: cached,
+          count: flat.length,
+          message: `${platformName} minimal opportunities have been cached`,
+          minimal: cached, // not flattened so that each array is its own 'protocol' to help debug
           hydrated: pools,
         },
       };

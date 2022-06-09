@@ -18,6 +18,11 @@ import { chunkArray, insertAtPosition } from '../../../common/utils';
 import { ChainsService } from '../../chains/chains.service';
 import { TokenBalance } from '../balances.interfaces';
 import { BalancesContract } from '../contracts/balances.contract';
+import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
+import { DynamicContract } from '@app/common/web3provider/contracts/DynamicContract';
+import { BALANCES_ABI } from '../contracts/balances.contract.abi';
+import { CallData } from '@app/common/dto/CallData';
+import { BALANCE_OF_ABI } from '../contracts/balance-of.abi';
 
 export class NetworkBalancesStrategy
   extends BaseBalanceStrategy
@@ -27,6 +32,7 @@ export class NetworkBalancesStrategy
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     private readonly web3Provider: Web3Provider,
     private readonly chainsService: ChainsService,
+    private readonly multicall: MulticallAggregator,
   ) {
     super();
   }
@@ -56,7 +62,8 @@ export class NetworkBalancesStrategy
       throw new Error(`No balances checker contract for ${chainId} chain`);
     }
 
-    const contract = new BalancesContract(contractAddress, web3);
+    // const contract = new BalancesContract(contractAddress, web3);
+    const contract = new DynamicContract(contractAddress);
 
     let tokens = [...originalTokens];
     const nativeCoinIndex = tokens.indexOf(COIN_ADDRESS);
@@ -65,19 +72,25 @@ export class NetworkBalancesStrategy
       tokens.splice(nativeCoinIndex, 1);
     }
 
-    let promises: Promise<string | string[]>[] = chunkArray(tokens, this.DEFAULT_BATCH_SIZE).map(
+    let promises: CallData[]/*Promise<string | string[]>[]*/ = chunkArray(tokens, this.DEFAULT_BATCH_SIZE).map(
       (chunk) =>
-        retry(() => contract.getBalances(address, chunk, block), this.WEB3_RETRY_CALL_IN_MS),
+        // retry(() => contract.getBalances(address, chunk, block), this.WEB3_RETRY_CALL_IN_MS),
+        contract.createCall(BALANCES_ABI.pop(), address, chunk)
     );
 
     if (hasNativeCoin) {
       promises = [
-        retry(() => web3.eth.getBalance(address), this.WEB3_RETRY_CALL_IN_MS),
+        contract.createCall(BALANCE_OF_ABI, address),
+        // retry(() => web3.eth.getBalance(address), this.WEB3_RETRY_CALL_IN_MS),
         ...promises,
       ];
     }
 
-    const batchedBalances = await Promise.all<string | string[]>(promises);
+    const batchedBalances = await this.multicall.callArray(
+      promises,
+      1,
+      false,
+    )//await Promise.all<string | string[]>(promises);
 
     let balances: string[];
     if (hasNativeCoin) {
@@ -112,3 +125,4 @@ export class NetworkBalancesStrategy
     return this.COMMON_BALANCE_CHECKER_ADDRESS;
   }
 }
+

@@ -34,6 +34,8 @@ import { RoninBalancesStrategy } from './strategies/ronin.balances.strategy';
 import { SecretBalancesStrategy } from './strategies/secret.balances.strategy';
 import { SolanaBalancesStrategy } from './strategies/solana.balances.strategy';
 import { TerraBalancesStrategy } from './strategies/terra.balances.strategy';
+import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
+import { Web3ProviderService } from '@app/common/web3provider';
 
 @Module({
   imports: [
@@ -80,6 +82,8 @@ import { TerraBalancesStrategy } from './strategies/terra.balances.strategy';
     TerraDelegationsStrategy,
     CardanoDelegationsStrategy,
     SolanaDelegationsStrategy,
+    MulticallAggregator,
+    Web3ProviderService,
   ],
 })
 export class BalancesModule {}

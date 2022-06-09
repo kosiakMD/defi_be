@@ -74,7 +74,7 @@ configMaps:
     POLYGON_URL: https://polygon-rpc.com/
     FTM_URL: https://rpc.ftm.tools
     #FTM_URL: http://rpc/v1/rpc-call/4
-    AVAX_URL: https://api.avax.network/ext/bc/C/rpc
+    AVAX_URL: https://speedy-nodes-nyc.moralis.io/173c906bbd79b4c01dc6034b/avalanche/mainnet
     #AVAX_URL: http://rpc/v1/rpc-call/6
     CELO_URL: https://forno.celo.org
     #CELO_URL: http://rpc/v1/rpc-call/8

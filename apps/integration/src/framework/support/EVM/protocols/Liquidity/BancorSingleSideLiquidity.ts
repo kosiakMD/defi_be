@@ -208,7 +208,7 @@ export class BancorSingleSideLiquidity
     const liquidityPositionsData = await this.multicall.callArray(callsArray, this.meta.chain);
     const liquidityBalances = liquidityPositionsData.reduce((balances, position) => {
       const poolAddress = position['1'].toLowerCase();
-      const assetAddress = position['2'].toLowerCase();
+      const assetAddress = this.formatTokenAddress(position['2'].toLowerCase());
       const balance = position['4'];
       if (balances[poolAddress] === undefined) {
         balances[poolAddress] = {};

@@ -4,7 +4,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { ChainIdEnum, Logger } from '@app/common';
 
-import { MuesliSwapMilkPools } from '../support/Cardano/Yield/MuesliSwapMilkPools';
+import { MuesliSwapMilkPools } from '../support/Cardano/protocols/Yield/MuesliSwapMilkPools';
 import { RootPlatform } from '../support/RootPlatform';
 import { FeatureEnum } from '../support/enums';
 

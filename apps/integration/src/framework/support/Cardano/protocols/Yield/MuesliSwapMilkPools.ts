@@ -13,20 +13,20 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { Logger } from '@app/common';
 import { stringToHex } from '@app/common/utils';
 
-import { CardanoService } from '../../../../modules/protocols/helpers/cardano/cardano.service';
-import { IProtocolMeta } from '../../interfaces';
-import { BaseWithTokens } from '../../interfaces/new.interfaces';
+import { CardanoService } from '../../../../../modules/protocols/helpers/cardano/cardano.service';
+import { IProtocolMeta } from '../../../interfaces';
+import { BaseWithTokens } from '../../../interfaces/new.interfaces';
 import {
   IRewardTokenMinimal,
   IRewardTokenOpportunity,
   IRewardTokenUserEntry,
-} from '../../interfaces/tokens.rewarded.interface';
+} from '../../../interfaces/tokens.rewarded.interface';
 import {
   ISupplyTokenMinimal,
   ISupplyTokenOpportunity,
   ISupplyTokenUserEntry,
-} from '../../interfaces/tokens.supplied.interface';
-import { CardanoCore } from '../CardanoCore';
+} from '../../../interfaces/tokens.supplied.interface';
+import { CardanoCore } from '../../CardanoCore';
 
 interface IMilkPoolExtra {
   endDate: string; // "2022-04-01T12:00:00+00:00"

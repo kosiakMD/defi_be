@@ -1,5 +1,4 @@
 import {
-  AaveProtocolEnum,
   AaveV3ProtocolEnum,
   AlpacaProtocolEnum,
   AnchorProtocolEnum,
@@ -35,7 +34,6 @@ export type ProtocolName =
   | AutofarmProtocolEnum
   | QuickswapProtocolEnum
   | AlpacaProtocolEnum
-  | AaveProtocolEnum
   | EllipsisProtocolEnum
   | CurveProtocolEnum
   | AnchorProtocolEnum

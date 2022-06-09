@@ -55,10 +55,6 @@ export enum YearnProtocolEnum {
   YearnV2 = 'YearnV2',
 }
 
-export enum AaveProtocolEnum {
-  AaveV2 = 'AaveV2',
-}
-
 export enum AbracadabraProtocolEnum {
   abracadabra = 'Abracadabra',
 }
@@ -222,6 +218,7 @@ export enum WingRidersProtocolEnum {
 // if unsure if it should be in v3 protocolEnum or v2 protocolEnum, put it in v2
 export const ProtocolV3NameEnum = {
   muesliswap: 'MuesliSwap',
+  aaveV2: 'AaveV2',
   aaveV3: 'AaveV3',
   IronBank: 'IronBank',
   Liquity: 'Liquity',
@@ -249,7 +246,6 @@ export const ProtocolV3NameEnum = {
 };
 
 export const ProtocolNameEnum = {
-  ...AaveProtocolEnum,
   ...AbracadabraProtocolEnum,
   ...AlpacaProtocolEnum,
   ...AnchorProtocolEnum,

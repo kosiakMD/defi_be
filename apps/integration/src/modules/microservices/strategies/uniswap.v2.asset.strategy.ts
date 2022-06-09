@@ -1,5 +1,7 @@
 import BigNumber from 'bignumber.js';
 
+import { Injectable } from '@nestjs/common';
+
 import { normalizeDecimals } from '@app/common/utils';
 import { ERC20 } from '@app/common/web3provider/contracts/ERC20';
 import { UniswapV2Pair } from '@app/common/web3provider/contracts/UniswapV2Pair';
@@ -7,6 +9,7 @@ import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregat
 
 import { TokenDataStrategy } from './strategy.interface';
 
+@Injectable()
 export class UniswapV2LpStrategy implements TokenDataStrategy {
   constructor(protected multicall: MulticallAggregator) {}
 

@@ -1,4 +1,4 @@
-import { FakeAssetService } from 'apps/integration/src/modules/microservices/fake.asset.service';
+import { UniswapV2AssetService } from 'apps/integration/src/modules/microservices/uniswap.asset.service';
 import { Cache } from 'cache-manager';
 import { firstValueFrom, map, mergeMap, toArray } from 'rxjs';
 
@@ -40,7 +40,7 @@ export class UniswapV2Liquidity
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected logger: Logger,
     @Inject(CACHE_MANAGER) protected cache: Cache,
-    protected assetService: FakeAssetService,
+    protected assetService: UniswapV2AssetService,
     protected httpService: HttpService,
     // only used to get totalSupply
     protected multicall: MulticallAggregator,

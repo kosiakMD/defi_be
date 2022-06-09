@@ -8,6 +8,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Web3ProviderService } from '@app/common/web3provider';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
+import { AbiModule } from '../../framework/support/EVM/AbiModule/abi.module';
 import { CurveAssetsManager } from '../../framework/support/assets/curve.assets.manager';
 import { CardanoService } from '../protocols/helpers/cardano/cardano.service';
 import { MuesliSwapAccountService } from './MuesliSwapAccountService';
@@ -21,6 +22,8 @@ import { PriceService } from './price.service';
 import { Puppeteer } from './puppeteer';
 import { SolanaAssetService } from './solana.asset.service';
 import { SonarAssetService } from './sonar.asset.service';
+import { SynapseStrategy } from './strategies/synapse.asset.strategy';
+import { UniswapV2LpStrategy } from './strategies/uniswap.v2.asset.strategy';
 import { SynapseAssetService } from './synapse.asset.service';
 import { UniswapV2AssetService } from './uniswap.asset.service';
 import { YetiAssetService } from './yeti.asset.service';
@@ -29,6 +32,7 @@ import { YetiAssetService } from './yeti.asset.service';
   imports: [
     TypeOrmModule.forFeature(),
     HttpModule,
+    AbiModule, // temp for fake asset service
     CacheModule.registerAsync({
       useFactory: async (configService: ConfigService) => ({
         ttl: configService.get('REDIS_CACHE_TTL') || 300,
@@ -52,6 +56,10 @@ import { YetiAssetService } from './yeti.asset.service';
     SolanaAssetService,
     SonarAssetService,
     YetiAssetService,
+    // Strategies
+    UniswapV2LpStrategy,
+    SynapseStrategy,
+
     // Account Services
     AccountService,
     MuesliSwapAccountService,
@@ -60,6 +68,7 @@ import { YetiAssetService } from './yeti.asset.service';
     MuesliSwapPriceService,
 
     // Helpers
+
     Puppeteer,
     CardanoService,
     CurveAssetsManager, // Required For EllipsisAssetService

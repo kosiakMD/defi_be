@@ -37,6 +37,7 @@ export class MinSwap extends RootPlatform {
       feature: FeatureEnum.staking,
       context: {
         endpoint: 'https://monorepo-mainnet-prod.minswap.org/graphql',
+        rewardedToken: '29d222ce763455e3d7a09a665ce554f00ac89d2e99a1a83d267170c6.4d494e',
       },
     });
   }

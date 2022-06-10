@@ -28,19 +28,19 @@ import { FARM_POOL_INFO, IFarmPoolInfo } from '../../Subgraphs/MinswapSubgraph';
 
 export type IFeatureEntryMinimal = BaseWithTokens<
   ISupplyTokenMinimal,
-  IRewardTokenMinimal,
+  IRewardTokenMinimal[],
   void,
   void
 >;
 export type IFeatureOpportunity = BaseWithTokens<
   ISupplyTokenOpportunity,
-  IRewardTokenOpportunity,
+  IRewardTokenOpportunity[],
   void,
   void
 >;
 export type IFeatureUserEntry = BaseWithTokens<
   ISupplyTokenUserEntry,
-  IRewardTokenUserEntry,
+  IRewardTokenUserEntry[],
   void,
   void
 >;
@@ -49,6 +49,7 @@ export interface IMinSwapPoolsMeta extends IProtocolMeta {
   feature: FeatureEnum.staking;
   context: {
     endpoint: string;
+    rewardedToken: string;
   };
 }
 
@@ -78,38 +79,31 @@ export class MinSwapStaking extends CardanoCore<
     address: string,
     pools: IFeatureOpportunity[],
   ): Promise<IFeatureUserEntry[]> {
-    const data = await this.fetchStakingRewards(address);
-    const poolMap = new Map(pools.map((p) => [p.id, p]));
+    return Promise.resolve([]);
+    // const data = await this.fetchStakingRewards(address);
+    // const poolMap = new Map(pools.map((p) => [p.id, p]));
 
-    return data.map((stakingData) => {
-      const pool = poolMap.get(stakingData.pool_id);
-      if (!pool) {
-        // pool filtered out, likely missing tokens
-        return null;
-      }
+    // return data.map((stakingData) => {
+    //   const pool = poolMap.get(stakingData.pool_id);
+    //   if (!pool) {
+    //     // pool filtered out, likely missing tokens
+    //     return null;
+    //   }
 
-      return {
-        ...pool,
-        supply: {
-          ...pool.supply,
-          amount: stakingData.amount_staked,
-          value: pool.supply.token.price * stakingData.amount_staked,
-        },
-        reward: {
-          ...pool.reward,
-          amount: stakingData.reward,
-          value: pool.reward.token.price * stakingData.reward,
-        },
-      };
-    });
-  }
-
-  protected getHarvestBreakdown(): { apr: null; apy: null } {
-    return { apr: null, apy: null };
-  }
-
-  protected getYieldBreakdown(): { apr: null; apy: null } {
-    return { apr: null, apy: null };
+    //   return {
+    //     ...pool,
+    //     supply: {
+    //       ...pool.supply,
+    //       amount: stakingData.amount_staked,
+    //       value: pool.supply.token.price * stakingData.amount_staked,
+    //     },
+    //     reward: {
+    //       ...pool.reward,
+    //       amount: stakingData.reward,
+    //       value: pool.reward.token.price * stakingData.reward,
+    //     },
+    //   };
+    // });
   }
 
   private async fetchFarms(): Promise<IFarmPoolInfo[]> {
@@ -136,11 +130,13 @@ export class MinSwapStaking extends CardanoCore<
         },
         totalSupplied: pool.amountStaked,
       },
-      reward: {
-        token: {
-          address: this.toTokenId(pool.rewardPolicyId, pool.rewardName),
+      rewarded: [
+        {
+          token: {
+            address: this.meta.context.rewardedToken,
+          },
         },
-      },
+      ],
       // meta: {
       //   endDate: pool.poolEndTime,
       //   tokensLeft: pool.tokensLeft,

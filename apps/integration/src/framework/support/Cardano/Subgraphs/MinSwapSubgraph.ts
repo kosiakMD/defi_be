@@ -46,16 +46,18 @@ export const FARM_POOL_INFO = gql`
   }
 `;
 
-export interface IFarmPoolInfo {
+export type IFarmPoolInfoResponse = {
   data: {
-    farmPoolInfo: {
-      allocPoint: number;
-      assetA: CardanoAsset;
-      assetB: CardanoAsset;
-      lpAsset: CardanoAsset;
-      baseAPR: number;
-    }[];
+    farmPoolInfo: IFarmPoolInfo[];
   };
+};
+
+export interface IFarmPoolInfo {
+  allocPoint: number;
+  assetA: CardanoAsset;
+  assetB: CardanoAsset;
+  lpAsset: CardanoAsset;
+  baseAPR: number;
 }
 
 export interface CardanoAsset {

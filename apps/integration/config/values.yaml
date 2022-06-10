@@ -69,10 +69,10 @@ configMaps:
     #BSC_URL: https://bsc-dataseed.binance.org
     BSC_URL: http://rpc/v1/rpc-call/2
     #POLYGON_rpc-call_URL: https://polygon-rpc-call.com/
-    POLYGON_rpc-call_URL: http://rpc/v1/rpc-call/3
+    POLYGON_RPC_URL: http://rpc/v1/rpc-call/3
     #FTM_rpc-call_URL: https://rpc-call.ftm.tools
     #FTM_URL: https://rpc-call.ftm.tools
-    FTM_rpc-call_URL: http://rpc/v1/rpc-call/4
+    FTM_RPC_URL: http://rpc/v1/rpc-call/4
     FTM_URL: http://rpc/v1/rpc-call/4
     #AVAX_URL: https://api.avax.network/ext/bc/C/rpc-call
     AVAX_URL: http://rpc/v1/rpc-call/6
@@ -108,6 +108,7 @@ configMaps:
     GNOSIS_URL: http://rpc/v1/rpc-call/7
     #AURORA_URL: https://mainnet.aurora.dev
     AURORA_URL: http://rpc/v1/rpc-call/18
+    METIS_URL: http://rpc/v1/rpc-call/23
     KAVA_API: https://api2.kava.io
     KAVA_URL: https://api2.kava.io
   external:

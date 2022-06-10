@@ -44,8 +44,6 @@ export const FARM_POOL_INFO = gql`
       pendingReward
       baseAPR
       boostAPR
-      # boosterRate
-      # stakingUtxo
       allocPoint
     }
   }

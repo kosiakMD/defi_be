@@ -12,6 +12,7 @@ import { QueueName } from '../../../common/enum/queue-name.enum';
 
 import { PriceSource } from '../../prices/types/price-source.type';
 import { AssetsCachedRepository } from '../repositories/assets.cached-repository';
+import { CardanoTokenRegistryProvider } from '../services/tracked-assets/cardano-token-registry.provider';
 import { CoingeckoAssetsProvider } from '../services/tracked-assets/coingecko-assets.provider';
 import { CoinmarketcapAssetsProvider } from '../services/tracked-assets/coinmarketcap-assets.provider';
 import { EVMCoinProvider } from '../services/tracked-assets/evm-coin.provider';
@@ -28,15 +29,22 @@ export class UpdateTrackedAssetsProcessor {
     coingekoProvider: CoingeckoAssetsProvider,
     coinmarketcapProvider: CoinmarketcapAssetsProvider,
     evmCoinProvider: EVMCoinProvider,
+    cardanoTokenRegistryProvider: CardanoTokenRegistryProvider,
   ) {
-    this.trackedAssetsProviders.push(coingekoProvider, coinmarketcapProvider, evmCoinProvider);
+    this.trackedAssetsProviders.push(
+      coingekoProvider,
+      coinmarketcapProvider,
+      evmCoinProvider,
+      cardanoTokenRegistryProvider,
+    );
   }
 
   @Process(AssetJobName.UPDATE_TRACKED_ASSETS)
   async handle(job: Job<PriceSource>) {
     try {
-      const jobs = this.trackedAssetsProviders.map((provider) => this.handleProvider(provider));
-      await Promise.all(jobs);
+      await Promise.all(
+        this.trackedAssetsProviders.map((provider) => this.handleProvider(provider)),
+      );
     } catch (e) {
       this.logger.error(`Error processing tracked assets job: ${job.name}`, e);
       throw e;

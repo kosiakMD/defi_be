@@ -1,5 +1,6 @@
 import { CoingeckoAssetAnalyser } from './aggregators/coingecko.asset-analyser';
 import { CoinmarketcapAssetAnalyser } from './aggregators/coinmarketcap.asset-analyser';
+import { CardanoRegistryAssetAnalyser } from './chains/cardano-registry.asset-analyser';
 import { CardanoAssetAnalyser } from './chains/cardano.asset-analyser';
 import { CosmosAssetAnalyser } from './chains/cosmos.asset-analyser';
 import { EVMMetaDataStrategy } from './chains/evm.asset-analyser';
@@ -15,6 +16,7 @@ export const assetAnalysers = [
   CoinmarketcapAssetAnalyser,
 
   CardanoAssetAnalyser,
+  CardanoRegistryAssetAnalyser,
   CosmosAssetAnalyser,
   EVMMetaDataStrategy,
   SolanaAssetAnalyser,

@@ -5,6 +5,8 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+import { ChainIdEnum } from '@app/common';
+
 import { ChainService } from '../../../../common/services/chain.service';
 
 import { AssetProcessingRequest } from '../../types/asset-processing.request';
@@ -47,7 +49,7 @@ export class CoinmarketcapAssetsProvider implements TrackedAssetsProvider {
     for (const { id, platform, rank } of coinmarketcapTokens) {
       const { name: chain, token_address: address } = platform || {};
       const chainId = chainIdMap.get(chain);
-      if (chainId && address) {
+      if (chainId && chainId !== ChainIdEnum.cardano && address) {
         candidates.push({
           chainId,
           address,

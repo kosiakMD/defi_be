@@ -30,14 +30,17 @@ import { assetAnalysers } from './services/analysers/registry';
 import { AssetAnalyserService } from './services/asset-analyser.service';
 import { AssetsService } from './services/assets.service';
 import { IconsService } from './services/icons.service';
+import { CardanoTokenRegistryProvider } from './services/tracked-assets/cardano-token-registry.provider';
 import { CoingeckoAssetsProvider } from './services/tracked-assets/coingecko-assets.provider';
 import { CoinmarketcapAssetsProvider } from './services/tracked-assets/coinmarketcap-assets.provider';
 import { EVMCoinProvider } from './services/tracked-assets/evm-coin.provider';
+import { GithubService } from './services/tracked-assets/helpers/github.helper';
 
 const trackedAssetsProviders = [
   CoingeckoAssetsProvider,
   CoinmarketcapAssetsProvider,
   EVMCoinProvider,
+  CardanoTokenRegistryProvider,
 ];
 
 @Module({
@@ -88,6 +91,7 @@ const trackedAssetsProviders = [
     AssetAnalyserService,
     AssetsProcessor,
     UpdateTrackedAssetsProcessor,
+    GithubService,
   ],
   exports: [],
 })

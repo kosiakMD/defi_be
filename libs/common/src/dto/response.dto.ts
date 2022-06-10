@@ -47,6 +47,12 @@ export class ResponseDto<T = any> extends DetailedResponseDto<T> {
 export class ResponseMetaDto {
   @ApiProperty({
     type: String,
+    example: '2022-06-09T09:40:42.335Z',
+  })
+  timeEntry: string;
+
+  @ApiProperty({
+    type: String,
     example: '1650579202013',
   })
   timestampEntry: string;

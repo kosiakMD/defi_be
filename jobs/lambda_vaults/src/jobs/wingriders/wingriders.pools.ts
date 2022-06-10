@@ -228,6 +228,11 @@ export class WingRidersPools extends CardanoPools implements JobInterface {
       const assetBToken = wingRidersPool.tokenBundle.find(
         (token) => !this.isAdaToken(token) && !this.isLpToken(token),
       );
+
+      if (!assetBToken) {
+        continue;
+      }
+
       const assetBTokenMetadata = tokensMetadataMap.get(
         assetBToken.policyId + assetBToken.assetName,
       );

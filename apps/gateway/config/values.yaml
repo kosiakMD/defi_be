@@ -44,10 +44,10 @@ configMaps:
 resources:
   requests:
     cpu: 50m
-    memory: 300Mi
+    memory: 200Mi
   limits:
     cpu: 100m
-    memory: 300Mi
+    memory: 200Mi
 
 secrets:
 - mailer

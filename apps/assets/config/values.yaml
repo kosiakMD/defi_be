@@ -42,11 +42,11 @@ configMaps:
 
 resources:
   requests:
-    cpu: 10m
+    cpu: 50m
     memory: 200Mi
   limits:
     cpu: 100m
-    memory: 300Mi
+    memory: 200Mi
 
 secrets:
   - database-assets

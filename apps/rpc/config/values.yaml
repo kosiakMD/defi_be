@@ -15,17 +15,17 @@ configMaps:
     LOG_LEVEL: info
     NODE_ENV: development
     AWS_XRAY_DAEMON_ADDRESS: xray-service.default:2000
-  config: 
+  config:
     BODY_LIMIT: 10mb
     URL_LIMIT: 10mb
 
 resources:
   requests:
-    cpu: 200m
-    memory: 400Mi
+    cpu: 50m
+    memory: 100Mi
   limits:
-    cpu: 400m
-    memory: 1Gi
+    cpu: 100m
+    memory: 200Mi
 
 secrets:
   - databaserpc

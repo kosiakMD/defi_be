@@ -23,18 +23,15 @@ export const FARM_POOL_INFO = gql`
       assetA {
         currencySymbol
         tokenName
-        ...allMetadata
       }
       assetB {
         currencySymbol
         tokenName
-        ...allMetadata
       }
       extraRewards {
         asset {
           currencySymbol
           tokenName
-          ...allMetadata
         }
         baseAPR
         pendingReward
@@ -47,13 +44,21 @@ export const FARM_POOL_INFO = gql`
       allocPoint
     }
   }
-
-  fragment allMetadata on Asset {
-    metadata {
-      name
-      ticker
-      url
-      decimals
-    }
-  }
 `;
+
+export interface IFarmPoolInfo {
+  data: {
+    farmPoolInfo: {
+      allocPoint: number;
+      assetA: CardanoAsset;
+      assetB: CardanoAsset;
+      lpAsset: CardanoAsset;
+      baseAPR: number;
+    }[];
+  };
+}
+
+export interface CardanoAsset {
+  currencySymbol: string;
+  tokenName: string;
+}

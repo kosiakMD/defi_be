@@ -10,6 +10,7 @@ import { Logger } from '@app/common';
 import { stringToHex } from '@app/common/utils';
 
 import { CardanoService } from '../../../../../modules/protocols/helpers/cardano/cardano.service';
+import { FeatureEnum } from '../../../enums';
 import { IProtocolMeta } from '../../../interfaces';
 import { BaseWithTokens } from '../../../interfaces/new.interfaces';
 import {
@@ -23,38 +24,35 @@ import {
   ISupplyTokenUserEntry,
 } from '../../../interfaces/tokens.supplied.interface';
 import { CardanoCore } from '../../CardanoCore';
-import { FARM_POOL_INFO } from '../../Subgraphs/MinswapSubgraph';
-
-interface IMilkPoolExtra {
-  endDate: string; // "2022-04-01T12:00:00+00:00"
-  tokensLeft: number;
-  poolSize: number;
-}
+import { FARM_POOL_INFO, IFarmPoolInfo } from '../../Subgraphs/MinswapSubgraph';
 
 export type IFeatureEntryMinimal = BaseWithTokens<
   ISupplyTokenMinimal,
   IRewardTokenMinimal,
   void,
-  IMilkPoolExtra
+  void
 >;
 export type IFeatureOpportunity = BaseWithTokens<
   ISupplyTokenOpportunity,
   IRewardTokenOpportunity,
   void,
-  IMilkPoolExtra
+  void
 >;
 export type IFeatureUserEntry = BaseWithTokens<
   ISupplyTokenUserEntry,
   IRewardTokenUserEntry,
   void,
-  IMilkPoolExtra
+  void
 >;
 
 export interface IMinSwapPoolsMeta extends IProtocolMeta {
-  context?: any;
+  feature: FeatureEnum.staking;
+  context: {
+    endpoint: string;
+  };
 }
 
-export class MuesliSwapMilkPools extends CardanoCore<
+export class MinSwapStaking extends CardanoCore<
   IFeatureEntryMinimal,
   IFeatureOpportunity,
   IFeatureUserEntry,
@@ -71,7 +69,7 @@ export class MuesliSwapMilkPools extends CardanoCore<
   }
 
   async getCacheableOpportunityData(): Promise<IFeatureEntryMinimal[]> {
-    const pools = await this.fetchMilkPools();
+    const pools = await this.fetchFarms();
 
     return pools.map(this.milkPoolToMinimalFeature.bind(this));
   }
@@ -114,24 +112,20 @@ export class MuesliSwapMilkPools extends CardanoCore<
     return { apr: null, apy: null };
   }
 
-  /**
-   *
-   * @returns
-   */
-  private async fetchMilkPools(): Promise<IMuesliSwapStakingPool[]> {
-    return this.get(`https://staking.muesliswap.com/tokens-info`);
+  private async fetchFarms(): Promise<IFarmPoolInfo[]> {
+    return this.post(this.meta.context.endpoint + '?FarmPoolInfo', { query: FARM_POOL_INFO });
   }
 
-  private async fetchStakingRewards(address: string): Promise<IMuesliSwapStakingRewards[]> {
-    return this.get(`https://staking.muesliswap.com/my-rewards`, {
-      pkh: this.cardanoUtils.addressToBlake224(address),
-    });
-  }
+  // private async fetchStakingRewards(address: string): Promise<IMuesliSwapStakingRewards[]> {
+  //   return this.get(`https://staking.muesliswap.com/my-rewards`, {
+  //     pkh: this.cardanoUtils.addressToBlake224(address),
+  //   });
+  // }
 
   /**
    * Formats basic HTTP result milk pool to FeatureMinimal
    */
-  private milkPoolToMinimalFeature(pool: IMuesliSwapStakingPool): IFeatureEntryMinimal {
+  private milkPoolToMinimalFeature(pool: any): IFeatureEntryMinimal {
     return {
       id: pool.poolId,
       chain: this.meta.chain,
@@ -147,11 +141,11 @@ export class MuesliSwapMilkPools extends CardanoCore<
           address: this.toTokenId(pool.rewardPolicyId, pool.rewardName),
         },
       },
-      meta: {
-        endDate: pool.poolEndTime,
-        tokensLeft: pool.tokensLeft,
-        poolSize: pool.poolSize,
-      },
+      // meta: {
+      //   endDate: pool.poolEndTime,
+      //   tokensLeft: pool.tokensLeft,
+      //   poolSize: pool.poolSize,
+      // },
     };
   }
 
@@ -159,7 +153,7 @@ export class MuesliSwapMilkPools extends CardanoCore<
     return `${policyId}.${stringToHex(symbol)}`;
   }
 
-  private get<T>(url: string, params?: { [key: string]: unknown }): Promise<T> {
-    return firstValueFrom(this.httpService.get(url, { params }).pipe(map(({ data }) => data)));
+  private post<T>(url: string, body?: Record<string, any>): Promise<T> {
+    return firstValueFrom(this.httpService.post(url, body).pipe(map(({ data }) => data)));
   }
 }

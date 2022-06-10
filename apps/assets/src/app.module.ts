@@ -25,6 +25,12 @@ import { PricesModule } from './modules/prices/prices.module';
 @Module({
   imports: [
     ScheduleModule.forRoot(),
+    ConfigModule.forRoot(configuration(config)),
+    WinstonModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => getWinstonParams('assets', configService),
+    }),
     BullModule.registerQueue({
       name: QueueName.ASSETS,
       settings: {
@@ -36,11 +42,16 @@ import { PricesModule } from './modules/prices/prices.module';
         removeOnFail: true,
       },
     }),
-    ConfigModule.forRoot(configuration(config)),
-    WinstonModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: async (configService: ConfigService) => getWinstonParams('assets', configService),
+    BullModule.registerQueue({
+      name: QueueName.PRICES,
+      settings: {
+        maxStalledCount: 0,
+      },
+      defaultJobOptions: {
+        attempts: 1,
+        removeOnComplete: true,
+        removeOnFail: true,
+      },
     }),
     TracingModule.forRoot({ serviceName: 'assets-service' }),
     TypeOrmModule.forRootAsync({

@@ -5,7 +5,9 @@ import { Inject, LoggerService } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { JobName } from '../../../common/enum/job-name.enum';
+import { formatError } from '@app/common/utils';
+
+import { PriceJobName } from '../../../common/enum/job-name.enum';
 import { QueueName } from '../../../common/enum/queue-name.enum';
 
 import { PriceService } from '../price.service';
@@ -13,7 +15,7 @@ import { getPriceStrategyType } from '../strategies';
 import { BaseStrategy } from '../strategies/base.strategy';
 import { PriceSource } from '../types/price-source.type';
 
-@Processor(QueueName.ASSETS)
+@Processor(QueueName.PRICES)
 export class UpdateCurrentPricesFromSourceProcessor {
   constructor(
     private readonly moduleRef: ModuleRef,
@@ -21,15 +23,15 @@ export class UpdateCurrentPricesFromSourceProcessor {
     private readonly priceService: PriceService,
   ) {}
 
-  @Process(JobName.UPDATE_CURRENT_PRICES_FROM_SOURCE)
+  @Process(PriceJobName.UPDATE_CURRENT_PRICES_FROM_SOURCE)
   async handle(job: Job<PriceSource>) {
     try {
       await this.process(job.data);
     } catch (e) {
-      this.logger.error(
-        `Error processing price job: ${job.name} for source ${job.data?.sourceId}`,
-        e,
-      );
+      this.logger.error({
+        message: `Error processing price job: ${job.name} for source ${job.data?.sourceId}`,
+        error: formatError(e),
+      });
       throw e;
     }
   }

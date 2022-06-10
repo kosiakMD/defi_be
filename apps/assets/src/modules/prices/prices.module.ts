@@ -52,12 +52,12 @@ const priceStrategies = [
     HttpModule,
     CommonModule,
     BullModule.registerQueue({
-      name: QueueName.ASSETS,
+      name: QueueName.PRICES,
       settings: {
         maxStalledCount: 0,
       },
       defaultJobOptions: {
-        attempts: 3,
+        attempts: 1,
         removeOnComplete: true,
         removeOnFail: true,
       },

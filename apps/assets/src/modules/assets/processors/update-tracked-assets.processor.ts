@@ -4,8 +4,10 @@ import { InjectQueue, Process, Processor } from '@nestjs/bull';
 import { Inject, Logger } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { JobName } from '../../../common/enum/job-name.enum';
-import { JobCompleteStates } from '../../../common/enum/job-states.enum';
+import { formatError } from '@app/common/utils';
+
+import { AssetJobName } from '../../../common/enum/job-name.enum';
+import { JobPriority } from '../../../common/enum/job-priority.enum';
 import { QueueName } from '../../../common/enum/queue-name.enum';
 
 import { PriceSource } from '../../prices/types/price-source.type';
@@ -30,13 +32,11 @@ export class UpdateTrackedAssetsProcessor {
     this.trackedAssetsProviders.push(coingekoProvider, coinmarketcapProvider, evmCoinProvider);
   }
 
-  @Process(JobName.UPDATE_TRACKED_ASSETS)
+  @Process(AssetJobName.UPDATE_TRACKED_ASSETS)
   async handle(job: Job<PriceSource>) {
     try {
       const jobs = this.trackedAssetsProviders.map((provider) => this.handleProvider(provider));
       await Promise.all(jobs);
-
-      return JobCompleteStates.SUCCESS;
     } catch (e) {
       this.logger.error(`Error processing tracked assets job: ${job.name}`, e);
       throw e;
@@ -50,13 +50,24 @@ export class UpdateTrackedAssetsProcessor {
       this.logger.log(`${candidates.length} assets provided by '${provider.name()}'`);
 
       for (const candidate of candidates) {
-        await this.assetsQueue.add(JobName.ASSET_METADATA, {
-          ...candidate,
-          isTracked: true,
-        });
+        await this.assetsQueue.add(
+          AssetJobName.ASSET_METADATA,
+          {
+            ...candidate,
+            isTracked: true,
+          },
+          {
+            // NOTE: This should prevent process asset jobs duplications
+            jobId: `process-asset:${candidate.chainId}-${candidate.address}`,
+            priority: JobPriority.LOW,
+          },
+        );
       }
     } catch (e) {
-      this.logger.error(`Error processing tracked assets provider ${provider.name()}`, e);
+      this.logger.error({
+        message: `Error processing tracked assets provider ${provider.name()}`,
+        error: formatError(e),
+      });
     }
   }
 }

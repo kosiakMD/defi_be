@@ -105,7 +105,7 @@ export class AssetsCachedRepository {
         getAssetCacheKey({ address, chainId: cachedAsset.chainId }),
       );
       const underlying = [];
-      if (underlyingAssetDto.underlying) {
+      if (underlyingAssetDto?.underlying) {
         underlying.push(...this.getUnderlying(underlyingAssetDto, cachedAssetsMap));
       }
       assetUnderlyingEntity.underlyingAsset = plainToClass(AssetEntity, {

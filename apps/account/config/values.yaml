@@ -25,7 +25,7 @@ configMaps:
     #BINANCE_URL: http://rpc/v1/rpc-call/2
     #BSC_URL: http://rpc/v1/rpc-call/2
     POLYGON_URL: https://speedy-nodes-nyc.moralis.io/173c906bbd79b4c01dc6034b/polygon/mainnet/archive
-    POLYGON_RPC_URL: https://polygon-rpc-call.com/
+    POLYGON_RPC_URL: https://polygon-rpc.com/
     #POLYGON_URL: http://rpc/v1/rpc-call/3
     #POLYGON_RPC_URL: http://rpc/v1/rpc-call/3
     FANTOM_URL: https://rpc.ftm.tools/
@@ -40,10 +40,10 @@ configMaps:
     #ARBITRUM_URL: http://rpc/v1/rpc-call/5
     XDAI_URL: https://xdai-archive.blockscout.com
     #XDAI_URL: http://rpc/v1/rpc-call/7
-    CELO_URL: https://celo-mainnet--rpc-call.datahub.figment.io/apikey/4db2dc6e107f70e18fd4bdbb549b9aa1/
+    CELO_URL: https://celo-mainnet--rpc.datahub.figment.io/apikey/4db2dc6e107f70e18fd4bdbb549b9aa1/
     #CELO_URL: http://rpc/v1/rpc-call/8
-    MOONRIVER_URL: https://rpc-call.api.moonriver.moonbeam.network
-    MRIVER_URL: https://rpc-call.api.moonriver.moonbeam.network
+    MOONRIVER_URL: https://rpc.api.moonriver.moonbeam.network
+    MRIVER_URL: https://rpc.api.moonriver.moonbeam.network
     #MOONRIVER_URL: http://rpc/v1/rpc-call/9
     #MRIVER_URL: http://rpc/v1/rpc-call/9
     HARMONY_URL: https://a.api.s0.t.hmny.io
@@ -54,13 +54,13 @@ configMaps:
     #HECO_URL: http://rpc/v1/rpc-call/11
     SOLANA_URL: https://solana-api.projectserum.com/
     SOL_URL: https://solana-api.projectserum.com/
-    OKEX_URL: https://exchainrpc-call.okex.org
+    OKEX_URL: https://exchainrpc.okex.org
     #OKEX_URL: http://rpc/v1/rpc-call/13
     CRONOS_URL: https://evm-cronos.crypto.org
     #CRONOS_URL: http://rpc/v1/rpc-call/14
     BOBA_URL: https://mainnet.boba.network/
     #BOBA_URL: http://rpc/v1/rpc-call/15
-    KUCOIN_URL: https://rpc-call-mainnet.kcc.network
+    KUCOIN_URL: https://rpc-mainnet.kcc.network
     #KUCOIN_URL: http://rpc/v1/rpc-call/16
     OPTIMISM_URL: https://mainnet.optimism.io/
     OPT_URL: https://mainnet.optimism.io/
@@ -74,23 +74,23 @@ configMaps:
     #TERRA_URL: http://rpc/v1/rpc-call/19
     METIS_URL: https://andromeda-rpc.metis.io/
     #METIS_URL: http://rpc/v1/rpc-call/23
-    RONIN_URL: https://api.roninchain.com/rpc-call
+    RONIN_URL: https://api.roninchain.com/rpc
     #RONIN_URL: http://rpc/v1/rpc-call/24
     GNOSIS_URL: https://poa-xdai-archival.gateway.pokt.network/v1/lb/61f959410d66d80038fc1da0
     #GNOSIS_URL: http://rpc/v1/rpc-call/7
     KLAYTN_URL: https://public-node-api.klaytnapi.com/v1/cypress
     #KLAYTN_URL: http://rpc/v1/rpc-call/20
-    FUSE_URL: https://rpc-call.fuse.io
+    FUSE_URL: https://rpc.fuse.io
     #FUSE_URL: http://rpc/v1/rpc-call/21
-    KAVA_URL: https://rpc-call.kava.io
+    KAVA_URL: https://rpc.kava.io
     #KAVA_URL: http://rpc/v1/rpc-call/26
     CARDANO_URL: https://cardano-mainnet.blockfrost.io
     #CARDANO_URL: http://rpc/v1/rpc-call/22
-    COSMOS_URL: https://cosmoshub-4--rpc-call--archive.datahub.figment.io/apikey/91e126bee34f826357715bff8eac3441/
+    COSMOS_URL: https://cosmoshub-4--rpc--archive.datahub.figment.io/apikey/91e126bee34f826357715bff8eac3441/
     #COSMOS_URL: http://rpc/v1/rpc-call/25
-    OSMOSIS_URL: https://osmosis-1--rpc-call--archive.datahub.figment.io/apikey/91e126bee34f826357715bff8eac3441/
+    OSMOSIS_URL: https://osmosis-1--rpc--archive.datahub.figment.io/apikey/91e126bee34f826357715bff8eac3441/
     #OSMOSIS_URL: http://rpc/v1/rpc-call/27
-    SECRET_URL: https://secret-3--rpc-call--archive.datahub.figment.io/apikey/91e126bee34f826357715bff8eac3441/
+    SECRET_URL: https://secret-3--rpc--archive.datahub.figment.io/apikey/91e126bee34f826357715bff8eac3441/
     #SECRET_URL: http://rpc/v1/rpc-call/28
   endpoints:
     PRICE_SERVICE_HOST: http://price

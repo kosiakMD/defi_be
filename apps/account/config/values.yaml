@@ -94,7 +94,7 @@ configMaps:
     PRICE_SERVICE_PORT: 80
     PRICES_PATH: v1/prices
     PRICE_SERVICE_MAIN_COIN_ADDRESS: 0x0000000000000000000000000000000000000000
-    KAVA_LCDL: https://api2.kava.io
+    KAVA_LCD: https://api2.kava.io
     OSMOSIS_LCD: https://lcd.osmosis.zone
     COSMOS_LCD: https://lcd-cosmos.cosmostation.io
     SECRET_LCD: https://lcd-secret.cosmostation.io

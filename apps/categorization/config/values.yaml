@@ -19,11 +19,11 @@ configMaps:
 
 resources:
   requests:
-    cpu: 50m
-    memory: 300Mi
-  limits:
     cpu: 100m
-    memory: 300Mi
+    memory: 2Gi
+  limits:
+    cpu: 1
+    memory: 4Gi
 
 secrets:
 - redis
@@ -38,3 +38,5 @@ initContainer:
   image: ""
   spec:
     command: [ "node", "./node_modules/typeorm/cli.js", "migration:run", "-f", "dist/apps/categorization/src/ormconfig.js" ]
+
+

@@ -3,7 +3,6 @@ import {
   PangolinProtocolEnum,
   PancakeProtocolEnum,
   AlpacaProtocolEnum,
-  AaveProtocolEnum,
   SushiSwapProtocolEnum,
   UniswapProtocolEnum,
   YearnProtocolEnum,
@@ -21,6 +20,5 @@ export type ProtocolName =
   | SushiSwapProtocolEnum
   | UniswapProtocolEnum
   | AlpacaProtocolEnum
-  | AaveProtocolEnum
   | YearnProtocolEnum
   | EllipsisProtocolEnum;

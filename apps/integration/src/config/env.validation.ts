@@ -30,6 +30,8 @@ export const validationSchema = Joi.object({
   // Internal Services
   PRICE_SERVICE_URL: Joi.string().required(),
   ACCOUNT_SERVICE_URL: Joi.string().required(),
+  ASSETS_SERVICE_URL: Joi.string().required(),
+
   COVALENT_URL: Joi.string().required(),
   COVALENT_KEY: Joi.string().required(),
 

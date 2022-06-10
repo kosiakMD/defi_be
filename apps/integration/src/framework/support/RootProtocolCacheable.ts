@@ -1,9 +1,9 @@
+import { AssetServiceInterface } from '@sdk/assets/interfaces';
 import { Cache } from 'cache-manager';
 
 import { Address, Logger } from '@app/common';
 import { aprToApy, normalizeDecimals } from '@app/common/utils';
 
-import { AssetServiceInterface } from '../../modules/microservices/asset.service.interface';
 import { RootProtocol } from './RootProtocol';
 import { MissingOpportunityException, MissingTokenException } from './exceptions';
 import {
@@ -193,38 +193,57 @@ export abstract class RootProtocolCacheable<
    */
 
   async getPoolData(): Promise<IPoolDataProtocolResponse<TOpportunity>> {
-    return this.getOrSet(60, `${this.protocolId}_hydrated_pool_list`, async () => {
-      // get pool list from longer term cache
-      const list = await this.cache.get<string[]>(this.poolListCacheKey);
+    const cacheKey = `${this.protocolId}_hydrated_pool_list`;
+    const cacheTime = 60;
 
-      if (!list?.length) {
-        // If protocol pool list is not available, then
-        // refetch all the pools and cache for the next user
-        // (Only would likely be used for new deploys, or failed background job)
-        this.logger.warn(
-          `Failed to get pools list from cache. Fetching On Demand`,
-          this.protocolId,
-        );
-        return this.hydrateOpportunityData(await this.cachePoolData());
+    const cachedData = await this.getCache<IPoolDataProtocolResponse<TOpportunity>>(cacheKey);
+    if (cachedData) {
+      return cachedData;
+    }
+    // return this.getOrSet(cacheTime, cacheKey, async () => {
+    // get pool list from longer term cache
+    const list = await this.cache.get<string[]>(this.poolListCacheKey);
+
+    if (!list?.length) {
+      // If protocol pool list is not available, then
+      // refetch all the pools and cache for the next user
+      // (Only would likely be used for new deploys, or failed background job)
+      this.logger.warn(`Failed to get pools list from cache. Fetching On Demand`, this.protocolId);
+      const { data, errors } = await this.hydrateOpportunityData(await this.cachePoolData());
+      if (!errors.length) {
+        return this.setCache(cacheTime, cacheKey, { data, errors });
+      } else {
+        return { data, errors };
       }
+    }
 
-      // fetch all cached pools from redis
-      const pools = (
-        await this.cache.store.mget(...list.map(this.singlePoolCacheKey.bind(this)), {})
-      ).filter((pool) => pool);
+    // fetch all cached pools from redis
+    // TODO: try/catch
+    const pools = (
+      await this.cache.store.mget(...list.map(this.singlePoolCacheKey.bind(this)), {})
+    ).filter((pool) => pool);
 
-      if (list.length !== pools.length) {
-        // Should only occur if pools list is cached, however the pools themselves are not cached
-        // this could be an error due to ttl configuration between the pools. Falls back
-        // to just refetching all the pools for next time
-        this.logger.warn('Pool list mismatch. Fetching On Demand', this.protocolId);
+    if (list.length !== pools.length) {
+      // Should only occur if pools list is cached, however the pools themselves are not cached
+      // this could be an error due to ttl configuration between the pools. Falls back
+      // to just refetching all the pools for next time
+      this.logger.warn('Pool list mismatch. Fetching On Demand', this.protocolId);
 
-        return this.hydrateOpportunityData(await this.cachePoolData());
+      const { data, errors } = await this.hydrateOpportunityData(await this.cachePoolData());
+      if (!errors.length) {
+        return this.setCache(cacheTime, cacheKey, { data, errors });
+      } else {
+        return { data, errors };
       }
+    }
 
-      // Hydrate Cached Data
-      return this.hydrateOpportunityData(pools);
-    });
+    // Hydrate Cached Data
+    const { data, errors } = await this.hydrateOpportunityData(pools);
+    if (!errors.length) {
+      return this.setCache(cacheTime, cacheKey, { data, errors });
+    } else {
+      return { data, errors };
+    }
   }
 
   /**
@@ -377,8 +396,6 @@ export abstract class RootProtocolCacheable<
    * @param tokens map of all tokens (and token details) keyed by token address
    */
   protected formatOpportunity(opportunity: TMinimal, tokens: TokenMap): void | TOpportunity {
-    const tvl = this.getOpportunityTVL(opportunity, tokens);
-
     // const base: Partial<TOpportunity> = { // TODO: 'token' isn't yet on TOpportunity
     const base: any = {
       feature: opportunity.feature,
@@ -420,6 +437,7 @@ export abstract class RootProtocolCacheable<
     }
 
     // fill & format reward tokens
+    const tvl = this.getOpportunityTVL(opportunity, tokens);
     if ('rewarded' in opportunity) {
       base.rewarded = opportunity.rewarded.map((poolToken) => {
         const token = tokens.get(poolToken.token.address);
@@ -599,11 +617,20 @@ export abstract class RootProtocolCacheable<
    * @returns data
    */
   protected async getOrSet<T>(ttl: number, key: string, callback: () => Promise<T>): Promise<T> {
-    const cached = await this.cache.get<T>(key);
+    const cached = await this.getCache<T>(key);
     if (cached) return cached;
 
     // in the event of an error, nothing will be cached
     const data = await callback();
+    await this.setCache(ttl, key, data);
+    return data;
+  }
+
+  protected getCache<T>(key: string): Promise<T> {
+    return this.cache.get<T>(key);
+  }
+  protected async setCache<T>(ttl: number, key: string, data: T): Promise<T> {
+    // null is not a cacheable value
     if (data) {
       await this.cache.set(key, data, { ttl });
     }

@@ -26,20 +26,25 @@ export class OpportunityAdapterService {
 
     // Run each adapter sync so that the next adapter has a chance
     // to skip all farms processed by a previous layer
+    // TODO: run in parallel and filter after
     for (const adapterClass of adapters) {
-      this.logger.time(`Processing ${adapterClass.name}`);
-      const adapter = await this.moduleRef.create(adapterClass);
+      try {
+        this.logger.time(`Processing ${adapterClass.name}`);
+        const adapter = await this.moduleRef.create(adapterClass);
 
-      const { farms: localFarms, opportunities: localOpportunities } = await adapter.loadData({
-        processed: farms,
-      });
+        const { farms: localFarms, opportunities: localOpportunities } = await adapter.loadData({
+          processed: farms,
+        });
 
-      farms.push(...localFarms);
-      opportunities.push(...localOpportunities);
-      this.logger.timeEnd(`Processing ${adapterClass.name}`);
-      this.logger.log(
-        `Processing ${adapterClass.name}. found: ${localFarms.length} Farms & ${localOpportunities.length} Opportunities`,
-      );
+        farms.push(...localFarms);
+        opportunities.push(...localOpportunities);
+        this.logger.timeEnd(`Processing ${adapterClass.name}`);
+        this.logger.log(
+          `Processing ${adapterClass.name}. found: ${localFarms.length} Farms & ${localOpportunities.length} Opportunities`,
+        );
+      } catch (err) {
+        this.logger.error(`Failed to process ${adapterClass.name}`);
+      }
     }
     if (opportunities.length) {
       return await this.refreshOpportunities(opportunities);

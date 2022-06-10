@@ -123,17 +123,23 @@ export class InternalV3Adapter implements IOpportunityAdapter {
         );
 
         items.map((item) => {
-          const totalApr = this.getTotalApr(item);
+          const totalApr = Number(this.getTotalApr(item));
+          const totalApy = Number(aprToApy(totalApr));
+          const tvl = Number(item.supplied.reduce((acc, s) => acc + s.tvl, 0));
+
+          if ([totalApr, totalApy, tvl].some((n) => Number.isNaN(n))) {
+            this.logger.warn(`Some items are invalidly formatted - ${farm.name}//${item.id}`);
+          }
 
           const opportunity = plainToClass(OpportunityCreateDto, {
             farm: farm,
             source: 'internal_v3',
             sourceId: item.id,
             chainId: item.chain,
-            apr: totalApr,
-            apy: aprToApy(totalApr),
+            apr: totalApr || 0,
+            apy: totalApy || 0,
             investmentUrl: item.links?.opportunity ?? null,
-            totalValueLocked: item.supplied.reduce((acc, s) => acc + s.tvl, 0),
+            totalValueLocked: tvl || 0,
             categories: this.getVaultCategories(item),
             tokens: plainToClass(InvestmentTokensDto, {
               rewards: this.getRewardTokens(item),
@@ -141,6 +147,7 @@ export class InternalV3Adapter implements IOpportunityAdapter {
             }),
           });
 
+          // only display opportunities with apr
           if (opportunity.apr) {
             opportunities.push(opportunity);
           }

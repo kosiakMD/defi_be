@@ -17,6 +17,15 @@
         "tsConfigPath": "libs/common/tsconfig.lib.json"
       }
     },
+    "assets-sdk": {
+      "type": "library",
+      "root": "libs/assets",
+      "entryFile": "index",
+      "sourceRoot": "libs/assets/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/assets/tsconfig.lib.json"
+      }
+    },
     "gateway": {
       "type": "application",
       "root": "apps/gateway",

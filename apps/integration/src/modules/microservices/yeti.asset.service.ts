@@ -1,12 +1,12 @@
-/* eslint-disable max-classes-per-file */
+import {
+  AssembledAssetInterface,
+  AssetRequestObjectInterface,
+  AssetServiceInterface,
+} from '@sdk/assets/interfaces';
+
 import { Injectable } from '@nestjs/common';
 
 import { AccountService } from './account.service';
-import {
-  AssembledAssetInterface,
-  AssetRequestInterface,
-  AssetServiceInterface,
-} from './asset.service.interface';
 import { PriceService } from './price.service';
 import { TokenDataStrategy } from './strategies/strategy.interface';
 
@@ -20,7 +20,9 @@ export class YetiAssetService implements AssetServiceInterface {
     return asset;
   }
 
-  async getAssets(requests: AssetRequestInterface[]): Promise<[string, AssembledAssetInterface][]> {
+  async getAssets(
+    requests: AssetRequestObjectInterface[],
+  ): Promise<[string, AssembledAssetInterface][]> {
     // get unique list of requested chains
     const chains = Array.from(new Set(requests.map((c) => c.chainId)));
     const allTokens = await Promise.all(

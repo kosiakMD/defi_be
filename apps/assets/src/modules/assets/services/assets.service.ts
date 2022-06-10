@@ -70,7 +70,7 @@ export class AssetsService extends CrudService<AssetsRepository> {
     );
     // TODO: improve this dependencies
     const dtosToUpdatePricesInCache = assetsUpdatedWithPrices //
-      .filter(({ underlying }) => underlying.some(({ reserve }) => reserve));
+      .filter(({ underlying }) => underlying?.some(({ reserve }) => reserve));
     this.priceService.saveSpecificAssetPrices(dtosToUpdatePricesInCache);
     return assetsUpdatedWithPrices;
   }
@@ -101,7 +101,6 @@ export class AssetsService extends CrudService<AssetsRepository> {
 
   private async getAssets(requests: GetAssetRequest[]): Promise<AssetEntity[]> {
     const assets = await this.assetsRepository.findManyByAddressesAndChainIds(requests);
-
     const assetsToProcess = this.excludeFoundAssets(requests, assets);
     if (assetsToProcess.length) {
       this.processAssets(assetsToProcess);
@@ -126,6 +125,7 @@ export class AssetsService extends CrudService<AssetsRepository> {
 
   private isAssetOutdated(asset: AssetEntity): boolean {
     return (
+      this.config.get<number>('REPROCESS_ASSET_PERIOD_MS') > 0 &&
       Date.now() - asset.updatedAt.getTime() >= this.config.get<number>('REPROCESS_ASSET_PERIOD_MS')
     );
   }

@@ -63,12 +63,14 @@ export class PriceService {
   }
 
   public async saveSpecificAssetPrices(dtosToUpdatePricesInCache: AssetDto[]) {
-    const priceCacheItems = dtosToUpdatePricesInCache.map(({ address, chainId, price }) =>
-      toAvgPriceCacheItem({
-        asset: { address, chainId },
-        price,
-      }),
-    );
+    const priceCacheItems = dtosToUpdatePricesInCache
+      .filter(({ price }) => price)
+      .map(({ address, chainId, price }) =>
+        toAvgPriceCacheItem({
+          asset: { address, chainId },
+          price,
+        }),
+      );
     await this.cache.mset(priceCacheItems, { ttl: this.assetPricesTTLInSeconds });
   }
 

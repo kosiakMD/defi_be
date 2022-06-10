@@ -41,5 +41,6 @@ export class GetAssetRequest {
     required: false,
     default: false,
   })
+  @Transform(({ value }) => value?.toLowerCase() === 'true')
   forceUpdate?: boolean;
 }

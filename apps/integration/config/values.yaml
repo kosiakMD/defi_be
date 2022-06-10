@@ -155,8 +155,8 @@ resources:
     cpu: 200m
     memory: 400Mi
   limits:
-    cpu: "1"
-    memory: 2Gi
+    cpu: 300m
+    memory: 600Mi
 
 secrets:
   - database

@@ -1,4 +1,4 @@
-import { AssetService } from 'apps/integration/src/modules/microservices/asset.service';
+import { UniswapV2AssetService } from 'apps/integration/src/modules/microservices/uniswap.asset.service';
 import BigNumber from 'bignumber.js';
 import { Cache } from 'cache-manager';
 import { AbiInput } from 'web3-utils';
@@ -61,7 +61,7 @@ export class MasterChef
     protected multicall: MulticallAggregator,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected logger: Logger,
     @Inject(CACHE_MANAGER) protected cache: Cache,
-    protected assetService: AssetService,
+    protected assetService: UniswapV2AssetService,
   ) {
     super();
     if (this.updateFunctionPredicates) {

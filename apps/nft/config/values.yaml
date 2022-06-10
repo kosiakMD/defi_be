@@ -6,11 +6,11 @@ configMaps:
 
 resources:
   requests:
-    cpu: 100m
-    memory: 200Mi
+    cpu: 50m
+    memory: 100Mi
   limits:
     cpu: 100m
-    memory: 200Mi
+    memory: 100Mi
 
 secrets:
   - redis

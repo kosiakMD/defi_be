@@ -53,7 +53,7 @@ export class AssetsProcessor {
         `Asset chainId: ${chainId} address: ${address} is processed, id: ${asset?.id || ''}`,
       );
     } catch (e) {
-      this.logger.error(`Error to progress job [${job.id}]: ${e.message}, ${e.stack}`);
+      this.logger.error(`Error to progress job [${job.id}]: ${e.message}, ${e.stack}`, { job });
       throw e;
     }
   }

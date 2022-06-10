@@ -1,4 +1,6 @@
+import BigNumber from 'bignumber.js';
 import { Cache } from 'cache-manager';
+import web3 from 'web3';
 import { AbiItem } from 'web3-utils';
 
 import { CACHE_MANAGER, Inject } from '@nestjs/common';
@@ -136,8 +138,8 @@ export class AbiService {
         web.eth.getStorageAt(address, beaconContractAddress),
       ]);
 
-      const targets = rawTargets.map((rawTarget) =>
-        web.utils.numberToHex(web.utils.hexToNumberString(rawTarget)),
+      const targets = rawTargets.map(
+        (rawTarget) => '0x' + web3.utils.padLeft(new BigNumber(rawTarget).toString(16), 40, '0'),
       );
 
       return targets.find((target) => this.isNonZeroAddress(target));

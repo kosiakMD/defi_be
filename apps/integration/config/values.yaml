@@ -153,10 +153,10 @@ configMaps:
 resources:
   requests:
     cpu: 200m
-    memory: 500Mi
+    memory: 400Mi
   limits:
     cpu: 300m
-    memory: 800Mi
+    memory: 600Mi
 
 secrets:
   - database

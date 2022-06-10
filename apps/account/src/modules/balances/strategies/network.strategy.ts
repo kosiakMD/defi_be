@@ -22,7 +22,8 @@ import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregat
 import { DynamicContract } from '@app/common/web3provider/contracts/DynamicContract';
 import { BALANCES_ABI } from '../contracts/balances.contract.abi';
 import { CallData } from '@app/common/dto/CallData';
-import { BALANCE_OF_ABI } from '../contracts/balance-of.abi';
+
+import { AbiItem } from 'web3-utils';
 
 export class NetworkBalancesStrategy
   extends BaseBalanceStrategy
@@ -75,17 +76,17 @@ export class NetworkBalancesStrategy
     let promises: CallData[]/*Promise<string | string[]>[]*/ = chunkArray(tokens, this.DEFAULT_BATCH_SIZE).map(
       (chunk) =>
         // retry(() => contract.getBalances(address, chunk, block), this.WEB3_RETRY_CALL_IN_MS),
-        contract.createCall(BALANCES_ABI.pop(), address, chunk)
+        contract.createCall(BALANCES_ABI.getBalances, address, chunk)
     );
 
     if (hasNativeCoin) {
       promises = [
-        contract.createCall(BALANCE_OF_ABI, address),
+        contract.createCall(BALANCES_ABI.balanceOf, address),
         // retry(() => web3.eth.getBalance(address), this.WEB3_RETRY_CALL_IN_MS),
         ...promises,
       ];
     }
-
+console.log(promises)
     const batchedBalances = await this.multicall.callArray(
       promises,
       1,
@@ -95,9 +96,10 @@ export class NetworkBalancesStrategy
     let balances: string[];
     if (hasNativeCoin) {
       const [coinBalance, ...tokenBalances] = batchedBalances;
-      balances = tokenBalances.flat();
+      console.log(coinBalance,tokenBalances.slice(0,3))
+      balances = tokenBalances.filter(([success]) => success).flatMap(([, result]) => result);
       tokens = insertAtPosition(tokens, nativeCoinIndex, COIN_ADDRESS);
-      balances = insertAtPosition(balances, nativeCoinIndex, coinBalance as string);
+      balances = insertAtPosition(balances, nativeCoinIndex, coinBalance[1] as string);
     } else {
       balances = batchedBalances.flat();
     }
@@ -125,4 +127,6 @@ export class NetworkBalancesStrategy
     return this.COMMON_BALANCE_CHECKER_ADDRESS;
   }
 }
+
+const findABI = (abiName: string, abis: AbiItem[]) => abis.find(({name}) => name === abiName);
 

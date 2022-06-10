@@ -40,8 +40,14 @@ export class MulticallAbi {
     ],
     name: 'tryAggregate',
     outputs: [
-      { name: 'blockNumber', type: 'uint256' },
-      { name: 'returnData', type: 'bytes[]' },
+      {
+        name: 'returnData',
+        type: 'tuple[]',
+        components: [
+          { name: 'success', type: 'bool' },
+          { name: 'returnData', type: 'bytes[]' },
+        ]
+      },
     ],
     payable: false,
     stateMutability: 'view',

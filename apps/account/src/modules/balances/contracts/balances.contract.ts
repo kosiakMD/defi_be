@@ -10,7 +10,7 @@ export class BalancesContract {
   protected contract: Contract;
 
   constructor(address: Address, web3: Web3) {
-    this.contract = new web3.eth.Contract(BALANCES_ABI, address);
+    this.contract = new web3.eth.Contract(BALANCES_ABI.getBalances, address);
   }
 
   async getBalances(address: Address, tokens: string[], block?: BlockTimestamp): Promise<string[]> {

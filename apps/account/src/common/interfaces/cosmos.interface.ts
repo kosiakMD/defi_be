@@ -3,7 +3,7 @@ export type CosmosBalance = {
   amount: string;
 };
 
-export type CosmosWallet = { balances: CosmosBalance[] } | { result: CosmosBalance[] };
+export type CosmosWallet = { balances: CosmosBalance[] };
 
 export type ProviderUrl = (address: string, network: string) => string;
 export interface ICosmosProvider {

@@ -331,6 +331,8 @@ export class AlchemixV2Vaults
             suppliedOpportunity.token.decimals,
           );
 
+          this.logger.log(`Alchemix, pool: ${pool.id}, supplied: ${tokensSupplied}`);
+
           if (tokensSupplied === 0) return;
 
           const suppliedTotal = this.tryCalculateBalanceForTokenSupplied(

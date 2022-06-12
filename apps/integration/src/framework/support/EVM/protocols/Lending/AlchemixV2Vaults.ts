@@ -386,9 +386,11 @@ export class AlchemixV2Vaults
       return tokensSupplied * pool.token.price;
     }
 
-    if (pool.token.price === 0 && pool.token.underlying.length > 0) {
+    if ((pool.token.price === null || pool.token.price === 0) && pool.token.underlying.length > 0) {
       return tokensSupplied * pool.pricePerShare * pool.token.underlying[0].price;
     }
+
+    return 0;
   }
 
   protected formatUserData(

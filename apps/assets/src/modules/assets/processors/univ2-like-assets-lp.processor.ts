@@ -22,7 +22,7 @@ import { PriceSourceStrategy } from '../../prices/enums/price-source-strategy.en
 import { PriceSourceRepository } from '../../prices/repositories/price-source.repository';
 import { PriceSource } from '../../prices/types/price-source.type';
 import { AssetsCachedRepository } from '../repositories/assets.cached-repository';
-import { findAbiItem } from '../utils/abi';
+import { findAbiItemByName } from '../utils/abi';
 import { getAssetProcessJobId } from '../utils/jobs.helper';
 import { areStringEqualsIgnoreCase } from '../utils/strings';
 
@@ -44,7 +44,7 @@ export class Univ2LikeAssetsLPProcessor {
   @Process(AssetJobName.UPDATE_UNIV2_LIKE_ASSETS_LP)
   async handle(job: Job<PriceSource>) {
     try {
-      const priceSources = await this.priceSourceRepository.getPriceSourceByType(
+      const priceSources = await this.priceSourceRepository.getPriceSourcesByType(
         PriceSourceStrategy.UNIV2_NETWORK,
       );
       this.logger.log(`${priceSources.length} UniSwap V2 sources found`);
@@ -67,7 +67,7 @@ export class Univ2LikeAssetsLPProcessor {
   ): Promise<AssetReference[]> {
     const { chainId, factory, wrappedCoin, stableCoins, proxyCoins } = config;
 
-    const baseAssets = [...[wrappedCoin], ...stableCoins, ...(proxyCoins || [])].map(formatAddress);
+    const baseAssets = [wrappedCoin, ...stableCoins, ...(proxyCoins || [])].map(formatAddress);
     const trackedAssets = await this.assetsRepository.findTrackedAssetsByChain(chainId);
 
     const pairs = new Array<Pair>();
@@ -104,7 +104,7 @@ export class Univ2LikeAssetsLPProcessor {
     pairs: Pair[],
   ): Promise<AssetReference[]> {
     const factoryContract = new DynamicContract(factory);
-    const getPairAbi: AbiItem = findAbiItem(UNIV2_FACTORY_ABI, 'getPair');
+    const getPairAbi: AbiItem = findAbiItemByName(UNIV2_FACTORY_ABI, 'getPair');
 
     const calls = pairs.map(({ token0, token1 }) =>
       factoryContract.createCall(getPairAbi, token0, token1),

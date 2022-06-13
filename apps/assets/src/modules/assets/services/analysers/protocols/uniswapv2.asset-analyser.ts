@@ -12,7 +12,7 @@ import { UNIV2LP_ABI } from '../../../../../common/abis/univ2-lp.abi';
 import { AssetReference } from '../../../../../common/types';
 
 import { AssetCategory } from '../../../enums/asset-category.enum';
-import { findAbiItem } from '../../../utils/abi';
+import { findAbiItemByName } from '../../../utils/abi';
 import { AssetAnalyser, AssetAnalysisResult } from '../core/asset.analyser';
 import { EVMAssetAnalyser } from '../core/evm.asset-analyser';
 import {
@@ -57,8 +57,8 @@ export class UniswapV2AssetAnalyser
     chainId: number,
     assets: ComplexAsset[],
   ): Promise<AssetPriceWithUnderlyingReserves[]> {
-    const getReservesAbi: AbiItem = findAbiItem(UNIV2LP_ABI, 'getReserves');
-    const totalSupplyAbi: AbiItem = findAbiItem(UNIV2LP_ABI, 'totalSupply');
+    const getReservesAbi: AbiItem = findAbiItemByName(UNIV2LP_ABI, 'getReserves');
+    const totalSupplyAbi: AbiItem = findAbiItemByName(UNIV2LP_ABI, 'totalSupply');
 
     const calls = assets.reduce((all, asset) => {
       const contract = new DynamicContract(asset.address);
@@ -109,9 +109,9 @@ export class UniswapV2AssetAnalyser
   }
 
   private async fetchAssetData(asset: AssetReference) {
-    const token0Abi: AbiItem = findAbiItem(UNIV2LP_ABI, 'token0');
-    const token1Abi: AbiItem = findAbiItem(UNIV2LP_ABI, 'token1');
-    const factoryAbi: AbiItem = findAbiItem(UNIV2LP_ABI, 'factory');
+    const token0Abi: AbiItem = findAbiItemByName(UNIV2LP_ABI, 'token0');
+    const token1Abi: AbiItem = findAbiItemByName(UNIV2LP_ABI, 'token1');
+    const factoryAbi: AbiItem = findAbiItemByName(UNIV2LP_ABI, 'factory');
 
     const contract = new DynamicContract(asset.address);
     try {

@@ -4,7 +4,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { Logger } from '@app/common';
 import { Web3ProviderService } from '@app/common/web3provider';
 
-import { EllipsysLpContact } from '../../../../../common/contracts/ellipsys-lp.contract';
+import { EllipsisLpContact } from '../../../../../common/contracts/ellipsis-lp.contract';
 import { MinterContract } from '../../../../../common/contracts/minter.contract';
 
 import { AssetEntity } from '../../../entities/asset.entity';
@@ -19,7 +19,7 @@ export class ElipsisStrategy implements UnderlyingTokenStrategy {
 
   async attemptToLoadUnderlyingTokens(asset: AssetEntity): Promise<string[]> {
     const chainProvider = this.web3Provider.getInstanceByChainId(asset.chainId);
-    const assetContract = new EllipsysLpContact(asset.address, chainProvider);
+    const assetContract = new EllipsisLpContact(asset.address, chainProvider);
     const minterAddress = await assetContract.minter();
     const minterContract = new MinterContract(minterAddress, chainProvider, this.logger);
 

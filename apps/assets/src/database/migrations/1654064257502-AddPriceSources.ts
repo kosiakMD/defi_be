@@ -90,6 +90,7 @@ export class AddPriceSources1654064257502 implements MigrationInterface {
             chainId: 3,
             subgraphUrl: 'https://api.thegraph.com/subgraphs/name/sushiswap/matic-exchange',
             tradeVolumeUSD: 'volumeUSD',
+            wrappedCoin: '0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270',
             ignoreCoin: true,
           },
           null,
@@ -102,6 +103,7 @@ export class AddPriceSources1654064257502 implements MigrationInterface {
           {
             chainId: 3,
             subgraphUrl: 'https://polygon.furadao.org/subgraphs/name/quickswap',
+            wrappedCoin: '0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270',
             ignoreCoin: true,
           },
           null,
@@ -206,7 +208,7 @@ export class AddPriceSources1654064257502 implements MigrationInterface {
         VALUES ('TraderJoe', 'univ2-subgraph', '${JSON.stringify(
           {
             chainId: 6,
-            subgraphUrl: 'https://thegraph.com/hosted-service/subgraph/traderjoe-xyz/exchange',
+            subgraphUrl: 'https://api.thegraph.com/subgraphs/name/traderjoe-xyz/exchange',
             tradeVolumeUSD: 'volumeUSD',
             coinSymbol: 'AVAX',
           },
@@ -219,7 +221,7 @@ export class AddPriceSources1654064257502 implements MigrationInterface {
         VALUES ('Pangolin', 'univ2-subgraph', '${JSON.stringify(
           {
             chainId: 6,
-            subgraphUrl: 'https://thegraph.com/hosted-service/subgraph/pangolindex/exchange',
+            subgraphUrl: 'https://api.thegraph.com/subgraphs/name/pangolindex/exchange',
           },
           null,
           2,
@@ -301,7 +303,7 @@ export class AddPriceSources1654064257502 implements MigrationInterface {
         VALUES ('SolarBeam Moonriver', 'univ2-subgraph', '${JSON.stringify(
           {
             chainId: 9,
-            subgraphUrl: 'https://thegraph.com/hosted-service/subgraph/solarbeamio/amm-v2',
+            subgraphUrl: 'https://api.thegraph.com/subgraphs/name/solarbeamio/amm-v2',
           },
           null,
           2,

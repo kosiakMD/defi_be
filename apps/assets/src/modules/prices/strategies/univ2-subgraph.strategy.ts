@@ -6,10 +6,12 @@ import { HttpService } from '@nestjs/axios';
 import { Inject, Logger } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+import { Address } from '@app/common';
 import { COIN_ADDRESS } from '@app/common/constant';
 import { delay } from '@app/common/helpers/delay';
 import { gql } from '@app/common/utils';
 
+import { areStringEqualsIgnoreCase } from '../../assets/utils/strings';
 import { AssetPrice } from '../types/asset-price.type';
 import { PriceSource } from '../types/price-source.type';
 import { BaseStrategy } from './base.strategy';
@@ -48,6 +50,7 @@ type Config = {
   priceAlias?: string;
   derivedAlias?: string;
   ignoreCoin?: boolean;
+  wrappedCoin?: Address;
 };
 
 export class Univ2SubgraphStrategy extends BaseStrategy<Config> {
@@ -59,7 +62,12 @@ export class Univ2SubgraphStrategy extends BaseStrategy<Config> {
   }
 
   public async fetchPrices(priceSource: PriceSource<Config>): Promise<AssetPrice[]> {
-    const { maxItems = 5000, chunkSize = 1000, requestDelay = 1000 } = priceSource.config;
+    const {
+      wrappedCoin,
+      maxItems = 5000,
+      chunkSize = 1000,
+      requestDelay = 1000,
+    } = priceSource.config;
 
     let prices: AssetPrice[] = [];
 
@@ -75,10 +83,25 @@ export class Univ2SubgraphStrategy extends BaseStrategy<Config> {
         },
       );
     } catch (e) {
-      this.logger.error('Failed load prices from UniSwap like Subgraph', e);
+      this.logger.error(
+        `Failed load prices from UniSwap like Subgraph. Source: ${priceSource.sourceId}`,
+        e,
+      );
       // NOTE: If some prices loaded, return them
       if (!prices.length) {
         throw e;
+      }
+    }
+
+    if (wrappedCoin) {
+      const wrappedCoinEntry = prices.find(({ address }) =>
+        areStringEqualsIgnoreCase(address, wrappedCoin),
+      );
+      if (wrappedCoinEntry && wrappedCoinEntry.price) {
+        prices.push({
+          ...wrappedCoinEntry,
+          address: COIN_ADDRESS,
+        });
       }
     }
 

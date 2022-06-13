@@ -8,7 +8,7 @@ import { PriceSourceStrategy } from '../enums/price-source-strategy.enum';
 @Injectable()
 @EntityRepository(PriceSourceEntity)
 export class PriceSourceRepository extends Repository<PriceSourceEntity> {
-  getPriceSourceByType(type: PriceSourceStrategy) {
+  getPriceSourcesByType(type: PriceSourceStrategy) {
     return this.find({
       where: {
         enabled: true,

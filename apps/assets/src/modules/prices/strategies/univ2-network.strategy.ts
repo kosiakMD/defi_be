@@ -15,7 +15,7 @@ import { AssetBag } from '../../../common/types/asset-bag';
 import { AssetPair } from '../../../common/types/asset-pair';
 
 import { AssetsCachedRepository } from '../../assets/repositories/assets.cached-repository';
-import { findAbiItem } from '../../assets/utils/abi';
+import { findAbiItemByName } from '../../assets/utils/abi';
 import { areStringEqualsIgnoreCase } from '../../assets/utils/strings';
 import { PriceService } from '../price.service';
 import { AssetPrice } from '../types/asset-price.type';
@@ -59,7 +59,7 @@ export class Univ2NetworkStrategy extends BaseStrategy<Config> {
     const assets = await this.getAssetsInformation(chainId, baseAssets, pairs);
     assetBag.setAssets(assets);
 
-    const getReservesAbi: AbiItem = findAbiItem(UNIV2LP_ABI, 'getReserves');
+    const getReservesAbi: AbiItem = findAbiItemByName(UNIV2LP_ABI, 'getReserves');
     const calls = pairs
       .map((pair) => {
         // NOTE: Make sure both assets are in asset bag

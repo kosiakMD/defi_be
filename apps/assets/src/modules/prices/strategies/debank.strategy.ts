@@ -67,7 +67,8 @@ export class DebankStrategy extends BaseStrategy<Config> {
     const chainAssets = assets.filter(({ chainId }) => chain.id === chainId);
 
     // NOTE: Has issues running with > 80 tokens
-    const chunkSize = config?.chunkSize || 80;
+    const maxSize = 80;
+    const chunkSize = config?.chunkSize ? Math.min(config.chunkSize, maxSize) : maxSize;
     return chunkRunAsync(chainAssets, chunkSize, (chunkAssets) =>
       this.fetchChainChunkPrices(sourceId, chain.id, debankId, chunkAssets, config),
     );

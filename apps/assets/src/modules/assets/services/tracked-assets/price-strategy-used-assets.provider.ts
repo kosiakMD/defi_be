@@ -25,7 +25,7 @@ export class PriceStrategyUsedAssetsProvider implements TrackedAssetsProvider {
   }
 
   async getTrackedAssetsCandidates(): Promise<AssetProcessingRequest[]> {
-    const priceSources = await this.priceSourceRepository.getPriceSourceByType(
+    const priceSources = await this.priceSourceRepository.getPriceSourcesByType(
       PriceSourceStrategy.UNIV2_NETWORK,
     );
     this.logger.log(`${priceSources.length} UniSwap V2 sources found`);
@@ -35,7 +35,7 @@ export class PriceStrategyUsedAssetsProvider implements TrackedAssetsProvider {
     for (const source of priceSources) {
       const config = source.config as Univ2NetworkPriceProviderConfig;
       const priceSourceAssets = [
-        ...[config.wrappedCoin],
+        config.wrappedCoin,
         ...config.stableCoins,
         ...(config.proxyCoins || []),
       ];

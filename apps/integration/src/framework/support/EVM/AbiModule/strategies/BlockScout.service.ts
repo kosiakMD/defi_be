@@ -9,6 +9,8 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import type { Address, ChainId, Logger } from '@app/common';
 import { ChainIdEnum } from '@app/common';
 
+import { AbiSource } from '../abi.source.interface';
+
 interface IBlockScoutResponse {
   data: {
     data?: {
@@ -29,7 +31,9 @@ interface IBlockScoutResponse {
 }
 
 @Injectable()
-export class BlockScout {
+export class BlockScout implements AbiSource {
+  private readonly endpoints: Partial<Record<ChainIdEnum, string>> = {};
+
   constructor(
     protected httpService: HttpService,
     protected config: ConfigService,
@@ -39,8 +43,6 @@ export class BlockScout {
     this.endpoints[ChainIdEnum.kcc] = config.get('BLOCKSCOUT_KCC_URL');
     this.endpoints[ChainIdEnum.metis] = config.get('BLOCKSCOUT_METIS_URL');
   }
-
-  endpoints = {};
 
   async fetchAbi(address: Address, chain: ChainId): Promise<AbiItem[] | void> {
     if (!this.endpoints[chain]) {
@@ -71,8 +73,9 @@ export class BlockScout {
 
     const { errors, data } = res;
 
+    // TODO: Rate limit exception vs other errors
     if (errors) {
-      this.logger.error(
+      this.logger.warn(
         `Failed to retrieve BlockScout ABI ${chain}/${address}`,
         'BlockScoutService',
       );

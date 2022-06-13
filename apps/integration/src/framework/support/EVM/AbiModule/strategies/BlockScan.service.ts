@@ -9,8 +9,14 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import type { Address, ChainId, Logger } from '@app/common';
 import { ChainIdEnum } from '@app/common';
 
+import { AbiSource } from '../abi.source.interface';
+import { RateLimitException } from '../exceptions/RateLimitException';
+
 @Injectable()
-export class BlockScan {
+export class BlockScan implements AbiSource {
+  private readonly endpoints: Partial<Record<ChainIdEnum, string>> = {};
+  private readonly apiKeys: Partial<Record<ChainIdEnum, string>> = {};
+
   constructor(
     protected httpService: HttpService,
     protected config: ConfigService,
@@ -38,11 +44,6 @@ export class BlockScan {
     this.endpoints[ChainIdEnum.boba] = config.get('BLOCKSCAN_BOBA_URL');
   }
 
-  // TODO: Endpoints & API keys to config
-  endpoints = {};
-
-  apiKeys = {};
-
   async fetchAbi(address: Address, chain: ChainId): Promise<AbiItem[] | void> {
     if (!this.endpoints[chain]) {
       this.logger.debug(`Chain ${chain} not initialized for ABI fetching`, this.constructor.name);
@@ -61,9 +62,12 @@ export class BlockScan {
 
     const { data } = await firstValueFrom(data$);
 
+    if (data.message === 'Max rate limit reached') {
+      throw new RateLimitException(chain, address, this);
+    }
+
     if (data.message !== 'OK') {
-      this.logger.error(`Failed to retrieve BlockScan ABI ${chain}/${address}`, 'BlockScanService');
-      return;
+      throw new Error(data.result);
     }
 
     try {

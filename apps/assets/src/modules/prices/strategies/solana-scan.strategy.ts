@@ -32,19 +32,21 @@ export class SolanaScanStrategy extends BaseStrategy<Config> {
   }
 
   public async fetchPrices({ sourceId, config }: PriceSource<Config>): Promise<AssetPrice[]> {
-    const { maxItems = 500, chunkSize = 50, requestDelay = 2 * 1000 } = config;
+    const { maxItems = 500, chunkSize = 500, requestDelay = 2 * 1000 } = config;
 
     let prices: AssetPrice[] = [];
 
     let skip = 0;
-    while (skip < maxItems) {
+    let chunkPrices = [];
+
+    do {
       await delay(requestDelay);
 
-      const chunkPrices = await this.getChunkPrices(sourceId, chunkSize, skip);
+      chunkPrices = await this.getChunkPrices(sourceId, chunkSize, skip);
       prices = prices.concat(chunkPrices);
 
       skip += chunkSize;
-    }
+    } while (skip < maxItems && chunkPrices.length > 0);
 
     return prices;
   }

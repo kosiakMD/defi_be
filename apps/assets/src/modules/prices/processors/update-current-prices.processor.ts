@@ -13,6 +13,10 @@ import { QueueName } from '../../../common/enum/queue-name.enum';
 import { PriceSourceRepository } from '../repositories/price-source.repository';
 import { PriceSource } from '../types/price-source.type';
 
+/*
+ Refreshes tracked assets prices from defined strategies.
+ Should be executed on minutes basis.
+* */
 @Processor(QueueName.PRICES)
 export class UpdateCurrentPricesProcessor {
   constructor(

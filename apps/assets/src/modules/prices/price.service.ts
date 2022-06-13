@@ -58,7 +58,7 @@ export class PriceService {
   }
 
   public async saveHistoricalPricesFromCurrentOnes() {
-    const trackedAssets = await this.assetsRepository.getAllTrackedAssets();
+    const trackedAssets = await this.assetsRepository.findAllTrackedAssets();
     await chunkRunAsync(trackedAssets, 500, this.insertChunkAssetPrices.bind(this));
   }
 
@@ -194,7 +194,8 @@ function getPriceMap(prices: AssetAvgPrice[]) {
   }, {});
 }
 
-const getPriceMapKey = ({ chainId, address }: AssetReference) => `${chainId}_${address}`;
+const getPriceMapKey = ({ chainId, address }: AssetReference) =>
+  `${chainId}_${address.toLowerCase()}`;
 
 const getSourcePricesCacheKey = ({ chainId, address }: AssetReference) =>
   `asset_source_prices_${chainId}_${address.toLowerCase()}`;

@@ -37,13 +37,17 @@ export class DebankStrategy extends BaseStrategy<Config> {
 
   public async fetchPrices(priceSource: PriceSource<Config>): Promise<AssetPrice[]> {
     const chains = await this.chainService.getChains();
-    const assets = await this.assetsRepository.getAllTrackedAssets();
+    const assets = await this.assetsRepository.findAllTrackedAssets();
 
     let prices: AssetPrice[] = [];
 
     for (const chain of chains) {
-      const chainPrices = await this.fetchChainPrices(chain, assets, priceSource);
-      prices = prices.concat(chainPrices);
+      try {
+        const chainPrices = await this.fetchChainPrices(chain, assets, priceSource);
+        prices = prices.concat(chainPrices);
+      } catch (e) {
+        this.logger.error(`Failed to load debank prices for chain ${chain.id}`, e);
+      }
     }
 
     return prices;
@@ -62,12 +66,11 @@ export class DebankStrategy extends BaseStrategy<Config> {
 
     const chainAssets = assets.filter(({ chainId }) => chain.id === chainId);
 
-    const chunkSize = config?.chunkSize || 100;
-    const responses = await chunkRunAsync(chainAssets, chunkSize, (chunkAssets) =>
+    // NOTE: Has issues running with > 80 tokens
+    const chunkSize = config?.chunkSize || 80;
+    return chunkRunAsync(chainAssets, chunkSize, (chunkAssets) =>
       this.fetchChainChunkPrices(sourceId, chain.id, debankId, chunkAssets, config),
     );
-
-    return responses.flat();
   }
 
   private async fetchChainChunkPrices(

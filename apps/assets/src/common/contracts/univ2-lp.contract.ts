@@ -1,15 +1,12 @@
 import Web3 from 'web3';
-import { AbiItem } from 'web3-utils';
 
 import { UNIV2LP_ABI } from '../abis/univ2-lp.abi';
-import { ERC20 } from './erc20.contract';
+import { ERC20Contract } from './erc20.contract';
 
-export class UNIV2LP extends ERC20 {
-  constructor(address: string, web3Provider: Web3) {
-    super(address, web3Provider);
-    this.contract = web3Provider.eth
-      ? new web3Provider.eth.Contract(UNIV2LP_ABI as AbiItem[], address)
-      : {};
+export class UniV2LpContract extends ERC20Contract {
+  constructor(address: string, web3: Web3) {
+    super(address, web3);
+    this.contract = new web3.eth.Contract(UNIV2LP_ABI, address);
   }
 
   async getReserves(): Promise<{ _reserve0: string; _reserve1: number }> {

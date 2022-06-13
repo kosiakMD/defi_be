@@ -1,12 +1,12 @@
 import Web3 from 'web3';
 
 import { EllipsisLpAbi } from '../abis/ellipsys-lp.abi';
-import { ERC20 } from './erc20.contract';
+import { ERC20Contract } from './erc20.contract';
 
-export class ELLIPSIS_LP extends ERC20 {
-  constructor(address: string, web3Provider: Web3) {
-    super(address, web3Provider);
-    this.contract = new web3Provider.eth.Contract([EllipsisLpAbi.minter], address);
+export class EllipsysLpContact extends ERC20Contract {
+  constructor(address: string, web3: Web3) {
+    super(address, web3);
+    this.contract = new web3.eth.Contract([EllipsisLpAbi.minter], address);
   }
 
   async minter(): Promise<string> {

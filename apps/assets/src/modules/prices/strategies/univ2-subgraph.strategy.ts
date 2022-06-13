@@ -40,12 +40,14 @@ type Config = {
   subgraphUrl: string;
   chainId: number;
   coinSymbol?: string;
-  orderBy?: string;
+  tradeVolumeUSD?: string;
+  tradeVolumeUSDMin?: number;
   maxItems?: number;
   chunkSize?: number;
   requestDelay?: number;
   priceAlias?: string;
   derivedAlias?: string;
+  ignoreCoin?: boolean;
 };
 
 export class Univ2SubgraphStrategy extends BaseStrategy<Config> {
@@ -61,22 +63,38 @@ export class Univ2SubgraphStrategy extends BaseStrategy<Config> {
 
     let prices: AssetPrice[] = [];
 
-    let skip = 0;
-    await doWhilst(
-      async () => this.getChunkPrices(priceSource, chunkSize, skip),
-      async (chunkPrices) => {
-        await delay(requestDelay);
-        prices = prices.concat(chunkPrices);
-        skip += chunkPrices.length;
-        return skip < maxItems && chunkPrices.length;
-      },
-    );
+    try {
+      let skip = 0;
+      await doWhilst(
+        async () => this.getChunkPrices(priceSource, chunkSize, skip),
+        async (chunkPrices) => {
+          await delay(requestDelay);
+          prices = prices.concat(chunkPrices);
+          skip += chunkPrices.length;
+          return skip < maxItems && chunkPrices.length;
+        },
+      );
+    } catch (e) {
+      this.logger.error('Failed load prices from UniSwap like Subgraph', e);
+      // NOTE: If some prices loaded, return them
+      if (!prices.length) {
+        throw e;
+      }
+    }
+
     return prices;
   }
 
   private async getChunkPrices(priceSource: PriceSource<Config>, chunkSize: number, skip: number) {
     const { sourceId, config } = priceSource;
-    const { chainId, subgraphUrl, coinSymbol = 'ETH', orderBy = 'tradeVolumeUSD' } = config;
+    const {
+      chainId,
+      subgraphUrl,
+      coinSymbol = 'ETH',
+      tradeVolumeUSD = 'tradeVolumeUSD',
+      tradeVolumeUSDMin = 2000,
+      ignoreCoin = false,
+    } = config;
     const priceAlias = config.priceAlias || `${coinSymbol.toLowerCase()}Price`;
     const derivedAlias = config.derivedAlias || `derived${coinSymbol}`;
 
@@ -94,9 +112,9 @@ export class Univ2SubgraphStrategy extends BaseStrategy<Config> {
             tokens (
               first: $first,
               skip: $skip,
-              orderBy: ${orderBy},
+              orderBy: ${tradeVolumeUSD},
               orderDirection: desc
-              where: { ${derivedAlias}_not: "0" }
+              where: { ${tradeVolumeUSD}_gt: "${tradeVolumeUSDMin}" }
             ) {
               id
               name
@@ -106,7 +124,7 @@ export class Univ2SubgraphStrategy extends BaseStrategy<Config> {
         `,
             variables: { skip, first: chunkSize },
           },
-          { timeout: 15000 },
+          { timeout: 30 * 1000 },
         ),
       );
     } catch (e) {
@@ -133,7 +151,7 @@ export class Univ2SubgraphStrategy extends BaseStrategy<Config> {
     const baseDerived = new BigNumber(bundle?.price);
     const prices = tokens.map((token) => this.parseToken(sourceId, chainId, token, baseDerived));
 
-    if (skip === 0) {
+    if (!ignoreCoin && skip === 0) {
       const coinPrice: AssetPrice = {
         sourceId,
         chainId,

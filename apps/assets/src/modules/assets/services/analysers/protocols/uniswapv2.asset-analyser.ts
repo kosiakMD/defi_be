@@ -12,6 +12,7 @@ import { UNIV2LP_ABI } from '../../../../../common/abis/univ2-lp.abi';
 import { AssetReference } from '../../../../../common/types';
 
 import { AssetCategory } from '../../../enums/asset-category.enum';
+import { findAbiItem } from '../../../utils/abi';
 import { AssetAnalyser, AssetAnalysisResult } from '../core/asset.analyser';
 import { EVMAssetAnalyser } from '../core/evm.asset-analyser';
 import {
@@ -20,7 +21,6 @@ import {
   ComplexAsset,
 } from '../core/price.provider';
 
-// TODO: Fix error crash here
 @Injectable()
 export class UniswapV2AssetAnalyser
   extends EVMAssetAnalyser
@@ -57,14 +57,15 @@ export class UniswapV2AssetAnalyser
     chainId: number,
     assets: ComplexAsset[],
   ): Promise<AssetPriceWithUnderlyingReserves[]> {
-    const getReservesAbi: AbiItem = this.findAbiItem(UNIV2LP_ABI, 'getReserves');
-    const totalSupplyAbi: AbiItem = this.findAbiItem(UNIV2LP_ABI, 'totalSupply');
+    const getReservesAbi: AbiItem = findAbiItem(UNIV2LP_ABI, 'getReserves');
+    const totalSupplyAbi: AbiItem = findAbiItem(UNIV2LP_ABI, 'totalSupply');
 
     const calls = assets.reduce((all, asset) => {
       const contract = new DynamicContract(asset.address);
       return all.concat([contract.createCall(getReservesAbi), contract.createCall(totalSupplyAbi)]);
     }, new Array<CallData>());
 
+    // TODO: Should we handle this in batches?
     const responses = await this.multicall.callArray(calls, chainId);
 
     const prices: AssetPriceWithUnderlyingReserves[] = [];
@@ -108,9 +109,9 @@ export class UniswapV2AssetAnalyser
   }
 
   private async fetchAssetData(asset: AssetReference) {
-    const token0Abi: AbiItem = this.findAbiItem(UNIV2LP_ABI, 'token0');
-    const token1Abi: AbiItem = this.findAbiItem(UNIV2LP_ABI, 'token1');
-    const factoryAbi: AbiItem = this.findAbiItem(UNIV2LP_ABI, 'factory');
+    const token0Abi: AbiItem = findAbiItem(UNIV2LP_ABI, 'token0');
+    const token1Abi: AbiItem = findAbiItem(UNIV2LP_ABI, 'token1');
+    const factoryAbi: AbiItem = findAbiItem(UNIV2LP_ABI, 'factory');
 
     const contract = new DynamicContract(asset.address);
     try {

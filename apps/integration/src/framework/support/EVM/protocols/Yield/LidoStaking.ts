@@ -93,8 +93,6 @@ export class LidoStaking
   async fetchOpportunityData(context: {
     [key: string]: any;
   }): Promise<IStakingFeatureMinimalSingle[]> {
-    // TODO: does this refresh enough?
-
     const { data } = await firstValueFrom(this.httpService.get(this.meta.context.statsApi));
     const apr = this.meta.context.statsProcessor(data);
 
@@ -200,7 +198,7 @@ export class LidoStaking
     const {
       output: { data: balanceRaw },
     } = data.get(this.balanceOfLabel(pool.id, address));
-    // TODO: Object.values(userInfo) and find index instead of assuming .amount ?
+
     const balance = normalizeDecimals(balanceRaw.toString(), pool.supply.token.decimals);
 
     if (!balance) return;

@@ -213,14 +213,9 @@ export class BenqiLending
   }
 
   async initialize() {
-    this.logger.log(
-      `Initializing: ${this.meta.name} ${this.meta.chain}/${this.meta.address}`,
-      `SingleContractProtocol/${this.constructor.name}`,
-    );
-
     this.functions = await this.abiService.parseFunctionsFromAddress(
       this.meta.address,
-      this.meta.chain, // TODO: update to this.meta.chain once they are verified
+      this.meta.chain,
       this.functionPredicates,
     );
 
@@ -228,13 +223,6 @@ export class BenqiLending
       this.meta.market,
       this.meta.chain,
       this.qiMarketFunctionPredicates,
-    );
-
-    this.logger.log(
-      `${this.meta.chain}/${this.meta.address} found ${Object.keys(this.functions).length}/${
-        Object.keys(this.functionPredicates).length
-      } functions`,
-      `SingleContractProtocol/${this.constructor.name}`,
     );
   }
 

@@ -228,7 +228,7 @@ export class MakerVault extends EVMCore<
       cdps.forEach((vaults) => {
         vaults.forEach((vault) => {
           urnPromises.push(contract.urns(vault.ilk, vault.urn));
-          ilkPromises.push(contract.ilks(vault.ilk)); // TODO: this is shared by pool
+          ilkPromises.push(contract.ilks(vault.ilk)); // TODO: this is not user specific. should be in getPoolData or getCacheableData
         });
       });
 

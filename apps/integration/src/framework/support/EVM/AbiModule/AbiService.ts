@@ -96,7 +96,7 @@ export class AbiService {
     chain: ChainId,
     predicates: INamedFunctionPredicates,
     acceptableStateMutability: string[] = ['view', 'pure'],
-  ) {
+  ): Promise<INamedFunctions> {
     const abi = await this.fetchAbi(address, chain);
     return this.parseFunctionsFromAbi(abi, predicates, address, chain, acceptableStateMutability);
   }

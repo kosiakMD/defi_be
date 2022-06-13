@@ -4,25 +4,6 @@ import type { Address, ChainDto, ChainId, ChainIdEnum } from '@app/common';
 import { IPlatformLinks } from '@app/common/interfaces/platform.v3.links';
 
 import { FeatureEnum } from './enums';
-import {
-  IClaimableFeatureOpportunity,
-  IClaimableFeatureUser,
-} from './interfaces/feature.claimable.interface';
-import {
-  ILendingFeatureEntryMinimal,
-  ILendingFeatureOpportunity,
-  ILendingFeatureUserEntry,
-} from './interfaces/feature.lending.interface';
-import {
-  IPoolFeatureEntryMinimal,
-  IPoolFeatureEntryOpportunity,
-  IPoolFeatureEntryUserEntry,
-} from './interfaces/feature.pool.interface';
-import {
-  IStakingFeatureOpportunity,
-  IStakingFeatureUserEntry,
-  IStakingFeatureMinimal,
-} from './interfaces/feature.staking.interface';
 import { BaseWithTokens } from './interfaces/new.interfaces';
 import type { ERC20Token } from './interfaces/tokens.common.interface';
 
@@ -55,25 +36,9 @@ export interface IProtocolMeta {
 }
 
 // TODO: Update BaseWithTokens any to be a generic extending the proper form
-export type IWalletMinimal =
-  | BaseWithTokens<any, any, any, any>
-  | IPoolFeatureEntryMinimal
-  | IStakingFeatureMinimal
-  | ILendingFeatureEntryMinimal;
-
-export type IWalletOpportunity =
-  | BaseWithTokens<any, any, any, any>
-  | IPoolFeatureEntryOpportunity
-  | IStakingFeatureOpportunity
-  | ILendingFeatureOpportunity
-  | IClaimableFeatureOpportunity;
-
-export type IWalletUserEntry =
-  | BaseWithTokens<any, any, any, any>
-  | IPoolFeatureEntryUserEntry
-  | IStakingFeatureUserEntry
-  | ILendingFeatureUserEntry
-  | IClaimableFeatureUser;
+export type IWalletMinimal = BaseWithTokens<any, any, any, any>; // minimal form
+export type IWalletOpportunity = BaseWithTokens<any, any, any, any>; // plain opportunity form
+export type IWalletUserEntry = BaseWithTokens<any, any, any, any>; // user entry form
 
 export interface IChainUserEntry {
   // TODO: why doesn't partial work? it still requires all keys in RootPlatform@mergeUserProtocolDataPerChain
@@ -120,8 +85,6 @@ export interface IRootPlatform {
   getUsersData?(chains: ChainId[], addresses: Address[]): Promise<IUserDataPlatformResponse>;
 }
 
-// TODO: CacheData, PoolData, UserData are all optional
-// TODO: this should just be 1. initialization, meta, cache, pools, user
 export interface IRootProtocol<TProtocolMeta extends IProtocolMeta = IProtocolMeta> {
   // sets all required metadata for the instance
   meta: TProtocolMeta;

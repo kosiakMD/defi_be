@@ -13,8 +13,6 @@ import { BlockScout } from './strategies/BlockScout.service';
 import { LocalFile } from './strategies/LocalFile.service';
 import { Tenderly } from './strategies/Tenderly.service';
 
-// TODO to add a new Protocol just add it here and at ProtocolService constructor
-
 @Module({
   imports: [
     HttpModule,

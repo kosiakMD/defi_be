@@ -18,7 +18,6 @@ export class MasterChefMdex extends MasterChef {
       output: { data: userInfo },
     } = data.get(this.userInfoLabel(masterchef, poolId, address));
 
-    // TODO: Object.values(userInfo) and find index instead of assuming .amount ?
     const balance = normalizeDecimals(
       userInfo[this.getUserInfoAmountKey()].toString(),
       pool.supplied[0].token.decimals,

@@ -19,6 +19,7 @@ import {
   IStakingFeatureMinimal,
   IStakingFeatureUserEntry,
 } from '../../../interfaces/feature.staking.interface';
+import { InteractiveInterface } from '../../../interfaces/new.interfaces';
 import { ISupplyTokenOpportunity } from '../../../interfaces/tokens.supplied.interface';
 import { AbiService } from '../../AbiModule/AbiService';
 import { SingleContractProtocol } from '../../SingleContractProtocol';
@@ -185,7 +186,7 @@ export class MasterChef
   }
 
   protected formatOpportunityInteractiveFunctions(poolInfo: { poolId: number }) {
-    const formatted = [];
+    const formatted: InteractiveInterface[] = [];
 
     const claimFunctionAbi = this.interactiveFunctions.claim;
     if (claimFunctionAbi) {
@@ -231,9 +232,6 @@ export class MasterChef
 
     const calls = new Map();
     pools.forEach((pool) => {
-      // TODO: include 'meta' object so we can just provide e.g. poolId on masterchefs?
-      // This works, but feels like a hack. but how to cleanly allow extra pool metadata
-      // without abuse/misuse?
       const [masterchef, poolId] = pool.id.split('::');
 
       calls.set(
@@ -283,7 +281,6 @@ export class MasterChef
       output: { data: userInfo },
     } = data.get(this.userInfoLabel(masterchef, poolId, address));
 
-    // TODO: Object.values(userInfo) and find index instead of assuming .amount ?
     const balance = normalizeDecimals(
       userInfo[this.getUserInfoAmountKey()].toString(),
       pool.supplied[0].token.decimals,

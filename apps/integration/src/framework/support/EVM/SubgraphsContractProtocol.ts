@@ -18,7 +18,7 @@ export abstract class SubgraphsContractProtocol<
 > extends RootProtocolCacheable<TMinimalType, TOpportunityType, TUserEntryType, TProtocolMeta> {
   protected abstract multicall: MulticallAggregator;
   protected abstract fetchUserData(addresses: Address[], pools: TOpportunityType[]): Promise<any>;
-  // TODO: type; data: any is the return value from getAsyncUserData
+  // TODO: type; data: any is the return value from fetchUserData
   protected abstract formatUserData(
     address: Address,
     pools: TOpportunityType[],

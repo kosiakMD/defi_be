@@ -21,6 +21,7 @@ export const rpcConfig = registerAs('rpc', () => ({
   solana: process.env.SOL_URL,
   gnosis: process.env.GNOSIS_URL,
   terra: process.env.TERRA_URL,
+  metis: process.env.METIS_URL,
 }));
 
 export const rpcValidation = {
@@ -42,4 +43,5 @@ export const rpcValidation = {
   SOL_URL: Joi.string().required(),
   GNOSIS_URL: Joi.string().required(),
   TERRA_URL: Joi.string().required(),
+  METIS_URL: Joi.string().required(),
 };

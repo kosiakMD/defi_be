@@ -43,6 +43,7 @@ import { MakerDAO } from '../platforms/MakerDAO';
 import { MarsEcosystem } from '../platforms/MarsEcosystem';
 import { Mdex } from '../platforms/Mdex';
 import { Mojitoswap } from '../platforms/Mojitoswap';
+import { Moola } from '../platforms/Moola';
 import { MuesliSwap } from '../platforms/MuesliSwap';
 import { Nereus } from '../platforms/Nereus';
 import { Netswap } from '../platforms/Netswap';
@@ -135,6 +136,7 @@ export class PlatformService implements OnApplicationBootstrap {
       YetiFinance,
       Zenlink,
       Bancor,
+      Moola,
     });
   }
 

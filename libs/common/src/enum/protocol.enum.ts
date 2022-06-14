@@ -243,6 +243,7 @@ export const ProtocolV3NameEnum = {
   nereus: 'Nereus',
   geist: 'Geist',
   blizz: 'Blizz',
+  moola: 'Moola',
 };
 
 export const ProtocolNameEnum = {

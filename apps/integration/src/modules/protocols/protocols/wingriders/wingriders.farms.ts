@@ -1,13 +1,12 @@
-import { toDecimals } from 'apps/integration_service/src/common/utils/util';
+import { toDecimals } from 'apps/integration/src/common/utils/util';
 import { Cache } from 'cache-manager';
 import { plainToClass } from 'class-transformer';
 import { firstValueFrom, map } from 'rxjs';
 
-import { HttpService } from '@nestjs/axios';
-import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
+import { CACHE_MANAGER, HttpService, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
-import { ChainDto, FeatureEnum, ProtocolTypeEnum, ProjectEnum } from '@app/common';
+import { ChainDto, FeatureEnum, ProjectEnum, ProtocolTypeEnum } from '@app/common';
 import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
 import { NotifyPools } from '@app/common/jobs/notify.dto';
 import { LiquidityPoolFeature } from '@app/common/jobs/pools';
@@ -62,7 +61,8 @@ export class WingRidersFarms {
       cachedPools.items.map((item) => [item.address, item]),
     );
 
-    const wrt = await this.cardanoUtils.getTokenInfo(WRT_REWARDS_TOKEN);
+    const tokens = await this.cardanoUtils.getTokenInfo([WRT_REWARDS_TOKEN]);
+    const wrt = tokens.get(WRT_REWARDS_TOKEN);
 
     for await (const address of baseDataStakingMap.keys()) {
       const stakingItems = baseDataStakingMap.get(address).items;

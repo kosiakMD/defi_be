@@ -249,6 +249,7 @@ export const ProtocolV3NameEnum = {
   MarsEcosystem: 'MarsEcosystem',
   Mdex: 'Mdex',
   Mojitoswap: 'Mojitoswap',
+  Moola: 'Moola',
   MuesliSwap: 'MuesliSwap',
   Nereus: 'Nereus',
   Netswap: 'Netswap',

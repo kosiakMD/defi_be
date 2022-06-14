@@ -53,6 +53,7 @@ configMaps:
     SUSHISWAP_GNOSIS_EXCHANGE_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/sushiswap/xdai-exchange
     MINSWAP_URL: https://monorepo-mainnet-prod.minswap.org/graphql
     SUNDAESWAP_URL: https://stats.sundaeswap.finance/graphql
+    
   blocks:
     BLOCKS_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/blocklytics/ethereum-blocks
   links:
@@ -89,6 +90,8 @@ configMaps:
     METIS_URL: https://andromeda-rpc.metis.io/
     WING_RIDERS_EXPLORER_URL: https://explorer.mainnet.wingriders.com
     WING_RIDERS_AGGREGATOR_URL: https://aggregator.mainnet.wingriders.com
+    MUESLI_SWAP_ORDERBOOK_URL: https://orderbookv2.muesliswap.com
+    MUESLI_SWAP_STAKING_URL: https://staking.muesliswap.com
   endpoints:
     ACCOUNT_SERVICE_URL: http://account
     PRICE_SERVICE_HOST: http://price

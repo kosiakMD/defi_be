@@ -1,16 +1,17 @@
 import * as redisStore from 'cache-manager-redis-store';
 
-import { HttpModule } from '@nestjs/axios';
 import { CacheModule, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
+import { HttpModule } from '@app/common';
 import { Web3ProviderService, Web3SolanaProviderService } from '@app/common/web3provider';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
 import { IntegrationsController } from '../../controllers/integrations.controller';
 import { IntegrationsControllerV2 } from '../../controllers/integrations.controller.v2';
 import { IntegrationsControllerV3 } from '../../controllers/integrations.controller.v3';
+import { IntegrationsDebugController } from '../../controllers/integrations.debug.controller';
 import { PlatformService } from '../../framework/services/platform.service';
 import { AbiModule } from '../../framework/support/EVM/AbiModule/abi.module';
 import { CurveAssetsManager } from '../../framework/support/assets/curve.assets.manager';
@@ -53,6 +54,11 @@ import { IntegrationsServiceV3Decorator } from './integrations.service.v3.decora
     IntegrationsServiceV3Decorator,
     CurveAssetsManager,
   ],
-  controllers: [IntegrationsController, IntegrationsControllerV2, IntegrationsControllerV3],
+  controllers: [
+    IntegrationsController,
+    IntegrationsControllerV2,
+    IntegrationsControllerV3,
+    IntegrationsDebugController,
+  ],
 })
 export class IntegrationsModule {}

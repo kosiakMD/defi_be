@@ -27,6 +27,7 @@ export enum ChainIdEnum {
   boba = 15,
   kcc = 16,
   opt = 17,
+  // TODO: It's not near, it aurora
   near = 18,
   terra = 19,
   klay = 20,

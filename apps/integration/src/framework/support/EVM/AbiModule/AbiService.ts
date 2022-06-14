@@ -1,8 +1,9 @@
+import BigNumber from 'bignumber.js';
 import { Cache } from 'cache-manager';
+import web3 from 'web3';
 import { AbiItem } from 'web3-utils';
 
 import { CACHE_MANAGER, Inject } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, ChainId, ChainIdEnum, Logger } from '@app/common';
@@ -11,9 +12,13 @@ import { DynamicContract } from '@app/common/web3provider/contracts/DynamicContr
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
 import { INamedFunctionPredicates, INamedFunctions } from '../../interfaces';
-import { BlockScan } from './BlockScan.service';
-import { BlockScout } from './BlockScout.service';
-import { LocalFile } from './LocalFile.service';
+import { AbiSource } from './abi.source.interface';
+import { AbiNotFoundException } from './exceptions/AbiNotFoundException';
+import { RateLimitException } from './exceptions/RateLimitException';
+import { BlockScan } from './strategies/BlockScan.service';
+import { BlockScout } from './strategies/BlockScout.service';
+import { LocalFile } from './strategies/LocalFile.service';
+import { Tenderly } from './strategies/Tenderly.service';
 
 export const logicContractAddress =
   '0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc';
@@ -21,15 +26,34 @@ export const beaconContractAddress =
   '0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50';
 
 export class AbiService {
+  private readonly strategies: AbiSource[];
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected logger: Logger,
     @Inject(CACHE_MANAGER) protected cache: Cache,
-    protected blockscout: BlockScout,
-    protected blockscan: BlockScan,
-    protected localfile: LocalFile,
-    protected config: ConfigService,
-    protected multicall: MulticallAggregator,
-  ) {}
+    blockscout: BlockScout,
+    blockscan: BlockScan,
+    localfile: LocalFile,
+    tenderly: Tenderly,
+    private multicall: MulticallAggregator,
+  ) {
+    this.strategies = [
+      // TODO: Database
+      localfile,
+      tenderly,
+      blockscout,
+      blockscan,
+    ];
+  }
+
+  async fetchAbiUsingStrategy(address: Address, chain: ChainId, strategyName: string) {
+    const strategy = this.strategies.find((strat) => strat.constructor.name === strategyName);
+    const abi = await this.loadAbiFromStrategy(address, chain, strategy);
+    if (abi) {
+      return abi;
+    }
+
+    throw new AbiNotFoundException(chain, address);
+  }
 
   async fetchAbi(address: Address, chain: ChainId): Promise<AbiItem[]> {
     const ONE_HOUR = 60 * 60;
@@ -38,8 +62,11 @@ export class AbiService {
       const abi = await this.loadAbi(address, chain);
 
       const proxyAddress = await this.checkForProxyAddress(address, chain, abi);
+      if (proxyAddress) {
+        return this.fetchProxyAbi(proxyAddress, chain);
+      }
 
-      return proxyAddress ? this.fetchAbi(proxyAddress, chain) : abi;
+      return abi;
     });
   }
 
@@ -69,7 +96,7 @@ export class AbiService {
     chain: ChainId,
     predicates: INamedFunctionPredicates,
     acceptableStateMutability: string[] = ['view', 'pure'],
-  ) {
+  ): Promise<INamedFunctions> {
     const abi = await this.fetchAbi(address, chain);
     return this.parseFunctionsFromAbi(abi, predicates, address, chain, acceptableStateMutability);
   }
@@ -100,31 +127,42 @@ export class AbiService {
   }
 
   private async loadAbi(address: Address, chain: ChainId): Promise<AbiItem[]> {
-    const fromLocalFile = await this.localfile.getAbi(address, chain);
-    if (fromLocalFile) {
-      this.logger.log(`${chain}/${address} ABI Retrieved from Local File`, 'AbiService');
-      return fromLocalFile;
+    // loop synchronously from most to least preferred strategy
+    for (const strategy of this.strategies) {
+      try {
+        const abi = await this.loadAbiFromStrategy(address, chain, strategy);
+        if (abi) {
+          return abi;
+        }
+      } catch (err) {
+        if (err instanceof RateLimitException) {
+          this.logger.warn(err.message, `AbiService/${strategy.constructor.name}`);
+        } else {
+          this.logger.error(err.message, err.stack, `AbiService/${strategy.constructor.name}`);
+        }
+      }
     }
 
-    const fromDB = await this.fetchAbiFromDatabase(address, chain);
-    if (fromDB) {
-      this.logger.log(`${chain}/${address} ABI Retrieved from Database`, 'AbiService');
-      return fromDB;
-    }
+    throw new AbiNotFoundException(chain, address);
+  }
 
-    const fromBlockScan = await this.blockscan.fetchAbi(address, chain);
-    if (fromBlockScan) {
-      this.logger.log(`${chain}/${address} ABI Retrieved from BlockScan`, 'AbiService');
-      return fromBlockScan;
-    }
+  private async loadAbiFromStrategy(address: Address, chain: ChainId, strategy?: AbiSource) {
+    if (!strategy) return;
 
-    const fromBlockScout = await this.blockscout.fetchAbi(address, chain);
-    if (fromBlockScout) {
-      this.logger.log(`${chain}/${address} ABI Retrieved from BlockScout`, 'AbiService');
-      return fromBlockScout;
+    const possibleAbi = await strategy.fetchAbi(address, chain);
+    if (possibleAbi) {
+      this.logger.log(
+        `${chain}/${address} ABI Retrieved from ${strategy.constructor.name}`,
+        'AbiService',
+      );
+      return possibleAbi;
     }
+  }
 
-    throw new Error(`Unable to find appropriate ABI ${chain}/${address}`);
+  private async fetchProxyAbi(address: Address, chain: ChainId) {
+    const abi = await this.fetchAbi(address, chain);
+    // TODO: register scheduled service to refresh this abi in cache
+    return abi;
   }
 
   private async attemptEIP1967ProxyAddress(address: Address, chain: ChainId) {
@@ -136,8 +174,8 @@ export class AbiService {
         web.eth.getStorageAt(address, beaconContractAddress),
       ]);
 
-      const targets = rawTargets.map((rawTarget) =>
-        web.utils.numberToHex(web.utils.hexToNumberString(rawTarget)),
+      const targets = rawTargets.map(
+        (rawTarget) => '0x' + web3.utils.padLeft(new BigNumber(rawTarget).toString(16), 40, '0'),
       );
 
       return targets.find((target) => this.isNonZeroAddress(target));

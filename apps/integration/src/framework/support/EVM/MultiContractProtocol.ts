@@ -71,7 +71,7 @@ export abstract class MultiContractProtocol<
   // TODO: Type. The output on this, is the 'data' input on formatUserData
   protected abstract fetchUserData(addresses: Address[], pools: TOpportunityType[]): Promise<any>;
 
-  // TODO: type; data: any is the return value from getAsyncUserData
+  // TODO: type; data: any is the return value from fetchUserData
   protected abstract formatUserData(
     address: Address,
     pool: TOpportunityType,
@@ -80,28 +80,23 @@ export abstract class MultiContractProtocol<
 
   async initialize() {
     const addresses = await this.fetchPoolList();
+
     // Max 3 attempts
     for (let i = -1; i < Math.min(addresses.length, 3); i++) {
       const addressToTry = addresses[i] ?? this.meta.address;
 
-      try {
-        this.logger.log(
-          `Initializing: ${this.meta.name} ${this.meta.chain}/${addressToTry}`,
-          `MultiContractProtocol/${this.constructor.name}`,
-        );
+      this.logger.log(
+        `Initializing: ${this.meta.name} ${this.meta.chain}/${addressToTry}`,
+        `MultiContractProtocol/${this.constructor.name}`,
+      );
 
+      try {
         this.functions = await this.abiService.parseFunctionsFromAddress(
           addressToTry,
           this.meta.chain,
           this.functionPredicates,
         );
 
-        this.logger.log(
-          `${this.meta.chain}/${addressToTry} found ${Object.keys(this.functions).length}/${
-            Object.keys(this.functionPredicates).length
-          } functions`,
-          `MultiContractProtocol/${this.constructor.name}`,
-        );
         return;
       } catch (err) {
         // failed to fetch abi. Moving along to the next address to try

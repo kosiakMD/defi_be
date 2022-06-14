@@ -111,7 +111,7 @@ export class QuarryStaking
     opportunity: IQuarryStakingFeatureMinimal,
     tokens: TokenMap,
   ): IQuarryStakingFeatureOpportunity {
-    const base: any = {
+    const base: Partial<IQuarryStakingFeatureOpportunity> = {
       feature: opportunity.feature,
       id: opportunity.id,
       chain: opportunity.chain,
@@ -144,7 +144,7 @@ export class QuarryStaking
       );
     });
 
-    return base;
+    return base as IQuarryStakingFeatureOpportunity;
   }
 
   private toFeatureEntryMinimal(protocol: IQuarryProtocol): IQuarryStakingFeatureMinimal[] {

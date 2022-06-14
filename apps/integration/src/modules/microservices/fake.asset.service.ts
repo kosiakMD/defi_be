@@ -1,12 +1,12 @@
-/* eslint-disable max-classes-per-file */
+import {
+  AssembledAssetInterface,
+  AssetRequestObjectInterface,
+  AssetServiceInterface,
+} from '@sdk/assets/interfaces';
+
 import { Injectable } from '@nestjs/common';
 
 import { AccountService } from './account.service';
-import {
-  AssembledAssetInterface,
-  AssetRequestInterface,
-  AssetServiceInterface,
-} from './asset.service.interface';
 import { PriceService } from './price.service';
 import { TokenDataStrategy } from './strategies/strategy.interface';
 
@@ -20,7 +20,9 @@ export class FakeAssetService implements AssetServiceInterface {
     return asset;
   }
 
-  async getAssets(requests: AssetRequestInterface[]): Promise<[string, AssembledAssetInterface][]> {
+  async getAssets(
+    requests: AssetRequestObjectInterface[],
+  ): Promise<[string, AssembledAssetInterface][]> {
     // get unique list of requested chains
     const chains = Array.from(new Set(requests.map((c) => c.chainId)));
     const allTokens = await Promise.all(
@@ -39,7 +41,10 @@ export class FakeAssetService implements AssetServiceInterface {
         const { data: tokens } = await this.accountService.getAssets(addresses, [chain]);
 
         // fetch prices
-        const { prices } = await this.priceService.getTokenPricesFetch(addresses, chain);
+        const { prices } = await this.priceService.getTokenPricesFetch(
+          this.getAllAddresses(tokens),
+          chain,
+        );
 
         const { tokens: updatedTokens, prices: updatedPrices } = this.dataStrategy
           ? await this.dataStrategy.fillMissingData(tokens, prices, chain)
@@ -89,5 +94,19 @@ export class FakeAssetService implements AssetServiceInterface {
       //   historicalPrices?: AssetHistoricalPriceInterface[];
       underlying: token.underlyingAssets?.map((asset) => this.mapV2ToV3Interface(asset, prices)),
     }; // as any is needed as reserve & totalSupply are not in the interface yet
+  }
+
+  private getAllAddresses(tokens: any[]): string[] {
+    return Array.from(
+      tokens.reduce((res, t) => {
+        res.add(t.address);
+        if (t.underlyingAssets) {
+          t.underlyingAssets.forEach((ua) => {
+            res.add(ua.address);
+          });
+        }
+        return res;
+      }, new Set<string>()),
+    );
   }
 }

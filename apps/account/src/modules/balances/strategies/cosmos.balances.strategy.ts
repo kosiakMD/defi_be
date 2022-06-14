@@ -1,47 +1,19 @@
+import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
-import { BalancesLoadingStrategy } from '../../../common/interfaces';
-import { CosmosBalance } from '../../../common/interfaces/cosmos.interface';
-import { CosmosService } from '../../../common/providers/3rdparty/cosmos/cosmos.service';
-import { BaseBalanceStrategy } from '../../../common/services/base-balance.strategy';
-import { BalancesRequest } from '../../../common/types';
-
-import type { TokenBalance } from '../balances.interfaces';
+import { CosmosHubBalancesStrategy } from './cosmos-hub.balances.strategy';
 
 @Injectable()
-export class CosmosBalancesStrategy extends BaseBalanceStrategy implements BalancesLoadingStrategy {
-  constructor(private readonly cosmosService: CosmosService) {
+export class CosmosBalancesStrategy extends CosmosHubBalancesStrategy {
+  protected endpoint: string;
+
+  constructor(
+    private readonly configService: ConfigService,
+    protected readonly httpService: HttpService,
+  ) {
     super();
-  }
 
-  async getBalances(request: BalancesRequest): Promise<TokenBalance[]> {
-    if (!this.cosmosService.isCosmosAddress(request.address)) return [];
-    const balances: CosmosBalance[] = await this.cosmosService.getBalances(
-      request.address,
-      request.chainId,
-    );
-    return this.mapCosmosResponse(balances, request);
-  }
-
-  private async mapCosmosResponse(
-    balances: CosmosBalance[],
-    request: BalancesRequest,
-  ): Promise<TokenBalance[]> {
-    const tokenBalances: TokenBalance[] = [];
-    const tokenSet = new Set(request.tokens);
-
-    for (const balance of balances) {
-      if (tokenSet.has(balance.denom)) {
-        tokenBalances.push({
-          amount: balance.amount.toString(),
-          token: {
-            chainId: request.chainId,
-            address: balance.denom,
-          },
-        });
-      }
-    }
-
-    return tokenBalances;
+    this.endpoint = this.configService.get<string>('COSMOS_LCD');
   }
 }

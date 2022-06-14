@@ -1,12 +1,13 @@
+import {
+  AssembledAssetInterface,
+  AssetRequestObjectInterface,
+  AssetServiceInterface,
+} from '@sdk/assets/interfaces';
+
 import { Injectable } from '@nestjs/common';
 
 import { MuesliSwapAccountService } from './MuesliSwapAccountService';
 import { MuesliSwapPriceService } from './MuesliSwapPriceService';
-import {
-  AssembledAssetInterface,
-  AssetRequestInterface,
-  AssetServiceInterface,
-} from './asset.service.interface';
 
 /**
  * This is a copy/paste of FakeAssetService, however I couldn't get the types to behave
@@ -25,7 +26,9 @@ export class MuesliSwapAssetService implements AssetServiceInterface {
     return asset;
   }
 
-  async getAssets(requests: AssetRequestInterface[]): Promise<[string, AssembledAssetInterface][]> {
+  async getAssets(
+    requests: AssetRequestObjectInterface[],
+  ): Promise<[string, AssembledAssetInterface][]> {
     // get unique list of requested chains
     const chains = Array.from(new Set(requests.map((c) => c.chainId)));
 

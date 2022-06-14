@@ -13,18 +13,18 @@ export interface AssetHistoricalPriceInterface {
 export interface AssetUnderlyingInterface {
   address: string;
   position: number;
-  // reserves:
+  reserve?: number; // TODO: optional for now since its not included in the response at the time of writing, but should be required
   // weight:
 }
 
-export interface AssetRequestInterface {
+export interface AssetRequestObjectInterface {
   chainId: number;
   address: string;
   pricesAt?: number[];
 }
 
 // Raw Return data from asset service
-export interface AssetInterface {
+export interface AssetResponseObjectInterface {
   id: number;
   chainId: number;
 
@@ -39,11 +39,18 @@ export interface AssetInterface {
   rank?: number;
   icon?: string;
 
-  //   isTracked: boolean;
-  //   disabled: boolean;
+  // isTracked: boolean;
+  // disabled: boolean;
   categories: AssetCategoryInterface[];
-  //   historicalPrices: AssetHistoricalPriceInterface[];
+  historicalPrices?: AssetHistoricalPriceInterface[];
   underlying: AssetUnderlyingInterface[];
+}
+
+export interface AssetRequestInterface {
+  assets: AssetRequestObjectInterface[];
+}
+export interface AssetResponseInterface {
+  assets: AssetResponseObjectInterface[];
 }
 
 // hydrated/assembled assets (attached underlying, etc)
@@ -55,7 +62,7 @@ export interface AssembledAssetInterface {
   decimals: number;
   name?: string;
   symbol?: string;
-  totalSupply?: string;
+  totalSupply?: number;
 
   displayName?: string;
   price?: number;
@@ -71,11 +78,11 @@ export interface AssembledAssetInterface {
   // isTracked?: boolean;
   // disabled?: boolean;
   categories: AssetCategoryInterface[];
-  //   historicalPrices?: AssetHistoricalPriceInterface[];
+  historicalPrices?: AssetHistoricalPriceInterface[];
   underlying: AssembledAssetInterface[];
 }
 
 export interface AssetServiceInterface {
   getAsset(address: Address, chainId: number): Promise<AssembledAssetInterface>;
-  getAssets(requests: AssetRequestInterface[]): Promise<[string, AssembledAssetInterface][]>;
+  getAssets(requests: AssetRequestObjectInterface[]): Promise<[string, AssembledAssetInterface][]>;
 }

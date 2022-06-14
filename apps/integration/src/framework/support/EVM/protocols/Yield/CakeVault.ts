@@ -1,4 +1,4 @@
-import { FakeAssetService } from 'apps/integration/src/modules/microservices/fake.asset.service';
+import { UniswapV2AssetService } from 'apps/integration/src/modules/microservices/uniswap.asset.service';
 import { Cache } from 'cache-manager';
 
 import { CACHE_MANAGER, Inject } from '@nestjs/common';
@@ -54,7 +54,7 @@ export class CakeVault
     protected multicall: MulticallAggregator,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected logger: Logger,
     @Inject(CACHE_MANAGER) protected cache: Cache,
-    protected assetService: FakeAssetService,
+    protected assetService: UniswapV2AssetService,
   ) {
     super();
     if (this.updateFunctionPredicates) {

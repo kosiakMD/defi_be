@@ -8,6 +8,7 @@ import { chunkRunAsync } from '@app/common/utils';
 
 import { AssetReference } from '../../common/types';
 
+import { AssetDto } from '../assets/dto/asset.dto';
 import { AssetEntity } from '../assets/entities/asset.entity';
 import { AssetsRepository } from '../assets/repositories/assets.repository';
 import { AssetHistoricalPriceEntity } from './entities/asset-historical-price.entity';
@@ -16,6 +17,7 @@ import { AssetPrice } from './types/asset-price.type';
 
 @Injectable()
 export class PriceService {
+  private readonly assetPricesTTLInSeconds: number;
   constructor(
     @InjectRepository(AssetsRepository)
     private readonly assetsRepository: AssetsRepository,
@@ -24,13 +26,14 @@ export class PriceService {
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
     private readonly cache: CacheService,
     private readonly config: ConfigService,
-  ) {}
+  ) {
+    this.assetPricesTTLInSeconds = this.config.get<number>('ASSET_PRICES_CACHE_TTL') || 60 * 60;
+  }
 
   public async saveAssetPrices(prices: AssetPrice[]) {
     this.logger.log(`Saving ${prices.length} prices into cache`);
 
-    const assetPricesTTLInSeconds = this.config.get<number>('ASSET_PRICES_CACHE_TTL') || 60 * 60;
-    const assetPricesTTLInMs = assetPricesTTLInSeconds * 1000;
+    const assetPricesTTLInMs = this.assetPricesTTLInSeconds * 1000;
     const expiredPricesTimestamp = Date.now() - assetPricesTTLInMs;
 
     const sourcePricesCacheKeys = prices.map(getSourcePricesCacheKey);
@@ -44,19 +47,31 @@ export class PriceService {
     );
     const notEmptyUpdatedPrices = updatedPrices.filter(({ prices }) => prices?.length > 0);
     const sourcePriceCacheItems = notEmptyUpdatedPrices.map(toSourcePricesCacheItem);
-    await this.cache.mset(sourcePriceCacheItems, { ttl: assetPricesTTLInSeconds });
+    await this.cache.mset(sourcePriceCacheItems, { ttl: this.assetPricesTTLInSeconds });
 
     // NOTE: Average price stored separately for easier retrieval
     const averagePrices = updatedPrices.map(calculateAveragePrice).filter(({ price }) => price);
     const avgPriceCacheItems = averagePrices.map(toAvgPriceCacheItem);
-    await this.cache.mset(avgPriceCacheItems, { ttl: assetPricesTTLInSeconds });
+    await this.cache.mset(avgPriceCacheItems, { ttl: this.assetPricesTTLInSeconds });
 
     this.logger.log(`Saved ${notEmptyUpdatedPrices.length} not empty prices into cache`);
   }
 
   public async saveHistoricalPricesFromCurrentOnes() {
-    const trackedAssets = await this.assetsRepository.getAllTrackedAssets();
+    const trackedAssets = await this.assetsRepository.findAllTrackedAssets();
     await chunkRunAsync(trackedAssets, 500, this.insertChunkAssetPrices.bind(this));
+  }
+
+  public async saveSpecificAssetPrices(dtosToUpdatePricesInCache: AssetDto[]) {
+    const priceCacheItems = dtosToUpdatePricesInCache
+      .filter(({ price }) => price)
+      .map(({ address, chainId, price }) =>
+        toAvgPriceCacheItem({
+          asset: { address, chainId },
+          price,
+        }),
+      );
+    await this.cache.mset(priceCacheItems, { ttl: this.assetPricesTTLInSeconds });
   }
 
   private async insertChunkAssetPrices(trackedAssetsChunk: AssetEntity[]) {
@@ -179,7 +194,8 @@ function getPriceMap(prices: AssetAvgPrice[]) {
   }, {});
 }
 
-const getPriceMapKey = ({ chainId, address }: AssetReference) => `${chainId}_${address}`;
+const getPriceMapKey = ({ chainId, address }: AssetReference) =>
+  `${chainId}_${address.toLowerCase()}`;
 
 const getSourcePricesCacheKey = ({ chainId, address }: AssetReference) =>
   `asset_source_prices_${chainId}_${address.toLowerCase()}`;

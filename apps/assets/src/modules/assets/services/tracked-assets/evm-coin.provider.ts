@@ -1,3 +1,5 @@
+import { Injectable } from '@nestjs/common';
+
 import { ZERO_ADDRESS } from '@app/common/constant';
 import { isEVMChain } from '@app/common/utils';
 
@@ -6,6 +8,7 @@ import { ChainService } from '../../../../common/services/chain.service';
 import { AssetProcessingRequest } from '../../types/asset-processing.request';
 import { TrackedAssetsProvider } from './tracked-assets.provider';
 
+@Injectable()
 export class EVMCoinProvider implements TrackedAssetsProvider {
   constructor(private readonly chainService: ChainService) {}
 

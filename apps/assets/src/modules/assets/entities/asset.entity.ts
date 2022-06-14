@@ -39,6 +39,9 @@ export class AssetEntity extends BaseEntity {
   @Column({ type: Number, nullable: true })
   public rank?: number;
 
+  @Column({ type: Boolean, default: false })
+  public isNotAccounted: boolean;
+
   @Exclude({ toPlainOnly: true })
   @Column({ type: Boolean, default: false })
   public isTracked: boolean;

@@ -11,60 +11,7 @@ import { getChainById } from '@app/common/utils';
 
 import { ErrorWithHttpInfo } from '../../common/types/error-with-http-info';
 
-import { AaveV2 } from '../platforms/AaveV2';
-import { AaveV3 } from '../platforms/AaveV3';
-import { AlchemixV2 } from '../platforms/AlchemixV2';
-import { ApeSwap } from '../platforms/ApeSwap';
-import { BabySwap } from '../platforms/BabySwap';
-import { BalancerV2 } from '../platforms/BalancerV2';
-import { Belt } from '../platforms/Belt';
-import { Benqi } from '../platforms/Benqi';
-import { BiSwap } from '../platforms/BiSwap';
-import { Blizz } from '../platforms/Blizz';
-import { CafeSwap } from '../platforms/CafeSwap';
-import { CheesecakeSwap } from '../platforms/CheesecakeSwap';
-import { CherrySwap } from '../platforms/CherrySwap';
-import { CryptoComDefiSwap } from '../platforms/CryptoComDefiSwap';
-import { CubFinance } from '../platforms/CubFinance';
-import { DfynNetwork } from '../platforms/DfynNetwork';
-import { Ellipsis } from '../platforms/Ellipsis';
-import { Evodefi } from '../platforms/Evodefi';
-import { Frax } from '../platforms/Frax';
-import { Geist } from '../platforms/Geist';
-import { Goose } from '../platforms/Goose';
-import { IronBank } from '../platforms/IronBank';
-import { Kava } from '../platforms/Kava';
-import { KnightSwap } from '../platforms/KnightSwap';
-import { KyberSwap } from '../platforms/KyberSwap';
-import { Lido } from '../platforms/Lido';
-import { Liquity } from '../platforms/Liquity';
-import { MakerDAO } from '../platforms/MakerDAO';
-// import { LimeSwap } from '../platforms/LimeSwap';
-import { MarsEcosystem } from '../platforms/MarsEcosystem';
-import { Mdex } from '../platforms/Mdex';
-import { Mojitoswap } from '../platforms/Mojitoswap';
-import { MuesliSwap } from '../platforms/MuesliSwap';
-import { Nereus } from '../platforms/Nereus';
-import { Netswap } from '../platforms/Netswap';
-import { PaintSwap } from '../platforms/PaintSwap';
-import { PancakeSwap } from '../platforms/PancakeSwap';
-import { Quarry } from '../platforms/Quarry';
-import { QuickSwap } from '../platforms/QuickSwap';
-import { RocketPool } from '../platforms/RocketPool';
-import { RuneFarm } from '../platforms/RuneFarm';
-import { SashimiSwap } from '../platforms/SashimiSwap';
-import { Solend } from '../platforms/Solend';
-import { SpiritSwap } from '../platforms/SpiritSwap';
-import { SpookySwap } from '../platforms/SpookySwap';
-import { Stargate } from '../platforms/Stargate';
-import { Swapr } from '../platforms/Swapr';
-import { Synapse } from '../platforms/Synapse';
-import { TombFinance } from '../platforms/TombFinance';
-import { TreeDefi } from '../platforms/TreeDefi';
-import { WaultFinance } from '../platforms/WaultFinance';
-import { YelFinance } from '../platforms/YelFinance';
-import { YetiFinance } from '../platforms/YetiFinance';
-import { Zenlink } from '../platforms/Zenlink';
+import * as Platforms from '../platforms';
 import { RootPlatform } from '../support/RootPlatform';
 import { IPlatformMeta } from '../support/interfaces';
 import {
@@ -79,62 +26,7 @@ export class PlatformService implements OnApplicationBootstrap {
     private readonly moduleRef: ModuleRef,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
   ) {
-    this.registerPlatforms({
-      // LimeSwap, // TODO: mark as rugged/scam. remove from explore opportunities, may still show user positions
-      AaveV2,
-      AaveV3,
-      AlchemixV2,
-      ApeSwap,
-      BabySwap,
-      BalancerV2,
-      Belt,
-      Benqi,
-      BiSwap,
-      Blizz,
-      CafeSwap,
-      CheesecakeSwap,
-      CherrySwap,
-      CryptoComDefiSwap,
-      CubFinance,
-      DfynNetwork,
-      Ellipsis,
-      Evodefi,
-      Frax,
-      Geist,
-      Goose,
-      IronBank,
-      Kava,
-      KnightSwap,
-      KyberSwap,
-      Lido,
-      Liquity,
-      MakerDAO,
-      MarsEcosystem,
-      Mdex,
-      Mojitoswap,
-      MuesliSwap,
-      Nereus,
-      Netswap,
-      PaintSwap,
-      PancakeSwap,
-      Quarry,
-      QuickSwap,
-      RocketPool,
-      RuneFarm,
-      SashimiSwap,
-      Solend,
-      SpiritSwap,
-      SpookySwap,
-      Stargate,
-      Swapr,
-      Synapse,
-      TombFinance,
-      TreeDefi,
-      WaultFinance,
-      YelFinance,
-      YetiFinance,
-      Zenlink,
-    });
+    this.registerPlatforms(Platforms);
   }
 
   platforms: Map<string, ClassConstructor<RootPlatform>> = new Map();
@@ -271,14 +163,21 @@ export class PlatformService implements OnApplicationBootstrap {
 
     if (debug) {
       const { data: pools, errors: poolErrors } = await platform.getPoolData(chains);
-
+      const flat = cached.flat();
       const poolErrorMessages = this.processErrors(poolErrors, platformName);
+      if (flat.length !== pools.length) {
+        errorMessages.push(
+          `Failed to hydrate some opportunities. Missing ${flat.length - pools.length}/${
+            flat.length
+          }`,
+        );
+      }
       return {
         errors: Array.from(new Set(errorMessages.concat(poolErrorMessages))),
         data: {
-          count: cached.flat().length,
-          message: `${platformName} opportunities have been cached`,
-          raw: cached,
+          count: flat.length,
+          message: `${platformName} minimal opportunities have been cached`,
+          minimal: cached, // not flattened so that each array is its own 'protocol' to help debug
           hydrated: pools,
         },
       };

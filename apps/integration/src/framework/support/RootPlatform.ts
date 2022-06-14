@@ -22,7 +22,6 @@ import {
   IWalletUserEntry,
 } from './interfaces';
 
-// TODO Make Meta generic & extend
 export abstract class RootPlatform implements IRootPlatform {
   protected abstract logger: Logger;
   protected abstract moduleRef: ModuleRef;
@@ -47,6 +46,11 @@ export abstract class RootPlatform implements IRootPlatform {
     instance.registerMeta(meta);
     if (instance.initialize) {
       try {
+        this.logger.log(
+          `Initializing: ${meta.name} Chain: ${meta.chain}`,
+          `${this.constructor.name}/${instance.constructor.name}`,
+        );
+
         await instance.initialize();
       } catch (err) {
         this.logger.error(err.message, err.stack, 'RootPlatform');
@@ -161,7 +165,6 @@ export abstract class RootPlatform implements IRootPlatform {
         errors.push(r.reason);
       }
     });
-    // errors.push(...(protocolErrors as any[]));
 
     this.logger.log(`Formatting fetched data for: ${this.meta.name}`);
 

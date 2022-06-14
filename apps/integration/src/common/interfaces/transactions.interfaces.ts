@@ -33,6 +33,9 @@ export class ERC20Token {
   @ApiProperty({ type: String, example: '69393241' })
   @Expose()
   totalSupply?: string;
+  @ApiProperty({ type: String, example: '69393241' })
+  @Expose()
+  underlyingAssets?: ERC20Token[];
 }
 
 export class StakingErcToken extends ERC20Token {

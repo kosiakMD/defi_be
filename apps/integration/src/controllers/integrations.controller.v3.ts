@@ -7,7 +7,6 @@ import {
   ChainIdEnum,
   ChainsArray,
   ErrorResponseDto,
-  ProtocolNameEnum,
   ProtocolParams,
   ProtocolV3NameEnum,
 } from '@app/common';
@@ -22,6 +21,7 @@ import {
 import { IntegrationsResponseV2Dto } from '../modules/integrations/dto/integrations.dto';
 
 const SortedProtocolNames = sortKeys(ProtocolV3NameEnum);
+const ExampleProtocol = SortedProtocolNames[Object.keys(SortedProtocolNames)[0]]; // just grab the first
 
 @ApiTags('Protocols')
 @Controller('v3/protocols')
@@ -44,7 +44,7 @@ export class IntegrationsControllerV3 {
   @ApiParam({
     name: 'protocolName',
     enum: SortedProtocolNames,
-    example: ProtocolNameEnum.SpookySwap,
+    example: ExampleProtocol,
   })
   @ApiQuery({
     name: 'chains',
@@ -68,7 +68,7 @@ export class IntegrationsControllerV3 {
   @ApiParam({
     name: 'protocolName',
     enum: SortedProtocolNames,
-    example: ProtocolNameEnum.SpookySwap,
+    example: ExampleProtocol,
   })
   @ApiQuery({
     name: 'chains',
@@ -86,7 +86,7 @@ export class IntegrationsControllerV3 {
   @ApiParam({
     name: 'protocolName',
     enum: SortedProtocolNames,
-    example: ProtocolNameEnum.SpookySwap,
+    example: ExampleProtocol,
   })
   @ApiQuery({
     name: 'debug',

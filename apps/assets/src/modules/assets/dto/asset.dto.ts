@@ -48,6 +48,10 @@ export class AssetDto {
   @ApiProperty({ type: Number, nullable: false })
   decimals: number;
 
+  @Expose()
+  @ApiProperty({ type: Boolean, default: false })
+  isNotAccounted: boolean;
+
   @ApiProperty({ type: Boolean, default: false })
   isTracked: boolean;
 

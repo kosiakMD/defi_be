@@ -3,8 +3,8 @@ import bech32 from 'bech32';
 import { isAddress as isETHAddress, toChecksumAddress } from 'web3-utils';
 
 import { Address } from '@app/common';
-import { ZERO_ADDRESS } from '@app/common/constant';
 
+import { ZERO_ADDRESS } from '../constant';
 import { ChainIdEnum } from '../enum';
 
 // Extending ChainIdEnum so when new chains are added, validation is not forgotten

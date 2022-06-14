@@ -1,6 +1,16 @@
+import type { AbiItem } from 'web3-utils';
+
 import { FeatureEnum } from '@app/common';
 
 import { IFeatureLinks } from './feature.common.interface';
+
+type InteractiveAction = 'claim' | 'withdraw' | 'deposit';
+
+export interface InteractiveInterface {
+  action: InteractiveAction;
+  input: { [key: string]: any };
+  abi: AbiItem;
+}
 
 interface Base {
   feature: FeatureEnum;
@@ -8,10 +18,11 @@ interface Base {
   id: string | `${string}::${string}`; // unique id for investment. this is used as the cache key, so must be unique
   chain: number;
   links?: IFeatureLinks; // website, discord, twitter, etc
-  interactive?: any;
+  interactive?: InteractiveInterface[];
 }
 
 // TODO: rename 'meta' to 'extra'... meta is defined during registration,
+// TODO: idea: extra is dev specific helpers stripped out before output. metadata is returned to front end
 // this is extra information pertaining to the pool
 type BaseWithExtra<TExtra> = Base & (TExtra extends void ? { meta?: never } : { meta: TExtra });
 

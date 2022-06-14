@@ -209,6 +209,7 @@ export enum WingRidersProtocolEnum {
 export const ProtocolV3NameEnum = {
   AaveV2: 'AaveV2',
   AaveV3: 'AaveV3',
+  Arrakis: 'Arrakis',
   AlchemixV2: 'AlchemixV2',
   ApeSwap: 'ApeSwap',
   BabySwap: 'BabySwap',

@@ -107,6 +107,8 @@ export function isSolAddress(address: string): boolean {
 
 export function isBech32LikeAddress(address: string, length?: number): boolean {
   try {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    //@ts-ignore
     const { prefix } = bech32.decode(address, length);
     return ['addr', 'kava', 'secret', 'osmo', 'terra', 'cosmos'].includes(prefix);
   } catch {

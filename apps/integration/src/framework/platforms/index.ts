@@ -1,7 +1,10 @@
+export { Arrakis } from './Arrakis';
+
 export { AaveV2 } from './AaveV2';
 export { AaveV3 } from './AaveV3';
 export { AlchemixV2 } from './AlchemixV2';
 export { ApeSwap } from './ApeSwap';
+
 export { BabySwap } from './BabySwap';
 export { BalancerV2 } from './BalancerV2';
 export { Bancor } from './Bancor';

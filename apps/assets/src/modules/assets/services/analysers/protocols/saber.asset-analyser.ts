@@ -18,6 +18,7 @@ import {
 } from '../core/price.provider';
 import { SolanaBaseAssetAnalyser } from '../core/solana-base.asset-analyser';
 
+// TODO: Use multicall
 @Injectable()
 export class SaberAssetAnalyser
   extends SolanaBaseAssetAnalyser

@@ -148,6 +148,7 @@ export class AssetsProcessor {
   }
 
   private calculateRank(address: Address, metadata: AssetMetadata = {}) {
+    // TODO: Check if is native coin
     if (isZeroAddress(address)) {
       // Coins should be at the top
       return 1;

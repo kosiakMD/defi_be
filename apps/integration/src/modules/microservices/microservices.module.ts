@@ -18,11 +18,13 @@ import { AccountService } from './account.service';
 import { AssetService } from './asset.service';
 import { EllipsisAssetService } from './ellipsis.asset.service';
 import { FakeAssetService } from './fake.asset.service';
+import { IronFinanceAssetService } from './ironFinance.asset.service';
 import { MuesliSwapAssetService } from './muesliswap.asset.service';
 import { PriceService } from './price.service';
 import { Puppeteer } from './puppeteer';
 import { SolanaAssetService } from './solana.asset.service';
 import { SonarAssetService } from './sonar.asset.service';
+import { IronFinanceStrategy } from './strategies/ironFinance.asset.strategy';
 import { SynapseStrategy } from './strategies/synapse.asset.strategy';
 import { UniswapV2LpStrategy } from './strategies/uniswap.v2.asset.strategy';
 import { SynapseAssetService } from './synapse.asset.service';
@@ -57,9 +59,11 @@ import { YetiAssetService } from './yeti.asset.service';
     SolanaAssetService,
     SonarAssetService,
     YetiAssetService,
+    IronFinanceAssetService,
     // Strategies
     UniswapV2LpStrategy,
     SynapseStrategy,
+    IronFinanceStrategy,
 
     // Account Services
     AccountService,
@@ -92,6 +96,7 @@ import { YetiAssetService } from './yeti.asset.service';
     MuesliSwapPriceService,
     Puppeteer,
     CardanoService,
+    IronFinanceAssetService,
   ],
 })
 export class MicroservicesModule {}

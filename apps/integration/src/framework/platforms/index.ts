@@ -1,7 +1,10 @@
+export { Arrakis } from './Arrakis';
+
 export { AaveV2 } from './AaveV2';
 export { AaveV3 } from './AaveV3';
 export { AlchemixV2 } from './AlchemixV2';
 export { ApeSwap } from './ApeSwap';
+
 export { BabySwap } from './BabySwap';
 export { BalancerV2 } from './BalancerV2';
 export { Bancor } from './Bancor';
@@ -30,6 +33,7 @@ export { MakerDAO } from './MakerDAO';
 export { MarsEcosystem } from './MarsEcosystem';
 export { Mdex } from './Mdex';
 export { Mojitoswap } from './Mojitoswap';
+export { Moola } from './Moola';
 export { MuesliSwap } from './MuesliSwap';
 export { Nereus } from './Nereus';
 export { Netswap } from './Netswap';
@@ -52,3 +56,6 @@ export { WaultFinance } from './WaultFinance';
 export { YelFinance } from './YelFinance';
 export { YetiFinance } from './YetiFinance';
 export { Zenlink } from './Zenlink';
+export { AutoFarm } from './AutoFarm';
+export { BeefyFinance } from './BeefyFinance';
+export { IronFinance } from './IronFinance';

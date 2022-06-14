@@ -1,6 +1,7 @@
 import { UniswapV2AssetService } from 'apps/integration/src/modules/microservices/uniswap.asset.service';
 import BigNumber from 'bignumber.js';
 import { Cache } from 'cache-manager';
+import { cloneDeep } from 'lodash';
 import { AbiInput } from 'web3-utils';
 
 import { CACHE_MANAGER, Inject } from '@nestjs/common';
@@ -8,6 +9,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, Logger } from '@app/common';
 import { averageBlockTimeByChain } from '@app/common/constant/blocktime';
+import { CallData } from '@app/common/dto/CallData';
 import { equals, normalizeDecimals, regex, startsWith } from '@app/common/utils';
 import { ERC20 } from '@app/common/web3provider/contracts/ERC20';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
@@ -228,6 +230,21 @@ export class MasterChef
     address: Address,
     pools: IStakingFeatureOpportunity[],
   ): Promise<IStakingFeatureUserEntry[]> {
+    const results = await this.getUserInfoAndRewardsFromChain(pools, address);
+    return pools.reduce((pools, pool) => {
+      const userPool = this.formatUserData(address, pool, results);
+      if (userPool) {
+        pools.push(userPool);
+      }
+
+      return pools;
+    }, []);
+  }
+
+  protected async getUserInfoAndRewardsFromChain(
+    pools: IStakingFeatureOpportunity[],
+    address: Address,
+  ): Promise<Map<string, CallData<any>>> {
     const contract = this.getMainContract();
 
     const calls = new Map();
@@ -244,16 +261,7 @@ export class MasterChef
       );
     });
 
-    const results = await this.multicall.handleInBatches(calls, this.meta.chain);
-
-    return pools.reduce((pools, pool) => {
-      const userPool = this.formatUserData(address, pool, results);
-      if (userPool) {
-        pools.push(userPool);
-      }
-
-      return pools;
-    }, []);
+    return await this.multicall.handleInBatches(calls, this.meta.chain);
   }
 
   protected modifyUserEntrySupplied(supplied: ISupplyTokenOpportunity, balance: number) {
@@ -275,6 +283,7 @@ export class MasterChef
     pool: IStakingFeatureOpportunity,
     data: any,
   ): IStakingFeatureUserEntry {
+    const poolInfo = cloneDeep(pool);
     const [masterchef, poolId] = pool.id.split('::');
 
     const {
@@ -283,13 +292,13 @@ export class MasterChef
 
     const balance = normalizeDecimals(
       userInfo[this.getUserInfoAmountKey()].toString(),
-      pool.supplied[0].token.decimals,
+      poolInfo.supplied[0].token.decimals,
     );
 
     if (!balance) return;
 
     // Update supplied token
-    pool.supplied[0] = this.modifyUserEntrySupplied(pool.supplied[0], balance);
+    poolInfo.supplied[0] = this.modifyUserEntrySupplied(poolInfo.supplied[0], balance);
 
     const {
       output: { data: pendingRewards },
@@ -297,16 +306,16 @@ export class MasterChef
 
     const rewardBalance = normalizeDecimals(
       pendingRewards.toString(),
-      pool.rewarded[0].token.decimals,
+      poolInfo.rewarded[0].token.decimals,
     );
 
     // Update Reward Token
-    Object.assign(pool.rewarded[0], {
+    Object.assign(poolInfo.rewarded[0], {
       amount: rewardBalance,
-      value: rewardBalance * pool.rewarded[0].token.price,
+      value: rewardBalance * poolInfo.rewarded[0].token.price,
     });
 
-    return pool as IStakingFeatureUserEntry;
+    return poolInfo as IStakingFeatureUserEntry;
   }
 
   /**

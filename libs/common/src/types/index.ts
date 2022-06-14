@@ -2,9 +2,7 @@ import {
   ChainIdEnum,
   AbracadabraProtocolEnum,
   AlpacaProtocolEnum,
-  AutofarmProtocolEnum,
   BadgerProtocolEnum,
-  BeefyProtocolEnum,
   CompoundProtocolEnum,
   ConvexProtocolEnum,
   CurveProtocolEnum,
@@ -51,9 +49,7 @@ export type ChainId = ChainIdEnum;
 export type ProtocolName =
   | AbracadabraProtocolEnum
   | AlpacaProtocolEnum
-  | AutofarmProtocolEnum
   | BadgerProtocolEnum
-  | BeefyProtocolEnum
   | CompoundProtocolEnum
   | ConvexProtocolEnum
   | CurveProtocolEnum

@@ -1,6 +1,6 @@
 import { firstValueFrom, map } from 'rxjs';
 
-import { HttpService } from '@nestjs/axios';
+import { HttpService } from '@nestjs/common';
 
 import { isBech32LikeAddress } from '@app/common/utils';
 

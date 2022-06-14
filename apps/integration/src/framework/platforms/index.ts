@@ -52,3 +52,5 @@ export { WaultFinance } from './WaultFinance';
 export { YelFinance } from './YelFinance';
 export { YetiFinance } from './YetiFinance';
 export { Zenlink } from './Zenlink';
+export { AutoFarm } from './AutoFarm';
+export { BeefyFinance } from './BeefyFinance';

@@ -7,12 +7,10 @@ import {
   UniswapProtocolEnum,
   YearnProtocolEnum,
   EllipsisProtocolEnum,
-  AutofarmProtocolEnum,
   QuickswapProtocolEnum,
 } from '@app/common';
 
 export type ProtocolName =
-  | AutofarmProtocolEnum
   | PancakeProtocolEnum
   | PangolinProtocolEnum
   | QuickswapProtocolEnum

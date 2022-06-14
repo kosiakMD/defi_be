@@ -368,9 +368,12 @@ export class IntegrationsServiceV3Decorator {
     v2Item.address = poolAddress.toLowerCase();
     v2Item.poolId = Number(poolId);
     v2Item.poolName = null;
+    const poolApy = Array.isArray(v3Item.rewarded)
+      ? v3Item.rewarded.reduce((total, reward) => (reward.apr?.year || 0) + total, 0) * 100
+      : 0;
     v2Item.stats = {
       tvl: lpToken.tvl,
-      poolApy: v3Item.rewarded.reduce((total, reward) => reward.apr?.year + total, 0) * 100,
+      poolApy: poolApy,
     };
 
     v2Item.stakingToken.address = lpToken.token.address;
@@ -383,7 +386,7 @@ export class IntegrationsServiceV3Decorator {
     v2Item.stakingToken.balance = lpToken.amount;
     v2Item.staked = lpToken.amount.toString();
 
-    v2Item.rewards = v3Item.rewarded.map((v3RewardToken) => {
+    const rewards = v3Item.rewarded?.map((v3RewardToken) => {
       const v2RewardToken = plainToClass(IntegrationClaimableTokenDto, {});
       v2RewardToken.address = v3RewardToken.token.address;
       v2RewardToken.name = v3RewardToken.token.name;
@@ -395,6 +398,7 @@ export class IntegrationsServiceV3Decorator {
       v2RewardToken.apr = v3RewardToken.apr?.year * 100;
       return v2RewardToken;
     });
+    v2Item.rewards = Array.isArray(rewards) ? rewards : [];
 
     /* handle underlying assets */
     if (lpToken.token.underlying && lpToken.token.underlying.length !== 0) {

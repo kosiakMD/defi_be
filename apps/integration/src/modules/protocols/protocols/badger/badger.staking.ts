@@ -87,8 +87,8 @@ export class BadgerStaking {
     addresses.forEach((a) => {
       const baseInfo: BaseDataStaking = plainToClass(BaseDataStaking, {
         chain,
-        projectName: ProjectEnum.autofarm,
-        protocolName: ProtocolNameEnum.autofarm,
+        projectName: ProjectEnum.badger,
+        protocolName: ProtocolNameEnum.badger,
         userAddress: a,
         protocolType: ProtocolTypeEnum.staking,
         feature: FeatureEnum.staking,

@@ -89,12 +89,12 @@ configMaps:
     WING_RIDERS_EXPLORER_URL: https://explorer.mainnet.wingriders.com
     WING_RIDERS_AGGREGATOR_URL: https://aggregator.mainnet.wingriders.com
   endpoints:
-    ACCOUNT_SERVICE_URL: http://account-service
-    PRICE_SERVICE_HOST: http://price-service
-    PRICE_SERVICE_URL: http://price-service
+    ACCOUNT_SERVICE_URL: http://account
+    PRICE_SERVICE_HOST: http://price
+    PRICE_SERVICE_URL: http://price
     PRICE_SERVICE_PORT: 80
     PRICES_PATH: v1/prices
-    ACCOUNT_SERVICE_HOST: http://account-service
+    ACCOUNT_SERVICE_HOST: http://account
     ACCOUNT_SERVICE_PORT: 80
     ACCOUNT_BALANCE: v1/balances
     ACCOUNT_ASSETS: v1/assets

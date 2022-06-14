@@ -108,6 +108,7 @@ configMaps:
     #AURORA_URL: http://rpc/v1/rpc-call/18
     KAVA_API: https://api2.kava.io
     KAVA_URL: https://api2.kava.io
+    METIS_URL: https://andromeda-rpc.metis.io/
   external:
     AUTOFARM_API_URL: https://static.autofarm.network/bsc/farm_data.json
     COINGECKO_API_URL: https://api.coingecko.com/api/v3/

@@ -84,6 +84,14 @@ export class AssetsRepository extends Repository<AssetEntity> {
       .getMany();
   }
 
+  async findCoingeckoAssets() {
+    return this.createQueryBuilder('assets')
+      .select()
+      .where('disabled is false')
+      .andWhere(`metadata->>'coingeckoId' IS NOT NULL`)
+      .getMany();
+  }
+
   async findUniV2LikePairsForTrackedAssets(
     chainId: ChainId,
     factory: Address,

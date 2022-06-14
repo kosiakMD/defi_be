@@ -13,7 +13,7 @@ import { TrackedAssetsProvider } from './tracked-assets.provider';
 Assets that are used for price calculation but UniV2 network strategy should be marked as tracked
 * */
 @Injectable()
-export class PriceStrategyUsedAssetsProvider implements TrackedAssetsProvider {
+export class PriceStrategyAssetsProvider implements TrackedAssetsProvider {
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     @InjectRepository(PriceSourceRepository)

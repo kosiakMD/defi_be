@@ -19,12 +19,12 @@ export const notEmpty = <T = any>(arr): T[] => arr.filter((x) => x);
 export async function chunkRunAsync<T, R>(
   array: T[],
   chunkSize: number,
-  func: (input: T[]) => Promise<R>,
+  func: (input: T[], index?: number) => Promise<R>,
 ) {
   const responses: R[] = [];
   for (let index = 0; index < array.length; index += chunkSize) {
     const chunk = array.slice(index, index + chunkSize);
-    const response = await func(chunk);
+    const response = await func(chunk, index);
     responses.push(response);
   }
   return responses.flat();

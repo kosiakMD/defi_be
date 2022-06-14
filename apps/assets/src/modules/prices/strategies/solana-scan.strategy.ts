@@ -4,9 +4,9 @@ import { HttpService } from '@nestjs/axios';
 import { Inject, Logger } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+import { SOL_COIN_ADDRESS, WRAPPED_SOL_ADDRESS } from '@app/common/constant';
 import { ChainIdEnum } from '@app/common/enum';
 import { delay } from '@app/common/helpers/delay';
-import { ChainCoinAddresses } from '@app/common/utils/chains';
 
 import { AssetPrice } from '../types/asset-price.type';
 import { PriceSource } from '../types/price-source.type';
@@ -65,17 +65,19 @@ export class SolanaScanStrategy extends BaseStrategy<Config> {
       }),
     );
 
+    const wrappedSol = assets.find(({ mintAddress }) => mintAddress === WRAPPED_SOL_ADDRESS);
+    if (wrappedSol && wrappedSol.priceUst) {
+      assets.push({
+        ...wrappedSol,
+        mintAddress: SOL_COIN_ADDRESS,
+      });
+    }
+
     return assets.map((token) => ({
-      address: mapAssetAddress(token.mintAddress),
+      address: token.mintAddress,
       chainId: ChainIdEnum.sol,
       sourceId,
       price: token.priceUst,
     }));
   }
-}
-
-function mapAssetAddress(address: string) {
-  return address === 'So11111111111111111111111111111111111111112'
-    ? ChainCoinAddresses[ChainIdEnum.sol]
-    : address;
 }

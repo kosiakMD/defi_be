@@ -4,7 +4,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { CallData } from '@app/common/dto/CallData';
-import { decimalsDivider, toBN } from '@app/common/utils';
+import { chunkRunAsync, decimalsDivider, toBN } from '@app/common/utils';
 import { DynamicContract } from '@app/common/web3provider/contracts/DynamicContract';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
@@ -65,8 +65,9 @@ export class UniswapV2AssetAnalyser
       return all.concat([contract.createCall(getReservesAbi), contract.createCall(totalSupplyAbi)]);
     }, new Array<CallData>());
 
-    // TODO: Should we handle this in batches?
-    const responses = await this.multicall.callArray(calls, chainId);
+    const responses = await chunkRunAsync(calls, 1000, (chunk) =>
+      this.multicall.callArray(chunk, chainId),
+    );
 
     const prices: AssetPriceWithUnderlyingReserves[] = [];
 
@@ -78,7 +79,7 @@ export class UniswapV2AssetAnalyser
 
       const assetReference = { chainId, address: asset.address };
 
-      if (!asset0?.price || !asset1?.price) {
+      if (!asset0.price && !asset1.price) {
         prices.push({
           asset: assetReference,
           price: null,
@@ -87,16 +88,18 @@ export class UniswapV2AssetAnalyser
         continue;
       }
 
-      const asset0Value = toBN(_reserve0)
-        .dividedBy(decimalsDivider(asset0.decimals))
-        .multipliedBy(asset0.price);
+      const oneTokenPoolValue = asset0.price
+        ? toBN(_reserve0) //
+            .dividedBy(decimalsDivider(asset0.decimals))
+            .multipliedBy(asset0.price)
+        : toBN(_reserve1) //
+            .dividedBy(decimalsDivider(asset1.decimals))
+            .multipliedBy(asset1.price);
 
-      const asset1Value = toBN(_reserve1)
-        .dividedBy(decimalsDivider(asset1.decimals))
-        .multipliedBy(asset1.price);
-
-      const totalValue = asset0Value.plus(asset1Value);
-      const price = totalValue.multipliedBy(decimalsDivider(asset.decimals)).dividedBy(totalSupply);
+      const totalPoolValue = oneTokenPoolValue.multipliedBy(2);
+      const price = totalPoolValue
+        .multipliedBy(decimalsDivider(asset.decimals))
+        .dividedBy(totalSupply);
 
       prices.push({
         asset: assetReference,

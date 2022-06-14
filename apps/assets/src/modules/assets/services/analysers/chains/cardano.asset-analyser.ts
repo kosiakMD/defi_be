@@ -9,6 +9,7 @@ import { AssetAnalysisResult } from '../core/asset.analyser';
 import { CardanoBaseAssetAnalyser } from '../core/cardano-base.asset-analyser';
 
 @Injectable()
+// TODO: Rename this?
 export class CardanoAssetAnalyser extends CardanoBaseAssetAnalyser {
   private readonly api: BlockFrostAPI;
   constructor(config: ConfigService) {

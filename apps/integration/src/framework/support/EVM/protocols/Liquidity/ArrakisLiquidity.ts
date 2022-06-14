@@ -164,11 +164,11 @@ export class ArrakisLiquidity
                 {
                   ...pool.supplied[0],
                   amount: normalizeDecimals(token0Balance as any, pool.supplied[0].token.decimals),
-                  value: normalizeDecimals(token0Value as any, pool.supplied[1].token.decimals),
+                  value: normalizeDecimals(token0Value as any, pool.supplied[0].token.decimals),
                 },
                 {
                   ...pool.supplied[1],
-                  amount: normalizeDecimals(token1Balance as any, pool.supplied[0].token.decimals),
+                  amount: normalizeDecimals(token1Balance as any, pool.supplied[1].token.decimals),
                   value: normalizeDecimals(token1Value as any, pool.supplied[1].token.decimals),
                 },
               ],

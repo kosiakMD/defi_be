@@ -10,6 +10,10 @@ import { QueueName } from '../../../common/enum/queue-name.enum';
 
 import { AssetsHistoricalPriceRepository } from '../repositories/asset-historical-price.repository';
 
+/*
+ Cleanups not needed historical prices from database.
+ Should be executed every few hours.
+* */
 @Processor(QueueName.PRICES)
 export class AssetsHistoricalPricesCleanerProcessor {
   constructor(

@@ -15,6 +15,10 @@ import { getPriceStrategyType } from '../strategies';
 import { BaseStrategy } from '../strategies/base.strategy';
 import { PriceSource } from '../types/price-source.type';
 
+/*
+ Refreshes tracked assets prices from for specific source. Triggered by update current prices job.
+ Should be executed on minutes basis.
+* */
 @Processor(QueueName.PRICES)
 export class UpdateCurrentPricesFromSourceProcessor {
   constructor(

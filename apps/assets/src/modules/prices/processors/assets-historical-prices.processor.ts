@@ -9,6 +9,10 @@ import { QueueName } from '../../../common/enum/queue-name.enum';
 
 import { PriceService } from '../price.service';
 
+/*
+ Dumps tracked assets current prices from cache to database for long storage and usage.
+ Should be executed every 15 minutes.
+* */
 @Processor(QueueName.PRICES)
 export class AssetsHistoricalPricesProcessor {
   constructor(

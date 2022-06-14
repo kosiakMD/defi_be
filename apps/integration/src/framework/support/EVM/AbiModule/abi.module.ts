@@ -8,11 +8,10 @@ import { Web3ProviderService } from '@app/common/web3provider';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
 import { AbiService } from './AbiService';
-import { BlockScan } from './BlockScan.service';
-import { BlockScout } from './BlockScout.service';
-import { LocalFile } from './LocalFile.service';
-
-// TODO to add a new Protocol just add it here and at ProtocolService constructor
+import { BlockScan } from './strategies/BlockScan.service';
+import { BlockScout } from './strategies/BlockScout.service';
+import { LocalFile } from './strategies/LocalFile.service';
+import { Tenderly } from './strategies/Tenderly.service';
 
 @Module({
   imports: [
@@ -31,10 +30,16 @@ import { LocalFile } from './LocalFile.service';
     }),
   ],
   providers: [
+    // Main Service
     AbiService,
+
+    // Strategies
     BlockScan,
     BlockScout,
     LocalFile,
+    Tenderly,
+
+    // helpers
     MulticallAggregator,
     Web3ProviderService,
   ],

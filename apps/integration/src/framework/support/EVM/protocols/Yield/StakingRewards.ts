@@ -111,6 +111,7 @@ export class StakingRewards extends MultiContractProtocol<
     // Loop and get all user balances for all pools
     // TODO: Benchmark all calls at once, or userInfo once,
     // then pendingRewards for only the required pools
+    // => try the AsyncTimer decorator
     const calls = new Map();
     addresses.forEach((address) => {
       return pools.forEach((pool) => {

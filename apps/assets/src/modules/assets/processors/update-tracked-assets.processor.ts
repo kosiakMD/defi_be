@@ -1,7 +1,8 @@
 import { Job, Queue } from 'bull';
 
 import { InjectQueue, Process, Processor } from '@nestjs/bull';
-import { Inject, Logger } from '@nestjs/common';
+import { Inject, Logger, OnModuleInit } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { formatError } from '@app/common/utils';
@@ -11,32 +12,28 @@ import { JobPriority } from '../../../common/enum/job-priority.enum';
 import { QueueName } from '../../../common/enum/queue-name.enum';
 
 import { PriceSource } from '../../prices/types/price-source.type';
-import { AssetsCachedRepository } from '../repositories/assets.cached-repository';
-import { CardanoTokenRegistryProvider } from '../services/tracked-assets/cardano-token-registry.provider';
-import { CoingeckoAssetsProvider } from '../services/tracked-assets/coingecko-assets.provider';
-import { CoinmarketcapAssetsProvider } from '../services/tracked-assets/coinmarketcap-assets.provider';
-import { EVMCoinProvider } from '../services/tracked-assets/evm-coin.provider';
+import { trackedAssetsProviders } from '../services/tracked-assets/registry';
 import { TrackedAssetsProvider } from '../services/tracked-assets/tracked-assets.provider';
+import { getAssetProcessJobId } from '../utils/jobs.helper';
 
+/*
+ Refreshes tracked assets based on defined strategies.
+ Should be executed daily.
+* */
 @Processor(QueueName.ASSETS)
-export class UpdateTrackedAssetsProcessor {
+export class UpdateTrackedAssetsProcessor implements OnModuleInit {
   private readonly trackedAssetsProviders = new Array<TrackedAssetsProvider>();
 
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     @InjectQueue(QueueName.ASSETS) private readonly assetsQueue: Queue,
-    private readonly assetsRepository: AssetsCachedRepository,
-    coingekoProvider: CoingeckoAssetsProvider,
-    coinmarketcapProvider: CoinmarketcapAssetsProvider,
-    evmCoinProvider: EVMCoinProvider,
-    cardanoTokenRegistryProvider: CardanoTokenRegistryProvider,
-  ) {
-    this.trackedAssetsProviders.push(
-      coingekoProvider,
-      coinmarketcapProvider,
-      evmCoinProvider,
-      cardanoTokenRegistryProvider,
-    );
+    private readonly moduleRef: ModuleRef,
+  ) {}
+
+  async onModuleInit(): Promise<void> {
+    for (const provider of trackedAssetsProviders) {
+      this.trackedAssetsProviders.push(await this.moduleRef.resolve(provider));
+    }
   }
 
   @Process(AssetJobName.UPDATE_TRACKED_ASSETS)
@@ -66,7 +63,7 @@ export class UpdateTrackedAssetsProcessor {
           },
           {
             // NOTE: This should prevent process asset jobs duplications
-            jobId: `process-asset:${candidate.chainId}-${candidate.address}`,
+            jobId: getAssetProcessJobId(candidate),
             priority: JobPriority.LOW,
           },
         );

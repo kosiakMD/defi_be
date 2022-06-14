@@ -27,7 +27,7 @@ export async function chunkRunAsync<T, R>(
     const response = await func(chunk);
     responses.push(response);
   }
-  return responses;
+  return responses.flat();
 }
 
 export function first(array) {

@@ -218,11 +218,6 @@ export class AaveV2Lending
   }
 
   async initialize() {
-    this.logger.log(
-      `Initializing: ${this.meta.name} ${this.meta.chain}/${this.meta.address}`,
-      `SingleContractProtocol/${this.constructor.name}`,
-    );
-
     this.poolFunctions = await this.abiService.parseFunctionsFromAddress(
       '0x7d2768de32b0b80b7a3454c06bdac94a69ddc7a9',
       ChainIdEnum.eth,
@@ -236,13 +231,6 @@ export class AaveV2Lending
         this.incentivesFunctionsPredicates,
       );
     }
-
-    this.logger.log(
-      `${this.meta.chain}/${this.meta.address} found ${Object.keys(this.poolFunctions).length}/${
-        Object.keys(this.poolFunctionPredicates).length
-      } functions`,
-      `EVMCore/${this.constructor.name}`,
-    );
   }
 
   protected updateBorrowRateField(field: string, rate: string, debtValue: string, borrowRate: any) {

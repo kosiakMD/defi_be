@@ -5,6 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+import { Address, ChainId } from '@app/common';
 import { CacheService } from '@app/common/services/cache.service';
 
 import { SearchParams } from '../../../common/interfaces/search.interfaces';
@@ -16,6 +17,7 @@ import { AssetEntity } from '../entities/asset.entity';
 import { mapAssetsToPlain } from '../utils/cache-mapping';
 import { AssetsRepository } from './assets.repository';
 
+// TODO: This one is not working, reprocessed metadata missing
 @Injectable()
 export class AssetsCachedRepository {
   constructor(
@@ -24,6 +26,10 @@ export class AssetsCachedRepository {
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
     @InjectRepository(AssetsRepository) private readonly assetsRepository: AssetsRepository,
   ) {}
+
+  findTrackedAssetsByChain(chainId: ChainId) {
+    return this.assetsRepository.findTrackedAssetsByChain(chainId);
+  }
 
   findAssetsByParams(searchParams: SearchParams): Promise<AssetEntity[]> {
     return this.assetsRepository.findAssetsByParams(searchParams);
@@ -35,6 +41,17 @@ export class AssetsCachedRepository {
     );
   }
 
+  findTrackedAssetsWithoutIcon(): Promise<AssetEntity[]> {
+    return this.assetsRepository.findTrackedAssetsWithoutIcon();
+  }
+
+  // TODO: Optimize this
+  async findManyByChainIdAndAddresses(chainId: ChainId, addresses: Address[]) {
+    const requests = addresses.map((address) => ({ chainId, address }));
+    return this.findManyByAddressesAndChainIds(requests);
+  }
+
+  // TODO: We should not use DTO here
   async findManyByAddressesAndChainIds(requests: GetAssetRequest[]): Promise<AssetEntity[]> {
     const cachedAssets = await this.getCachedAssetsByAddressesAndChainIds(requests);
 
@@ -44,7 +61,9 @@ export class AssetsCachedRepository {
       assetsToCache.push(
         ...(await this.assetsRepository.findManyByAddressesAndChainIds(notCachedAssetsRequests)),
       );
-      this.saveAssetsToCache(assetsToCache);
+      this.saveAssetsToCache(assetsToCache).catch((error) =>
+        this.logger.error('Failed to save assets to cache', error),
+      );
     }
 
     return cachedAssets.concat(assetsToCache);
@@ -59,6 +78,8 @@ export class AssetsCachedRepository {
   }
 
   private async getAssetFromCacheWithUnderlying(cacheKeys: string[]): Promise<AssetDto[]> {
+    // TODO: This is crashing from time to time
+    // TODO: We cannot do many awaits here, we should get all missing underlying and load with single call
     const cachedAssets = [];
     for (const cachedAsset of (await this.cache.mget<AssetDto>(cacheKeys)).filter(Boolean)) {
       cachedAssets.push(cachedAsset);
@@ -141,6 +162,10 @@ export class AssetsCachedRepository {
       this.logger.error(`Saving asset ${asset.address} to cache failed`, error),
     );
     return saved;
+  }
+
+  findUniV2LikePairsForTrackedAssets(chainId: ChainId, factory: Address, tokens: Address[]) {
+    return this.assetsRepository.findUniV2LikePairsForTrackedAssets(chainId, factory, tokens);
   }
 }
 

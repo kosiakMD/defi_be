@@ -174,11 +174,6 @@ export class AaveV3Lending
   }
 
   async initialize() {
-    this.logger.log(
-      `Initializing: ${this.meta.name} ${this.meta.chain}/${this.meta.address}`,
-      `SingleContractProtocol/${this.constructor.name}`,
-    );
-
     this.functions = await this.abiService.parseFunctionsFromAddress(
       this.meta.address,
       ChainIdEnum.plg, // TODO: update to this.meta.chain once they are verified
@@ -189,13 +184,6 @@ export class AaveV3Lending
       this.meta.incentivesV3,
       ChainIdEnum.plg,
       this.incentivesFunctionsPredicates,
-    );
-
-    this.logger.log(
-      `${this.meta.chain}/${this.meta.address} found ${Object.keys(this.functions).length}/${
-        Object.keys(this.functionPredicates).length
-      } functions`,
-      `SingleContractProtocol/${this.constructor.name}`,
     );
   }
 

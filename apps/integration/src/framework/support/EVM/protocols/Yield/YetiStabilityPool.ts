@@ -161,7 +161,7 @@ export class YetiStabilityPool
     const {
       output: { data: rewardRaw },
     } = data.get(this.pendingRewardsLabel(pool.id, address));
-    // TODO: Object.values(userInfo) and find index instead of assuming .amount ?
+
     const balance = normalizeDecimals(balanceRaw.toString(), pool.supply.token.decimals);
     const reward = normalizeDecimals(rewardRaw.toString(), pool.supply.token.decimals);
 

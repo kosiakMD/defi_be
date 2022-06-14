@@ -22,6 +22,10 @@ import { IconsService } from '../services/icons.service';
 import { AssetMetadata } from '../types/asset-metadata.type';
 import { AssetProcessingRequest } from '../types/asset-processing.request';
 
+/*
+ Main Assets processor that analyses and stores assets.
+ Executed on demand.
+* */
 @Processor(QueueName.ASSETS)
 export class AssetsProcessor {
   constructor(
@@ -48,7 +52,7 @@ export class AssetsProcessor {
       this.logger.debug(
         `Received job ${job.id}. Start getting metadata address: ${address}, chainId: ${chainId}`,
       );
-      const asset = await this.processAsset(job.data);
+      const asset = await this.processAsset(data);
       this.logger.debug(
         `Asset chainId: ${chainId} address: ${address} is processed, id: ${asset?.id || ''}`,
       );

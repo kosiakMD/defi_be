@@ -29,6 +29,7 @@ import { AssetsCachedRepository } from '../repositories/assets.cached-repository
 import { AssetsRepository } from '../repositories/assets.repository';
 import { HistoricalPriceRequest } from '../types/historical-price-request.type';
 import { mapAssetsToPlain } from '../utils/cache-mapping';
+import { getAssetProcessJobId } from '../utils/jobs.helper';
 import { AssetAnalyserService } from './asset-analyser.service';
 
 @Injectable()
@@ -155,7 +156,7 @@ export class AssetsService extends CrudService<AssetsRepository> {
         },
         {
           // NOTE: This should prevent process asset jobs duplications
-          jobId: `process-asset:${request.chainId}-${request.address}`,
+          jobId: getAssetProcessJobId(request),
           priority: JobPriority.HIGH,
         },
       );

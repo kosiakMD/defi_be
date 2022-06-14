@@ -14,9 +14,9 @@ interface ERC20TokenLocal extends ERC20Token {
 
 // events: https://web3js.readthedocs.io/en/v1.2.11/web3-eth-contract.html#events
 @Injectable()
-export class WETH {
-  constructor(private readonly chainProvider: Web3ProviderService) {
-    this.ETHProvider = this.chainProvider.getInstanceByChainId(ChainIdEnum.eth);
+export class WETHContract {
+  constructor(private readonly web3Provider: Web3ProviderService) {
+    this.ETHProvider = this.web3Provider.getInstanceByChainId(ChainIdEnum.eth);
     this.contract = new this.ETHProvider.eth.Contract(this.abi as AbiItem[], this.address);
   }
 

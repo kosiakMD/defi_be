@@ -1,4 +1,4 @@
-import { FakeAssetService } from 'apps/integration/src/modules/microservices/fake.asset.service';
+import { UniswapV2AssetService } from 'apps/integration/src/modules/microservices/uniswap.asset.service';
 import { Cache } from 'cache-manager';
 
 import { HttpService } from '@nestjs/axios';
@@ -18,7 +18,7 @@ export class SpiritLiquidity extends LpFactoryLiquidity {
     @Inject(CACHE_MANAGER) protected cache: Cache,
     protected abiService: AbiService,
     protected multicall: MulticallAggregator,
-    protected assetService: FakeAssetService,
+    protected assetService: UniswapV2AssetService,
     protected httpService: HttpService,
   ) {
     super();

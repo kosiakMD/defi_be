@@ -8,7 +8,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { Address } from '@app/common';
 import { formatAddress, formatError, isZeroAddress } from '@app/common/utils';
 
-import { JobName } from '../../../common/enum/job-name.enum';
+import { AssetJobName } from '../../../common/enum/job-name.enum';
 import { QueueName } from '../../../common/enum/queue-name.enum';
 import { AssetReference } from '../../../common/types';
 
@@ -22,6 +22,10 @@ import { IconsService } from '../services/icons.service';
 import { AssetMetadata } from '../types/asset-metadata.type';
 import { AssetProcessingRequest } from '../types/asset-processing.request';
 
+/*
+ Main Assets processor that analyses and stores assets.
+ Executed on demand.
+* */
 @Processor(QueueName.ASSETS)
 export class AssetsProcessor {
   constructor(
@@ -34,7 +38,7 @@ export class AssetsProcessor {
   ) {}
 
   @Process({
-    name: JobName.ASSET_METADATA,
+    name: AssetJobName.ASSET_METADATA,
     // TODO: Move to config (testing this value)
     concurrency: 2,
   })
@@ -48,7 +52,7 @@ export class AssetsProcessor {
       this.logger.debug(
         `Received job ${job.id}. Start getting metadata address: ${address}, chainId: ${chainId}`,
       );
-      const asset = await this.processAsset(job.data);
+      const asset = await this.processAsset(data);
       this.logger.debug(
         `Asset chainId: ${chainId} address: ${address} is processed, id: ${asset?.id || ''}`,
       );
@@ -65,15 +69,21 @@ export class AssetsProcessor {
       const { address, chainId, isTracked } = assetRequest;
       const savedAsset = await this.assetsRepository.findOneByAddressAndChain(address, chainId);
       if (savedAsset) {
-        this.logger.debug(
-          `Asset id: ${savedAsset.id} chainId: ${chainId} address: ${address} found, updating`,
-        );
         if (!assetRequest.forceUpdate) {
-          //if forceUpdate flag is provided we don't need to update the asset
-          //because we are going to re-process it
+          this.logger.debug(
+            `Asset id: ${savedAsset.id} chainId: ${chainId} address: ${address} found, updating`,
+          );
+          // TODO: Use the same logic as in assets service
+          // request.forceUpdate || !foundAsset || this.isAssetOutdated(foundAsset);
+
+          // if forceUpdate flag is provided we don't need to update the asset
+          // because we are going to re-process it
           await this.updateAsset(savedAsset, assetRequest);
           return savedAsset;
         }
+        this.logger.debug(
+          `Asset id: ${savedAsset.id} chainId: ${chainId} address: ${address} found, but force reload requested`,
+        );
       }
 
       const processingAsset = savedAsset || new AssetEntity();
@@ -186,7 +196,7 @@ export class AssetsProcessor {
       ...request.metadata,
     };
 
-    assetDataToUpdate.rank = this.calculateRank(asset.address, asset.metadata);
+    assetDataToUpdate.rank = this.calculateRank(asset.address, assetDataToUpdate.metadata);
     // TODO: Handle case when asset should have price but not be shown in balances
     if (request.isTracked && !asset.isTracked) {
       assetDataToUpdate.isTracked = request.isTracked;

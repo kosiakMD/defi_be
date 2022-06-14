@@ -3,6 +3,7 @@ import { plainToClass } from 'class-transformer';
 import { AssetDto } from '../dto/asset.dto';
 import { AssetEntity } from '../entities/asset.entity';
 
+// TODO: This should not be in utils
 function getAssetDtosWithUnderlyingReferences(asset: AssetEntity): AssetDto[] {
   const underlyingAssetDtos = [];
   const assetDto = plainToClass(AssetDto, asset);

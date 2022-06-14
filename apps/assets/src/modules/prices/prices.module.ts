@@ -8,6 +8,7 @@ import { CommonModule } from '../../common/common.module';
 import { QueueName } from '../../common/enum/queue-name.enum';
 
 import { AssetsCandidateRepository } from '../assets/repositories/assets-candidate.repository';
+import { AssetsCachedRepository } from '../assets/repositories/assets.cached-repository';
 import { AssetsRepository } from '../assets/repositories/assets.repository';
 import { AssetHistoricalPriceEntity } from './entities/asset-historical-price.entity';
 import { PriceSourceEntity } from './entities/price-source.entity';
@@ -21,6 +22,7 @@ import { CoingeckoStrategy } from './strategies/coingecko.strategy';
 import { DebankStrategy } from './strategies/debank.strategy';
 import { SolanaScanStrategy } from './strategies/solana-scan.strategy';
 import { SundaeSwapStrategy } from './strategies/sundae-swap.strategy';
+import { Univ2NetworkStrategy } from './strategies/univ2-network.strategy';
 import { Univ2SubgraphStrategy } from './strategies/univ2-subgraph.strategy';
 
 const entities = [PriceSourceEntity, AssetHistoricalPriceEntity];
@@ -44,6 +46,7 @@ const priceStrategies = [
   SolanaScanStrategy,
   SundaeSwapStrategy,
   Univ2SubgraphStrategy,
+  Univ2NetworkStrategy,
 ];
 
 @Module({
@@ -52,19 +55,19 @@ const priceStrategies = [
     HttpModule,
     CommonModule,
     BullModule.registerQueue({
-      name: QueueName.ASSETS,
+      name: QueueName.PRICES,
       settings: {
         maxStalledCount: 0,
       },
       defaultJobOptions: {
-        attempts: 3,
+        attempts: 1,
         removeOnComplete: true,
         removeOnFail: true,
       },
     }),
     TypeOrmModule.forFeature([...entities, ...repositories]),
   ],
-  providers: [...processors, ...priceStrategies, PriceService],
+  providers: [...processors, ...priceStrategies, AssetsCachedRepository, PriceService],
   exports: [PriceService],
 })
 export class PricesModule {}

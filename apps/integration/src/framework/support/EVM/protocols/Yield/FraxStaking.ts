@@ -1,4 +1,4 @@
-import { FakeAssetService } from 'apps/integration/src/modules/microservices/fake.asset.service';
+import { UniswapV2AssetService } from 'apps/integration/src/modules/microservices/uniswap.asset.service';
 import BigNumber from 'bignumber.js';
 import { Cache } from 'cache-manager';
 import { plainToClass } from 'class-transformer';
@@ -64,7 +64,7 @@ export class FraxStaking extends EVMCore<
     protected multicall: MulticallAggregator,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected logger: Logger,
     @Inject(CACHE_MANAGER) protected cache: Cache,
-    protected assetService: FakeAssetService,
+    protected assetService: UniswapV2AssetService,
     @Inject(Puppeteer) protected readonly browser: Puppeteer,
     protected uniswapV3: UniswapProtocolV3,
   ) {
@@ -739,7 +739,7 @@ export class FraxStaking extends EVMCore<
 }
 
 // TODO: these abis for the case when we can't obtain contract's abi via abiService(for proxy contracts)
-export const earnedAbi: AbiItem = {
+const earnedAbi: AbiItem = {
   inputs: [{ internalType: 'address', name: 'account', type: 'address' }],
   name: 'earned',
   outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
@@ -747,7 +747,7 @@ export const earnedAbi: AbiItem = {
   type: 'function',
 };
 
-export const yieldRate: AbiItem = {
+const yieldRate: AbiItem = {
   inputs: [],
   name: 'yieldRate',
   outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
@@ -755,7 +755,7 @@ export const yieldRate: AbiItem = {
   type: 'function',
 };
 
-export const pricePerShare: AbiItem = {
+const pricePerShare: AbiItem = {
   inputs: [],
   name: 'pricePerShare',
   outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],

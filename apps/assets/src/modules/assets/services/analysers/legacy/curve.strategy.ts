@@ -11,8 +11,8 @@ import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregat
 import { CURVE_METAPOOL_ARBI_ABI } from '../../../../../common/abis/curve-metapool.abi';
 import { CurveProviderAbi } from '../../../../../common/abis/curver-provider.abi';
 import { CURVE_REGISTRY_ABI } from '../../../../../common/abis/curver-registry.abi';
-import { CURVE_LP } from '../../../../../common/contracts/curve-lp.contract';
-import { CURVE_REGISTRY_CONTRACT } from '../../../../../common/contracts/curve-registry.contract';
+import { CurveLpContract } from '../../../../../common/contracts/curve-lp.contract';
+import { CurveRegistryContract } from '../../../../../common/contracts/curve-registry.contract';
 
 import { AssetEntity } from '../../../entities/asset.entity';
 import { UnderlyingTokenStrategy } from './token-strategy';
@@ -30,7 +30,7 @@ export class CurveStrategy implements UnderlyingTokenStrategy {
       const registries = await this.getCurveRegistries(ChainIdEnum.arbi);
       const registriesResp = await Promise.all(
         registries.map(async (address) => {
-          let contract = new CURVE_REGISTRY_CONTRACT(
+          let contract = new CurveRegistryContract(
             address,
             this.web3Provider.getInstanceByChainId(asset.chainId),
             CURVE_REGISTRY_ABI,
@@ -40,7 +40,7 @@ export class CurveStrategy implements UnderlyingTokenStrategy {
             pool = await contract.getPoolFromLpToken(asset.address);
             if (pool === ZERO_ADDRESS) return;
           } catch (e) {
-            contract = new CURVE_REGISTRY_CONTRACT(
+            contract = new CurveRegistryContract(
               address,
               this.web3Provider.getInstanceByChainId(asset.chainId),
               CURVE_METAPOOL_ARBI_ABI,
@@ -60,7 +60,7 @@ export class CurveStrategy implements UnderlyingTokenStrategy {
       }
     }
 
-    let curveLpPool = new CURVE_LP(
+    let curveLpPool = new CurveLpContract(
       asset.address,
       this.logger,
       this.web3Provider.getInstanceByChainId(asset.chainId),
@@ -74,7 +74,7 @@ export class CurveStrategy implements UnderlyingTokenStrategy {
     }
 
     if (minter && minter !== ZERO_ADDRESS) {
-      curveLpPool = new CURVE_LP(
+      curveLpPool = new CurveLpContract(
         minter,
         this.logger,
         this.web3Provider.getInstanceByChainId(asset.chainId),

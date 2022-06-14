@@ -43,7 +43,7 @@ export class SundaeSwapStrategy extends BaseStrategy {
   }
 
   public async fetchPrices({ sourceId, config }: PriceSource<Config>): Promise<AssetPrice[]> {
-    const { maxItems = 500 } = config;
+    const { maxItems = 1000 } = config;
 
     const {
       data: {

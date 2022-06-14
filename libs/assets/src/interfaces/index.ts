@@ -62,7 +62,7 @@ export interface AssembledAssetInterface {
   decimals: number;
   name?: string;
   symbol?: string;
-  totalSupply?: string;
+  totalSupply?: number;
 
   displayName?: string;
   price?: number;

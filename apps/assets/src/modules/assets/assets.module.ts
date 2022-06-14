@@ -17,11 +17,14 @@ import { AssetsCategoryRepository } from '../assets-category/repositories/assets
 import { AssetHistoricalPriceEntity } from '../prices/entities/asset-historical-price.entity';
 import { PricesModule } from '../prices/prices.module';
 import { AssetsHistoricalPriceRepository } from '../prices/repositories/asset-historical-price.repository';
+import { PriceSourceRepository } from '../prices/repositories/price-source.repository';
 import { AssetCandidateEntity } from './entities/asset-candidate.entity';
 import { AssetInvalidAddressEntity } from './entities/asset-invalid-address.entity';
 import { AssetUnderlyingEntity } from './entities/asset-underlying.entity';
 import { AssetEntity } from './entities/asset.entity';
 import { AssetsProcessor } from './processors/assets.processor';
+import { ReprocessNoIconAssetsProcessor } from './processors/reprocess-no-icon-assets.processor';
+import { Univ2LikeAssetsLPProcessor } from './processors/univ2-like-assets-lp.processor';
 import { UpdateTrackedAssetsProcessor } from './processors/update-tracked-assets.processor';
 import { AssetsCandidateRepository } from './repositories/assets-candidate.repository';
 import { AssetsCachedRepository } from './repositories/assets.cached-repository';
@@ -30,14 +33,14 @@ import { assetAnalysers } from './services/analysers/registry';
 import { AssetAnalyserService } from './services/asset-analyser.service';
 import { AssetsService } from './services/assets.service';
 import { IconsService } from './services/icons.service';
-import { CoingeckoAssetsProvider } from './services/tracked-assets/coingecko-assets.provider';
-import { CoinmarketcapAssetsProvider } from './services/tracked-assets/coinmarketcap-assets.provider';
-import { EVMCoinProvider } from './services/tracked-assets/evm-coin.provider';
+import { GithubService } from './services/tracked-assets/helpers/github.helper';
+import { trackedAssetsProviders } from './services/tracked-assets/registry';
 
-const trackedAssetsProviders = [
-  CoingeckoAssetsProvider,
-  CoinmarketcapAssetsProvider,
-  EVMCoinProvider,
+const processors = [
+  AssetsProcessor,
+  UpdateTrackedAssetsProcessor,
+  ReprocessNoIconAssetsProcessor,
+  Univ2LikeAssetsLPProcessor,
 ];
 
 @Module({
@@ -64,6 +67,8 @@ const trackedAssetsProviders = [
       },
     }),
     TypeOrmModule.forFeature([
+      // TODO: Weird dependency
+      PriceSourceRepository,
       AssetCandidateEntity,
       AssetsCandidateRepository,
       AssetCategoryEntity,
@@ -82,12 +87,12 @@ const trackedAssetsProviders = [
   providers: [
     ...trackedAssetsProviders,
     ...assetAnalysers,
+    ...processors,
     AssetsCachedRepository,
     IconsService,
     AssetsService,
     AssetAnalyserService,
-    AssetsProcessor,
-    UpdateTrackedAssetsProcessor,
+    GithubService,
   ],
   exports: [],
 })

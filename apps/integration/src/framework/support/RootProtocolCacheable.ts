@@ -31,7 +31,14 @@ import {
 
 /**
  * Common Protocol Base. This is to be used cross-chain
- * so don't implement EVM specific solutions here, better to do higher up
+ * so don't implement EVM specific solutions here, better to do higher up.
+ *
+ * For a high level overview see:
+ * https://defiyield.atlassian.net/wiki/spaces/PD/pages/618594305/Integrations+Service+Diagram
+ *
+ * 1. Get longer term cacheable data => this can be viewed and tested using the /{protocolName}/sync endpoint
+ * 2. (if needed) update any of the getPoolData logic => this can be viewed and tested using the /{protocolName}/opportunities endpoint
+ * 3. get user balances => this can be viewed and tested using the /{protocolName}/ endpoint
  */
 export abstract class RootProtocolCacheable<
   TMinimal extends IWalletMinimal,
@@ -43,31 +50,11 @@ export abstract class RootProtocolCacheable<
   protected abstract logger: Logger;
   protected abstract cache: Cache;
   protected abstract assetService: AssetServiceInterface;
-
-  // 1. get cacheable data
-  // 2. cache above data
-  /** for pools */
-  // 3. retrieve cached data and fill in 'real-time' data (prices, reserves) * most of this will come directly from asset service
-  // 4. return formatted data
-  /** For users */
-  // 5. retrieve above pool data
-  // 6. get user balances for each pool
-  // 7. return format data
-
-  /****************************************************
-   * Cacheable data
-   *
-   * This is long term cacheable data that will not
-   * change often. Pool list, token addresses
-   *
-   ****************************************************/
-
   /**
-   * Returns the list of all available pools
+   * Returns the list of all available pools.
    * This is long term cacheable data, so for example,
    * the token address, but not the token price
    */
-  // TODO: Rename OpportunityList
   abstract getCacheableOpportunityData(): Promise<TMinimal[]>; // get all raw data that can be cached (pools with token address, but not token details/price)
 
   private get poolListCacheKey() {
@@ -142,7 +129,6 @@ export abstract class RootProtocolCacheable<
    * @param tokens
    * @returns
    */
-  // TODO: rename fetchOpportunityData
   protected updateRealTimeData?(
     opportunities: TMinimal[],
     tokens?: Map<Address, any>,
@@ -200,7 +186,7 @@ export abstract class RootProtocolCacheable<
     if (cachedData) {
       return cachedData;
     }
-    // return this.getOrSet(cacheTime, cacheKey, async () => {
+
     // get pool list from longer term cache
     const list = await this.cache.get<string[]>(this.poolListCacheKey);
 
@@ -210,40 +196,44 @@ export abstract class RootProtocolCacheable<
       // (Only would likely be used for new deploys, or failed background job)
       this.logger.warn(`Failed to get pools list from cache. Fetching On Demand`, this.protocolId);
       const { data, errors } = await this.hydrateOpportunityData(await this.cachePoolData());
-      if (!errors.length) {
-        return this.setCache(cacheTime, cacheKey, { data, errors });
-      } else {
-        return { data, errors };
-      }
+      return this.cacheIfErrorFree(cacheTime, cacheKey, { data, errors });
     }
 
     // fetch all cached pools from redis
-    // TODO: try/catch
     const pools = (
       await this.cache.store.mget(...list.map(this.singlePoolCacheKey.bind(this)), {})
     ).filter((pool) => pool);
 
+    // Should only occur if pools list is cached, however the pools themselves are not cached
+    // this could be an error due to ttl configuration between the pools. Falls back
+    // to just refetching all the pools for next time
     if (list.length !== pools.length) {
-      // Should only occur if pools list is cached, however the pools themselves are not cached
-      // this could be an error due to ttl configuration between the pools. Falls back
-      // to just refetching all the pools for next time
       this.logger.warn('Pool list mismatch. Fetching On Demand', this.protocolId);
 
       const { data, errors } = await this.hydrateOpportunityData(await this.cachePoolData());
-      if (!errors.length) {
-        return this.setCache(cacheTime, cacheKey, { data, errors });
-      } else {
-        return { data, errors };
-      }
+      return this.cacheIfErrorFree(cacheTime, cacheKey, { data, errors });
     }
 
     // Hydrate Cached Data
     const { data, errors } = await this.hydrateOpportunityData(pools);
-    if (!errors.length) {
-      return this.setCache(cacheTime, cacheKey, { data, errors });
-    } else {
-      return { data, errors };
-    }
+    return this.cacheIfErrorFree(cacheTime, cacheKey, { data, errors });
+  }
+
+  /**
+   * Cache values if no errors have occurred.
+   * return the full response regardless
+   *
+   * @param cacheTime ttl
+   * @param cacheKey redis key
+   * @param protocolResponse
+   * @returns protocolResponse
+   */
+  private async cacheIfErrorFree(
+    cacheTime: number,
+    cacheKey: string,
+    { data, errors }: IPoolDataProtocolResponse<TOpportunity>,
+  ): Promise<IPoolDataProtocolResponse<TOpportunity>> {
+    return errors.length ? { data, errors } : this.setCache(cacheTime, cacheKey, { data, errors });
   }
 
   /**
@@ -396,17 +386,14 @@ export abstract class RootProtocolCacheable<
    * @param tokens map of all tokens (and token details) keyed by token address
    */
   protected formatOpportunity(opportunity: TMinimal, tokens: TokenMap): void | TOpportunity {
-    // const base: Partial<TOpportunity> = { // TODO: 'token' isn't yet on TOpportunity
-    const base: any = {
+    const base: Partial<IWalletOpportunity> = {
       feature: opportunity.feature,
       id: opportunity.id,
       chain: opportunity.chain,
       links: this.generateLinks(opportunity),
       meta: opportunity.meta,
+      interactive: opportunity.interactive,
     };
-    if (opportunity.interactive) {
-      base.interactive = opportunity.interactive;
-    }
 
     const receipt = this.formatOpportunityReceiptToken(
       opportunity,
@@ -475,7 +462,7 @@ export abstract class RootProtocolCacheable<
       base.borrow = this.formatOpportunityBorrowedToken(opportunity.borrow, token);
     }
 
-    return base;
+    return base as TOpportunity;
   }
 
   protected getOpportunityTVL(opportunity: TMinimal, tokens: TokenMap): number {
@@ -668,7 +655,10 @@ export abstract class RootProtocolCacheable<
     return {
       apr,
       apy: {
-        // TODO: this does not take into account fees on each harvest
+        /**
+         * @notice this does not take into account fees on each harvest
+         * and uses continual compounding to estimate apy
+         */
         day: aprToApy(apr.day, 1) || 0,
         week: aprToApy(apr.week, 7) || 0,
         month: aprToApy(apr.month, 365 / 12) || 0,

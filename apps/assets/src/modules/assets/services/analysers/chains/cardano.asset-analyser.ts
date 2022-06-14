@@ -3,28 +3,24 @@ import { BlockFrostAPI } from '@blockfrost/blockfrost-js';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
-import { ChainIdEnum } from '@app/common';
-
 import { AssetReference } from '../../../../../common/types';
 
-import { AssetAnalyser, AssetAnalysisResult } from '../core/asset.analyser';
+import { AssetAnalysisResult } from '../core/asset.analyser';
+import { CardanoBaseAssetAnalyser } from '../core/cardano-base.asset-analyser';
 
 @Injectable()
-export class CardanoAssetAnalyser implements AssetAnalyser {
+export class CardanoAssetAnalyser extends CardanoBaseAssetAnalyser {
   private readonly api: BlockFrostAPI;
   constructor(config: ConfigService) {
+    super();
     this.api = new BlockFrostAPI({
       projectId: config.get<string>('CARDANO_BLOCKFROST_API_KEY'),
     });
   }
 
-  canAnalyseAsset({ chainId }: AssetReference): boolean {
-    return chainId === ChainIdEnum.cardano;
-  }
-
   async analyseAsset({ address }: AssetReference): Promise<AssetAnalysisResult> {
-    const asset = await this.api.assetsById(address);
-    if (!asset?.metadata) {
+    const asset = await this.api.assetsById(address.replace('.', ''));
+    if (!asset?.metadata || !asset?.metadata.ticker || !asset?.metadata.decimals) {
       return null;
     }
 

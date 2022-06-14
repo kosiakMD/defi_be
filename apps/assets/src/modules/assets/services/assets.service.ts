@@ -9,7 +9,8 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { CrudService } from '@app/common/services/crud.service';
 import { isSomeAddress } from '@app/common/utils';
 
-import { JobName } from '../../../common/enum/job-name.enum';
+import { AssetJobName } from '../../../common/enum/job-name.enum';
+import { JobPriority } from '../../../common/enum/job-priority.enum';
 import { QueueName } from '../../../common/enum/queue-name.enum';
 import { SearchResultType } from '../../../common/enum/search-result-type.enum';
 import { SearchParams } from '../../../common/interfaces/search.interfaces';
@@ -28,6 +29,7 @@ import { AssetsCachedRepository } from '../repositories/assets.cached-repository
 import { AssetsRepository } from '../repositories/assets.repository';
 import { HistoricalPriceRequest } from '../types/historical-price-request.type';
 import { mapAssetsToPlain } from '../utils/cache-mapping';
+import { getAssetProcessJobId } from '../utils/jobs.helper';
 import { AssetAnalyserService } from './asset-analyser.service';
 
 @Injectable()
@@ -69,9 +71,19 @@ export class AssetsService extends CrudService<AssetsRepository> {
       dtos,
     );
     // TODO: improve this dependencies
-    const dtosToUpdatePricesInCache = assetsUpdatedWithPrices //
-      .filter(({ underlying }) => underlying?.some(({ reserve }) => reserve));
-    this.priceService.saveSpecificAssetPrices(dtosToUpdatePricesInCache);
+    const dtosToUpdatePricesInCache = assetsUpdatedWithPrices.filter(({ underlying }) =>
+      underlying?.some(({ reserve }) => reserve),
+    );
+
+    this.priceService
+      .saveSpecificAssetPrices(dtosToUpdatePricesInCache)
+      .catch((error) =>
+        this.logger.error(
+          `Saving ${dtosToUpdatePricesInCache.length} special asset prices failed`,
+          error,
+        ),
+      );
+
     return assetsUpdatedWithPrices;
   }
 
@@ -103,7 +115,9 @@ export class AssetsService extends CrudService<AssetsRepository> {
     const assets = await this.assetsRepository.findManyByAddressesAndChainIds(requests);
     const assetsToProcess = this.excludeFoundAssets(requests, assets);
     if (assetsToProcess.length) {
-      this.processAssets(assetsToProcess);
+      this.processAssets(assetsToProcess).catch((error) =>
+        this.logger.error(`Sending ${assetsToProcess.length} assets for processing failed`, error),
+      );
     }
 
     return assets;
@@ -133,11 +147,19 @@ export class AssetsService extends CrudService<AssetsRepository> {
   private async processAssets(requests: GetAssetRequest[]): Promise<void> {
     requests.map((request) => {
       this.logger.log(`Send asset for processing: ${JSON.stringify(request)}`);
-      return this.assetsQueue.add(JobName.ASSET_METADATA, {
-        address: request.address,
-        chainId: request.chainId,
-        forceUpdate: request.forceUpdate,
-      });
+      return this.assetsQueue.add(
+        AssetJobName.ASSET_METADATA,
+        {
+          address: request.address,
+          chainId: request.chainId,
+          forceUpdate: request.forceUpdate,
+        },
+        {
+          // NOTE: This should prevent process asset jobs duplications
+          jobId: getAssetProcessJobId(request),
+          priority: JobPriority.HIGH,
+        },
+      );
     });
   }
 

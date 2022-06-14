@@ -132,7 +132,6 @@ export class UniswapV2Liquidity
     const wallets = new Map();
     const poolsMap = new Map(pools.map((p) => [p.id, p]));
     try {
-      // TODO: pass poolsMap.keys to only check balances for these pools?
       const balances = await this.getSubgraphAccountBalances(addresses);
       for (const balance of balances) {
         if (!poolsMap.has(balance.pair)) {

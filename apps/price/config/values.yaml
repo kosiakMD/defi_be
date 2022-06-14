@@ -25,14 +25,6 @@ configMaps:
     URL_LIMIT: 50mb
     AWS_XRAY_DAEMON_ADDRESS: xray-service.default:2000
 
-resources:
-  requests:
-    cpu: 50m
-    memory: 100Mi
-  limits:
-    cpu: 100m
-    memory: 100Mi
-
 secrets:
   - database
   - redis

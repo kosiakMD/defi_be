@@ -57,11 +57,6 @@ export abstract class SingleContractProtocol<
    * and parses it for the requested functions
    */
   async initialize() {
-    this.logger.log(
-      `Initializing: ${this.meta.name} ${this.meta.chain}/${this.meta.address}`,
-      `SingleContractProtocol/${this.constructor.name}`,
-    );
-
     this.functions = await this.abiService.parseFunctionsFromAddress(
       this.meta.address,
       this.meta.chain,
@@ -69,29 +64,13 @@ export abstract class SingleContractProtocol<
     );
 
     if (this.interactiveFunctionPredicates) {
-      try {
-        this.interactiveFunctions = await this.abiService.parseFunctionsFromAddress(
-          this.meta.address,
-          this.meta.chain,
-          this.interactiveFunctionPredicates,
-          ['nonpayable'],
-        );
-      } catch (err) {
-        this.logger.error(
-          `${this.meta.chain}/${this.meta.address} found ${
-            Object.keys(this.interactiveFunctions).length
-          }/${Object.keys(this.interactiveFunctionPredicates).length} interactive functions`,
-          `SingleContractProtocol/${this.constructor.name}`,
-        );
-      }
+      this.interactiveFunctions = await this.abiService.parseFunctionsFromAddress(
+        this.meta.address,
+        this.meta.chain,
+        this.interactiveFunctionPredicates,
+        ['nonpayable'],
+      );
     }
-
-    this.logger.log(
-      `${this.meta.chain}/${this.meta.address} found ${Object.keys(this.functions).length}/${
-        Object.keys(this.functionPredicates).length
-      } functions`,
-      `SingleContractProtocol/${this.constructor.name}`,
-    );
   }
 
   /***********************

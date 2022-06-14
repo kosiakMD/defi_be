@@ -4,7 +4,7 @@ import { CardanoRegistryAssetAnalyser } from './chains/cardano-registry.asset-an
 import { CardanoAssetAnalyser } from './chains/cardano.asset-analyser';
 import { CosmosAssetAnalyser } from './chains/cosmos.asset-analyser';
 import { EVMMetaDataStrategy } from './chains/evm.asset-analyser';
-import { SolanaAssetAnalyser } from './chains/solana.asset-analyser';
+import { SolanaLabsAssetAnalyzer } from './chains/solana-labs.asset-analyser';
 import { TerraAssetAnalyser } from './chains/terra.asset-analyser';
 import { TrustWalletAssetAnalyser } from './icons/trust-wallet.asset-analyser';
 import { EvmCoinAssetAnalyser } from './others/evm-coin.asset-analyser';
@@ -19,7 +19,6 @@ export const assetAnalysers = [
   CardanoRegistryAssetAnalyser,
   CosmosAssetAnalyser,
   EVMMetaDataStrategy,
-  SolanaAssetAnalyser,
   TerraAssetAnalyser,
 
   EvmCoinAssetAnalyser,
@@ -28,4 +27,5 @@ export const assetAnalysers = [
 
   SaberAssetAnalyser,
   UniswapV2AssetAnalyser,
+  SolanaLabsAssetAnalyzer,
 ];

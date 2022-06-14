@@ -33,6 +33,7 @@ export { MakerDAO } from './MakerDAO';
 export { MarsEcosystem } from './MarsEcosystem';
 export { Mdex } from './Mdex';
 export { Mojitoswap } from './Mojitoswap';
+export { Moola } from './Moola';
 export { MuesliSwap } from './MuesliSwap';
 export { Nereus } from './Nereus';
 export { Netswap } from './Netswap';

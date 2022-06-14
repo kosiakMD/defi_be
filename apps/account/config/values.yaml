@@ -49,7 +49,7 @@ configMaps:
     SECRET_URL: https://secret-3--rpc--archive.datahub.figment.io/apikey/91e126bee34f826357715bff8eac3441/
     NEAR_URL: https://mainnet.aurora.dev/
   endpoints:
-    PRICE_SERVICE_HOST: http://price-service
+    PRICE_SERVICE_HOST: http://price
     PRICE_SERVICE_PORT: 80
     PRICES_PATH: v1/prices
     PRICE_SERVICE_MAIN_COIN_ADDRESS: 0x0000000000000000000000000000000000000000

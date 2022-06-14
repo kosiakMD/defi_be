@@ -11,6 +11,7 @@ import {
   HEADER_SESSION_ID,
   HEADER_TIMESTAMP_ENTRY,
 } from '@app/common/constant';
+import { ctx } from '@app/common/helpers/context';
 
 export interface Response<T> extends EResponse<T, any> {
   data: T;
@@ -31,6 +32,12 @@ export class HeadersEntryInterceptor<T = any, R = any> implements NestIntercepto
       const reqId = request.header(HEADER_REQUEST_ID);
       const sessionId = request.header(HEADER_SESSION_ID);
       const timestampEntry = request.header(HEADER_TIMESTAMP_ENTRY);
+      // Add to Execute Context
+      const exContext = ctx();
+      if (exContext) {
+        exContext.reqId = reqId;
+        exContext.sessionId = sessionId;
+      }
       // Add headers to response
       const response: Response<any> = httpContext.getResponse<Response<any>>();
       response.header(HEADER_REQUEST_ID, reqId);

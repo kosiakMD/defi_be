@@ -51,3 +51,8 @@ export const mapToObject = <T extends Map<string, any>>(mapInstance: T): Record<
 
 export const objectToMap = (objectInstance: Record<string, any>): Map<string, any> =>
   new Map(Object.entries(objectInstance));
+
+export const sortKeys = <T extends { [k: string]: unknown }>(obj: T): T => {
+  const a = Object.entries(obj);
+  return Object.fromEntries(a) as T;
+};

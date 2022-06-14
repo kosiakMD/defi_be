@@ -1,0 +1,36 @@
+import { map } from 'rxjs/operators';
+
+import { HttpService, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+
+import { ResponseData } from './interfaces/transfers.block.interface';
+
+@Injectable()
+export class TransfersBlocksSubgraph {
+  protected subgraphUrl: string;
+
+  constructor(
+    protected readonly configService: ConfigService,
+    protected readonly httpService: HttpService,
+  ) {
+    this.subgraphUrl = this.configService.get<string>('BLOCKS_SUBGRAPH_URL');
+  }
+
+  async getBlocksTimestamps(blockNumbers: number[]): Promise<ResponseData> {
+    return this.httpService
+      .post<ResponseData>(this.subgraphUrl, {
+        operationName: 'blocks',
+        variables: {
+          blockNumbers: blockNumbers,
+        },
+        query: `query blocks($blockNumbers: [Int]) {
+          blocks (where:{number_in:$blockNumbers}) {
+              number
+              timestamp
+          }
+        }`,
+      })
+      .pipe(map((response) => response.data))
+      .toPromise();
+  }
+}

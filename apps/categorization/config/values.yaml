@@ -1,0 +1,37 @@
+ingress:
+  enabled: true
+  host: devcategorization.defiyield.app
+
+configMaps:
+  logs:
+    LOG_AWS_ENABLED: true
+    LOG_LEVEL: debug
+    NODE_ENV: development
+  config:
+    SCREENSHOTS_ENABLED: false
+    DIR_SAVE_SCREENSHOTS: none
+    TENDERLY_API_URL: https://api.tenderly.co/api
+    TEST_RUN: false
+    DB_LOGGING: false
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 2Gi
+  limits:
+    cpu: 1
+    memory: 4Gi
+
+secrets:
+- redis-stage
+- databasecategorization
+- logs
+- etherscan
+- bscscan
+
+initContainer:
+  enabled: true
+  name: ctmigration
+  image: ""
+  spec:
+    command: [ "node", "./node_modules/typeorm/cli.js", "migration:run", "-f", "dist/apps/categorization/src/ormconfig.js" ]

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 . "$(dirname "$0Fixed Branch")/../.github/scripts/check_branch_naming.sh"
 . "$(dirname "$0")/_/husky.sh"
 

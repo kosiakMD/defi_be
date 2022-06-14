@@ -16,6 +16,7 @@ import {
   CoingeckoPlatformEnum,
 } from '@app/common/enum';
 import { ChainId } from '@app/common/types';
+import { isZeroAddress } from '@app/common/utils/addresses';
 
 export const AbsoluteChainIds: Record<ChainIdEnum, AbsoluteChainIdEnum> = {
   [ChainIdEnum.arbi]: AbsoluteChainIdEnum.arbi,
@@ -47,6 +48,7 @@ export const AbsoluteChainIds: Record<ChainIdEnum, AbsoluteChainIdEnum> = {
   [ChainIdEnum.osmosis]: AbsoluteChainIdEnum.osmosis,
   [ChainIdEnum.secret]: AbsoluteChainIdEnum.secret,
   [ChainIdEnum.iotex]: AbsoluteChainIdEnum.iotex,
+  [ChainIdEnum.milkomeda]: AbsoluteChainIdEnum.milkomeda,
 };
 
 export const getAbsoluteChainId = (chainId: ChainId): AbsoluteChainIdEnum =>
@@ -91,6 +93,7 @@ export const InternalChainIds: Record<AbsoluteChainIdEnum, ChainIdEnum> = {
   [AbsoluteChainIdEnum.osmosis]: ChainIdEnum.osmosis,
   [AbsoluteChainIdEnum.secret]: ChainIdEnum.secret,
   [AbsoluteChainIdEnum.iotex]: ChainIdEnum.iotex,
+  [AbsoluteChainIdEnum.milkomeda]: ChainIdEnum.milkomeda,
 };
 
 export const getInternalChainId = (chainId: ChainId): ChainId => InternalChainIds[chainId];
@@ -125,6 +128,7 @@ export const InternalChainIdByAbbr: Record<ChainAbbrEnum, ChainIdEnum> = {
   [ChainAbbrEnum.osmosis]: ChainIdEnum.osmosis,
   [ChainAbbrEnum.secret]: ChainIdEnum.secret,
   [ChainAbbrEnum.iotex]: ChainIdEnum.iotex,
+  [ChainAbbrEnum.milkomeda]: ChainIdEnum.milkomeda,
 };
 
 export const CoingeckoChainIds: Record<ChainIdEnum, CoingeckoPlatformEnum> = {
@@ -157,6 +161,7 @@ export const CoingeckoChainIds: Record<ChainIdEnum, CoingeckoPlatformEnum> = {
   [ChainIdEnum.osmosis]: CoingeckoPlatformEnum.osmosis,
   [ChainIdEnum.secret]: CoingeckoPlatformEnum.secret,
   [ChainIdEnum.iotex]: CoingeckoPlatformEnum.iotex,
+  [ChainIdEnum.milkomeda]: CoingeckoPlatformEnum.milkomeda,
 };
 
 export const getCoingeckoPlatformId = (chainId: ChainId): CoingeckoPlatformEnum =>
@@ -192,46 +197,8 @@ export const ChainCoinAddresses: Record<ChainIdEnum, string> = {
   [ChainIdEnum.osmosis]: COSMOS_COIN_ADDRESS,
   [ChainIdEnum.secret]: COSMOS_COIN_ADDRESS,
   [ChainIdEnum.iotex]: ZERO_ADDRESS,
+  [ChainIdEnum.milkomeda]: ZERO_ADDRESS,
 };
-
-export const getCoinAddress = (chainId: ChainId): CoingeckoPlatformEnum =>
-  CoingeckoChainIds[chainId];
-
-export const CoingeckoCoinIds: Record<ChainIdEnum, string> = {
-  [ChainIdEnum.eth]: '',
-  [ChainIdEnum.bnb]: '',
-  [ChainIdEnum.plg]: '',
-  [ChainIdEnum.ftm]: '',
-  [ChainIdEnum.arbi]: '',
-  [ChainIdEnum.avax]: '',
-  [ChainIdEnum.gnosis]: '',
-  [ChainIdEnum.celo]: '',
-  [ChainIdEnum.mriver]: '',
-  [ChainIdEnum.harm]: '',
-  [ChainIdEnum.heco]: '',
-  [ChainIdEnum.sol]: 'solana',
-  [ChainIdEnum.okex]: '',
-  [ChainIdEnum.cro]: '',
-  [ChainIdEnum.boba]: '',
-  [ChainIdEnum.kcc]: '',
-  [ChainIdEnum.opt]: '',
-  [ChainIdEnum.near]: '',
-  [ChainIdEnum.terra]: '',
-  [ChainIdEnum.klay]: 'klay-token',
-  [ChainIdEnum.fuse]: '',
-  [ChainIdEnum.cardano]: '',
-  [ChainIdEnum.metis]: '',
-  [ChainIdEnum.ronin]: 'ronin',
-  [ChainIdEnum.cosmos]: '',
-  [ChainIdEnum.kava]: '',
-  [ChainIdEnum.osmosis]: '',
-  [ChainIdEnum.secret]: '',
-  [ChainIdEnum.iotex]: '',
-};
-
-export const getCoingeckoCoinId = (chainId: ChainId): string => CoingeckoCoinIds[chainId];
-
-export const getChainList = (): ChainAbbrEnum[] => Object.values(ChainAbbrEnum);
 
 export const getChainByAbbr = (symbol: ChainAbbrEnum | string): ChainDto => {
   return plainToClass(ChainDto, {
@@ -243,4 +210,74 @@ export const getChainByAbbr = (symbol: ChainAbbrEnum | string): ChainDto => {
 
 export const getChainById = (chainId: ChainIdEnum): ChainDto => {
   return getChainByAbbr(ChainIdEnum[chainId]);
+};
+
+export const isEVMChain = (chainId: ChainIdEnum): boolean => {
+  return isZeroAddress(ChainCoinAddresses[chainId]);
+};
+
+export const CoinSymbols: Record<ChainIdEnum, string> = {
+  [ChainIdEnum.eth]: 'ETH',
+  [ChainIdEnum.bnb]: 'BNB',
+  [ChainIdEnum.plg]: 'MATIC',
+  [ChainIdEnum.ftm]: 'FTM',
+  [ChainIdEnum.arbi]: 'ETH',
+  [ChainIdEnum.avax]: 'AVAX',
+  [ChainIdEnum.gnosis]: 'xDai',
+  [ChainIdEnum.celo]: 'CELO',
+  [ChainIdEnum.mriver]: 'MOVR',
+  [ChainIdEnum.harm]: 'ONE',
+  [ChainIdEnum.heco]: 'HT',
+  [ChainIdEnum.sol]: 'SOL',
+  [ChainIdEnum.okex]: 'OKT',
+  [ChainIdEnum.cro]: 'CRO',
+  [ChainIdEnum.boba]: 'ETH',
+  [ChainIdEnum.kcc]: 'KCS',
+  [ChainIdEnum.opt]: 'ETH',
+  [ChainIdEnum.near]: 'ETH',
+  [ChainIdEnum.terra]: 'LUNA',
+  [ChainIdEnum.klay]: 'KLAY',
+  [ChainIdEnum.fuse]: 'FUSE',
+  [ChainIdEnum.cardano]: 'ADA',
+  [ChainIdEnum.metis]: 'METIS',
+  [ChainIdEnum.ronin]: 'RON',
+  [ChainIdEnum.cosmos]: 'ATOM',
+  [ChainIdEnum.kava]: 'KAVA',
+  [ChainIdEnum.osmosis]: 'OSMO',
+  [ChainIdEnum.secret]: 'SCRT',
+  [ChainIdEnum.iotex]: 'IOTX',
+  [ChainIdEnum.milkomeda]: 'ADA',
+};
+
+export const CoinNames: Record<ChainIdEnum, string> = {
+  [ChainIdEnum.eth]: 'Ethereum',
+  [ChainIdEnum.bnb]: 'Binance Coin',
+  [ChainIdEnum.plg]: 'Polygon',
+  [ChainIdEnum.ftm]: 'Fantom',
+  [ChainIdEnum.arbi]: 'Ethereum',
+  [ChainIdEnum.avax]: 'Avalanche',
+  [ChainIdEnum.gnosis]: 'xDai',
+  [ChainIdEnum.celo]: 'Celo',
+  [ChainIdEnum.mriver]: 'Moonriver',
+  [ChainIdEnum.harm]: 'Harmony',
+  [ChainIdEnum.heco]: 'Huobi Token',
+  [ChainIdEnum.sol]: 'Solana',
+  [ChainIdEnum.okex]: 'OEC Token',
+  [ChainIdEnum.cro]: 'Crypto.com Coin',
+  [ChainIdEnum.boba]: 'Ethereum',
+  [ChainIdEnum.kcc]: 'KuCoin Token',
+  [ChainIdEnum.opt]: 'Ethereum',
+  [ChainIdEnum.near]: 'Ethereum',
+  [ChainIdEnum.terra]: 'Terra',
+  [ChainIdEnum.klay]: 'Klaytn',
+  [ChainIdEnum.fuse]: 'Fuse',
+  [ChainIdEnum.cardano]: 'Cardano',
+  [ChainIdEnum.metis]: 'MetisDAO',
+  [ChainIdEnum.ronin]: 'Ronin',
+  [ChainIdEnum.cosmos]: 'Cosmos',
+  [ChainIdEnum.kava]: 'Kava',
+  [ChainIdEnum.osmosis]: 'Osmosis',
+  [ChainIdEnum.secret]: 'Secret',
+  [ChainIdEnum.iotex]: 'IoTeX',
+  [ChainIdEnum.milkomeda]: 'Cardano',
 };

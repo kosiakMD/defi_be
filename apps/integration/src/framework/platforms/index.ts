@@ -54,3 +54,4 @@ export { YetiFinance } from './YetiFinance';
 export { Zenlink } from './Zenlink';
 export { AutoFarm } from './AutoFarm';
 export { BeefyFinance } from './BeefyFinance';
+export { IronFinance } from './IronFinance';

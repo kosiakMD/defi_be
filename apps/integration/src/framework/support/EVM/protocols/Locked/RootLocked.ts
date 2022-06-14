@@ -10,7 +10,7 @@ import { CallData } from '@app/common/dto/CallData';
 import { normalizeDecimals } from '@app/common/utils';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
-import { INamedFunctionPredicates, IRootProtocol } from '../../../interfaces';
+import { INamedFunctionPredicates, IProtocolMeta, IRootProtocol } from '../../../interfaces';
 import {
   IStakingFeatureOpportunity,
   IStakingFeatureUserEntry,
@@ -22,17 +22,25 @@ import { ISupplyTokenMinimal } from '../../../interfaces/tokens.supplied.interfa
 import { AbiService } from '../../AbiModule/AbiService';
 import { SingleContractProtocol } from '../../SingleContractProtocol';
 
-export type IStakingFeatureMinimalSpirit = BaseWithTokens<
+export type IStakingFeatureMinimal = BaseWithTokens<
   ISupplyTokenMinimal[],
   IRewardTokenMinimal[],
   void
 >;
 
-export class SpiritLocked
+export interface ILockedMeta extends IProtocolMeta {
+  address: Address;
+  context: {
+    rewardToken: string;
+  };
+}
+
+export class RootLocked
   extends SingleContractProtocol<
-    IStakingFeatureMinimalSpirit,
+    IStakingFeatureMinimal,
     IStakingFeatureOpportunity,
-    IStakingFeatureUserEntry
+    IStakingFeatureUserEntry,
+    ILockedMeta
   >
   implements IRootProtocol
 {
@@ -47,9 +55,9 @@ export class SpiritLocked
   }
 
   protected functionPredicates: INamedFunctionPredicates = {
-    locked: () => (item) => item.name === 'locked',
-    token: () => (item) => item.name === 'token',
-    supply: () => (item) => item.name === 'supply',
+    lockedInfo: () => (item) => ['locked', 'getPersonalStakes'].includes(item.name),
+    tokenLocked: () => (item) => ['token', 'lockedToken'].includes(item.name),
+    totalSupply: () => (item) => ['totalSupply', 'supply', 'totalStaked'].includes(item.name),
   };
 
   protected async fetchUserData(
@@ -60,21 +68,21 @@ export class SpiritLocked
     const calls = new Map([
       [
         `${address} ${pools[0].supplied[0].token.address}`,
-        contract.createCall(this.functions.locked, address),
+        contract.createCall(this.functions.lockedInfo, address),
       ],
     ]);
     const userBalances = await this.multicall.handleInBatches(calls, this.meta.chain);
 
     return pools
       .map((p) => {
-        return this.formatUserData(address, p, userBalances);
+        return this.formatUserData(p, address, userBalances);
       })
       .filter((ub) => !!ub);
   }
 
   protected formatUserData(
-    address: Address,
     pool: IStakingFeatureOpportunity,
+    address: Address,
     data: Map<string, CallData>,
   ): IStakingFeatureUserEntry {
     const usersPool = cloneDeep(pool);
@@ -117,7 +125,7 @@ export class SpiritLocked
 
   protected async fetchOpportunityData(context: {
     [key: string]: any;
-  }): Promise<IStakingFeatureMinimalSpirit[]> {
+  }): Promise<IStakingFeatureMinimal[]> {
     return [
       {
         id: this.meta.address,
@@ -126,15 +134,15 @@ export class SpiritLocked
         supplied: [
           {
             token: {
-              address: context.token.toLowerCase(),
+              address: context.tokenLocked.toLowerCase(),
             },
-            totalSupplied: context.supply.toString(),
+            totalSupplied: context.totalSupply.toString(),
           },
         ],
         rewarded: [
           {
             token: {
-              address: this.meta.address.toLowerCase(),
+              address: this.meta.context?.rewardToken || this.meta.address.toLowerCase(),
             },
           },
         ],

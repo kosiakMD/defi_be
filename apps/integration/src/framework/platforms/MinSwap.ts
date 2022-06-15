@@ -6,6 +6,10 @@ import { ChainIdEnum, Logger } from '@app/common';
 
 import {
   IMinSwapPoolsMeta,
+  MinSwapPools,
+} from '../support/Cardano/protocols/Liquidity/MinSwapPools';
+import {
+  IMinSwapStakingMeta,
   MinSwapStaking,
 } from '../support/Cardano/protocols/Yield/MinSwapStaking';
 import { RootPlatform } from '../support/RootPlatform';
@@ -24,20 +28,29 @@ export class MinSwap extends RootPlatform {
       name: this.constructor.name,
       slug: this.constructor.name,
       links: {
-        twitter: 'https://twitter.com/MuesliSwapTeam',
-        telegram: 'https://t.me/muesliswapADA',
-        url: 'https://www.muesliswap.com/',
-        logo: 'https://2891243240-files.gitbook.io/~/files/v0/b/gitbook-x-prod.appspot.com/o/spaces%2F-MjoGoMS0wqMF7Accm3h%2Ficon%2F494cdRSp1ekeTJJgMFlv%2FIcon.png?alt=media',
+        twitter: 'https://twitter.com/MinswapDEX',
+        telegram: 'https://t.me/MinswapMafia',
+        url: 'https://minswap.org/',
+        logo: 'https://icons.llama.fi/minswap.png',
       },
     });
 
-    await this.registerProtocol<IMinSwapPoolsMeta>(MinSwapStaking, {
+    // await this.registerProtocol<IMinSwapStakingMeta>(MinSwapStaking, {
+    //   chain: ChainIdEnum.cardano,
+    //   name: 'MinSwapStaking',
+    //   feature: FeatureEnum.staking,
+    //   context: {
+    //     endpoint: 'https://monorepo-mainnet-prod.minswap.org/graphql',
+    //     rewardedToken: '29d222ce763455e3d7a09a665ce554f00ac89d2e99a1a83d267170c6.4d494e',
+    //   },
+    // });
+
+    await this.registerProtocol<IMinSwapPoolsMeta>(MinSwapPools, {
       chain: ChainIdEnum.cardano,
-      name: 'MuesliSwap',
-      feature: FeatureEnum.staking,
+      name: 'MinSwapPools',
+      feature: FeatureEnum.pools,
       context: {
         endpoint: 'https://monorepo-mainnet-prod.minswap.org/graphql',
-        rewardedToken: '29d222ce763455e3d7a09a665ce554f00ac89d2e99a1a83d267170c6.4d494e',
       },
     });
   }

@@ -36,7 +36,6 @@ export enum ProjectEnum {
   astroport = 'astroport',
   mirror = 'mirror',
   marinade = 'marinade',
-  minswap = 'minswap',
   stader = 'stader',
   osmosis = 'osmosis',
   aaveV3 = 'aaveV3',
@@ -186,9 +185,6 @@ export enum OrcaProtocolEnum {
 export enum SundaeProtocolEnum {
   sundaeswap = 'SundaeSwap',
 }
-export enum MinswapProtocolEnum {
-  minswap = 'Minswap',
-}
 
 export enum AstroportProtocolEnum {
   astroport = 'Astroport',
@@ -263,6 +259,7 @@ export const ProtocolV3NameEnum = {
   Synapse: 'Synapse',
   YelFinance: 'YelFinance',
   YetiFinance: 'YetiFinance',
+  MinSwap: 'MinSwap',
 };
 
 export const ProtocolNameEnum = {
@@ -279,7 +276,6 @@ export const ProtocolNameEnum = {
   ...DefiKingdomsProtocolEnum,
   ...EllipsisProtocolEnum,
   ...MarinadeProtocolEnum,
-  ...MinswapProtocolEnum,
   ...MirrorProtocolEnum,
   ...MojitoswapProtocolEnum,
   ...OlympusProtocolEnum,

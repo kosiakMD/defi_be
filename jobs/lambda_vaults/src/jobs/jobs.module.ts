@@ -61,7 +61,6 @@ import { JobsRunner } from './jobs.runner';
 import { JobsV3Runner } from './jobs.v3.runner';
 import { MarinadePools } from './marinade/marinade.pools';
 import { MarinadeUtils } from './marinade/marinade.utils';
-import { MinswapPools } from './minswap/minswap.pools';
 import { MojitoswapPools } from './mojitoswap/mojitoswap.pools';
 import { MojitoswapStaking } from './mojitoswap/mojitoswap.staking';
 import { OrcaStaking } from './orca/orca.farms';
@@ -153,7 +152,6 @@ const VVS = [VVSPools, VVSStaking];
 const ViperSwap = [ViperswapPools, ViperswapStaking];
 const Marinade = [MarinadePools];
 const SundaeSwap = [SundaeswapPools];
-const Minswap = [MinswapPools];
 const Osmosis = [OsmosisPools];
 const WingRiders = [WingRidersPools];
 
@@ -184,7 +182,6 @@ export const ActiveJobs: ClassConstructor<JobInterface>[] = [
   ...ViperSwap,
   ...SundaeSwap,
   ...Marinade,
-  ...Minswap,
   ...Osmosis,
   ...WingRiders,
 ];

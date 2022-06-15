@@ -35,7 +35,6 @@ import {
   AstroportProtocolEnum,
   MirrorProtocolEnum,
   MarinadeProtocolEnum,
-  MinswapProtocolEnum,
   StaderProtocolEnum,
   OsmosisProtocolEnum,
   AaveV3ProtocolEnum,
@@ -83,7 +82,6 @@ export type ProtocolName =
   | TerraswapProtocolEnum
   | AstroportProtocolEnum
   | MarinadeProtocolEnum
-  | MinswapProtocolEnum
   | MirrorProtocolEnum
   | StaderProtocolEnum
   | OsmosisProtocolEnum

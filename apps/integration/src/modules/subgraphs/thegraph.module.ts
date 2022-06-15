@@ -8,7 +8,6 @@ import { HttpModule } from '@app/common';
 import { AlpacaSubgraph } from './subgraphs/alpaca.subgraph';
 import { AutofarmSubgraph } from './subgraphs/autofarm.subgraph';
 import { BlocksSubgraph } from './subgraphs/blocks.subgraph';
-import { MinswapSubgraph } from './subgraphs/minswap.subgraph';
 import { PancakeSubgraph } from './subgraphs/pancake.subgraph';
 import { Pancakev2MainStakingSubgraph } from './subgraphs/pancakev2.main.staking.subgraph';
 import { PangolinSubgraph } from './subgraphs/pangolin.subgraph';
@@ -67,7 +66,6 @@ import { YearnV2Subgraph } from './subgraphs/yearn.v2.subgraph';
     YearnV2Subgraph,
     Pancakev2MainStakingSubgraph,
     SundaeSwapSubgraph,
-    MinswapSubgraph,
   ],
   exports: [
     AlpacaSubgraph,
@@ -91,7 +89,6 @@ import { YearnV2Subgraph } from './subgraphs/yearn.v2.subgraph';
     YearnV2Subgraph,
     Pancakev2MainStakingSubgraph,
     SundaeSwapSubgraph,
-    MinswapSubgraph,
   ],
 })
 export class ThegraphModule {}

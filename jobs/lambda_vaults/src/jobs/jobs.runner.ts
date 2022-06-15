@@ -174,9 +174,6 @@ export class JobsRunner {
     jobPlaceholdersSet.add(`${ChainIdEnum.sol}_${ProtocolNameEnum.orca}_${FeatureEnum.staking}`);
     jobPlaceholdersSet.add(`${ChainIdEnum.sol}_${ProtocolNameEnum.orca}_${FeatureEnum.pools}`);
     jobPlaceholdersSet.add(
-      `${ChainIdEnum.cardano}_${ProtocolNameEnum.minswap}_${FeatureEnum.pools}`,
-    );
-    jobPlaceholdersSet.add(
       `${ChainIdEnum.cardano}_${ProtocolNameEnum.sundaeswap}_${FeatureEnum.pools}`,
     );
     jobPlaceholdersSet.add(

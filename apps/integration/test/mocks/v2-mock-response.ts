@@ -12,6 +12,8 @@ import {
 export const v2mockResponseData: IntegrationsResponseV2Dto = {
   errors: [],
   data: {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     protocol: {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       //@ts-ignore

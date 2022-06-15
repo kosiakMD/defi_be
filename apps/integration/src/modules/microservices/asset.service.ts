@@ -6,7 +6,7 @@ import {
   AssetServiceInterface,
 } from '@sdk/assets/interfaces';
 import { Cache } from 'cache-manager';
-import { firstValueFrom } from 'rxjs/internal/firstValueFrom';
+import { firstValueFrom } from 'rxjs';
 
 import { HttpService } from '@nestjs/axios';
 import { CACHE_MANAGER, Inject } from '@nestjs/common';

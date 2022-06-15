@@ -34,7 +34,7 @@ spec:
             name: ssl-redirect
             port:
               name: use-annotation
-  - host: dev{{ .Values.application.name }}.defyield.app
+  - host: dev{{ .Values.application.name }}.defiyield.app
     http:
       paths:
       - path: /

@@ -1,4 +1,4 @@
-{{- if .Values.ingress.enabled -}}
+{{- if eq .Values.application.environment "development" }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -34,7 +34,7 @@ spec:
             name: ssl-redirect
             port:
               name: use-annotation
-  - host: {{ .Values.ingress.host }}
+  - host: dev{{ .Values.application.name }}.defyield.app
     http:
       paths:
       - path: /

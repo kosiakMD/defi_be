@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   init-read-env:
-    image: public.ecr.aws/u0p0n5o0/envread:latest
+    image: public.ecr.aws/defiyield/envread:1.2
     environment:
       - ENV_READER_PRIORITY=local
     env_file:

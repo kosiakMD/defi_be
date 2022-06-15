@@ -443,7 +443,7 @@ export class AddPriceSources1654064257502 implements MigrationInterface {
         VALUES ('KuSwap', 'univ2-subgraph', '${JSON.stringify(
           {
             chainId: 16,
-            subgraphUrl: 'https://info.kuswap.finance/subgraphs/name/kuswap/swa',
+            subgraphUrl: 'https://info.kuswap.finance/subgraphs/name/kuswap/swap',
           },
           null,
           2,

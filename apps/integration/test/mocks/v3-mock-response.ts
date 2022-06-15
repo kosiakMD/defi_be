@@ -114,6 +114,8 @@ export const v3mockResponseData: IUserEntryResponse = {
                       totalSupply: 1890000005.983848,
                     },
                   ],
+                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                  // @ts-ignore
                   debtRatio: 2.8602507415398044,
                 },
                 {
@@ -143,6 +145,8 @@ export const v3mockResponseData: IUserEntryResponse = {
                       totalSupply: 0,
                     },
                   ],
+                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                  // @ts-ignore
                   debtRatio: 0.063863880948,
                 },
               ],

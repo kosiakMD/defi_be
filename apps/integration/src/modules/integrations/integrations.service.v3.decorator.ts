@@ -410,7 +410,7 @@ export class IntegrationsServiceV3Decorator {
           decimals: u.decimals,
           reserve: u.reserve,
           value: u.value,
-          balance: u.balance,
+          balance: u.balance ? u.balance : u['amount'],
           price: u.price,
           positionInPool: u.position,
         };
@@ -420,7 +420,11 @@ export class IntegrationsServiceV3Decorator {
   }
 
   static claimableToV2(claimableV3: IClaimableFeatureUser): IntegrationClaimableTokenDto {
-    const supplied = claimableV3.supplied[0];
+    // in fact it is not correct when reward/claimable token saved as 'supplied'
+    let supplied = claimableV3.supplied[0];
+    if (!supplied) {
+      supplied = claimableV3.rewarded[0];
+    }
     const claimableV2 = plainToClass(IntegrationClaimableTokenDto, supplied.token);
 
     claimableV2.claimableData = {
@@ -470,7 +474,8 @@ export class IntegrationsServiceV3Decorator {
     if (liquidityV3.token) {
       liquidityV2.stats.share = liquidityV3.token.amount / liquidityV3.token.totalSupply;
     } else {
-      liquidityV2.stats.share = null;
+      const userSupplied = liquidityV2.tokens.reduce((total, token) => token.value, 0);
+      liquidityV2.stats.share = userSupplied / liquidityV2.stats.tvl;
     }
 
     liquidityV2.rewards = liquidityV3.rewarded?.map((v3RewardToken) => {

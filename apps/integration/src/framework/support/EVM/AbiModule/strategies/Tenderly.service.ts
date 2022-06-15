@@ -1,4 +1,4 @@
-import { firstValueFrom } from 'rxjs/internal/firstValueFrom';
+import { firstValueFrom } from 'rxjs';
 import { AbiItem } from 'web3-utils';
 
 import { HttpService } from '@nestjs/axios';

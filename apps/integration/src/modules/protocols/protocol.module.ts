@@ -29,7 +29,6 @@ import { AstroportLockdrop } from './protocols/astroport/astroport.lockdrop';
 import { AstroportPools } from './protocols/astroport/astroport.pools';
 import { AstroportProtocol } from './protocols/astroport/astroport.protocol';
 import { AstroportStaking } from './protocols/astroport/astroport.staking';
-
 import BadgerProtocol from './protocols/badger/badger.protocol';
 import { BadgerStaking } from './protocols/badger/badger.staking';
 import { CompoundProtocol } from './protocols/compoundProtocol';

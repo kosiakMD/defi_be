@@ -38,23 +38,41 @@ import {
 
 type ICustomBorrowTokenMinimal = IBorrowTokenMinimal<{ rate: number }>;
 
+type ILendingPoolMeta = {
+  name: string;
+  descriptor: string;
+  Art: string;
+  rate: string;
+  spot: string;
+  line: string;
+  dust: string;
+};
+
 type ILendingFeatureEntryMinimal = BaseWithTokens<
   ISupplyTokenMinimal,
   void,
   ICustomBorrowTokenMinimal,
-  { name: string }
+  {
+    name: string;
+    descriptor?: string;
+    Art?: string;
+    rate?: string;
+    spot?: string;
+    line?: string;
+    dust?: string;
+  }
 >;
 type ILendingFeatureOpportunity = BaseWithTokens<
   ISupplyTokenOpportunity,
   void,
   IBorrowTokenOpportunity,
-  { name: string }
+  ILendingPoolMeta
 >;
 type ILendingFeatureUserEntry = BaseWithTokens<
   ISupplyTokenUserEntry,
   void,
   IBorrowTokenUserEntity,
-  { name: string }
+  ILendingPoolMeta
 > & { debtRatio: number };
 
 interface RawVaultInterface {
@@ -80,6 +98,15 @@ export class MakerVault extends EVMCore<
   ILendingFeatureUserEntry,
   MakerVaultInterface
 > {
+  private ethersProviderBacking: ethers.providers.JsonRpcProvider;
+  private get ethersProvider() {
+    if (this.ethersProviderBacking) return this.ethersProviderBacking;
+    this.ethersProviderBacking = new ethers.providers.JsonRpcProvider(
+      (this.multicall.web3(this.meta.chain).currentProvider as any).host,
+    );
+    return this.ethersProviderBacking;
+  }
+
   constructor(
     protected abiService: AbiService,
     protected multicall: MulticallAggregator,
@@ -90,6 +117,42 @@ export class MakerVault extends EVMCore<
     protected configService: ConfigService,
   ) {
     super();
+  }
+
+  protected async updateRealTimeData(
+    opportunities: ILendingFeatureEntryMinimal[],
+  ): Promise<ILendingFeatureEntryMinimal[]> {
+    const ilkDescriptorByName = new Map(
+      opportunities.map((op) => [op.meta.name, this.nameToIlk(op.meta.name)]),
+    );
+
+    const { functions } = await this.getContract(VAT, {
+      ilks: () => (item) => item.name === 'ilks',
+    });
+
+    const contract = new ethers.Contract(VAT, [functions.ilks], this.ethersProvider);
+    const ilkPromises = [];
+    ilkDescriptorByName.forEach((ilk, name) => {
+      ilkPromises.push(contract.ilks(ilk).then((c) => [name, c]));
+    });
+
+    const ilks = new Map<string, any>(await Promise.all(ilkPromises));
+
+    return opportunities.map((op): ILendingFeatureEntryMinimal => {
+      const { Art, rate, spot, line, dust } = ilks.get(op.meta.name);
+      return {
+        ...op,
+        meta: {
+          name: op.meta.name,
+          descriptor: ilkDescriptorByName.get(op.meta.name),
+          Art: Art.toString(), // total normalized debt
+          rate: rate.toString(), // debt multiplier
+          spot: spot.toString(), // collateral price with safety margin, i.e. the maximum stablecoin allowed per unit of collateral
+          line: line.toString(), // the debt ceiling for a specific collateral type.
+          dust: dust.toString(), // the minimum possible debt of a Vault.
+        },
+      };
+    });
   }
 
   async getCacheableOpportunityData(): Promise<ILendingFeatureEntryMinimal[]> {
@@ -148,7 +211,7 @@ export class MakerVault extends EVMCore<
    * @override
    */
   protected formatBorrowApy(borrow: ICustomBorrowTokenMinimal) {
-    return { variableApy: borrow.extra.rate };
+    return { year: borrow.extra.rate };
   }
 
   async getUsersData(
@@ -174,16 +237,16 @@ export class MakerVault extends EVMCore<
         const positions = [];
 
         const vaults = urns.get(address);
-
         vaults.forEach((vault) => {
           const pool = poolsByIlk.get(vault.name);
+
           const supply = normalizeDecimals(vault.ink, 18); // always 18
-          const borrow = normalizeDecimals(vault.art, 18) * normalizeDecimals(vault.rate, 27); // always 18
+          const borrow = normalizeDecimals(vault.art, 18) * normalizeDecimals(pool.meta.rate, 27); // always 18
           //   // Filter out old/empty vaults
           if (!supply && !borrow) return;
 
           const spot =
-            (normalizeDecimals(vault.spot, 27) * pool.borrow.token.price * supply) /
+            (normalizeDecimals(pool.meta.spot, 27) * pool.borrow.token.price * supply) /
             (borrow * pool.borrow.token.price);
 
           positions.push({
@@ -219,32 +282,30 @@ export class MakerVault extends EVMCore<
         ilks: () => (item) => item.name === 'ilks',
       });
 
-      const provider = new ethers.providers.JsonRpcProvider(
-        (this.multicall.web3(this.meta.chain).currentProvider as any).host,
-      );
       const urnPromises = [];
-      const ilkPromises = [];
-      const contract = new ethers.Contract(VAT, [functions.urns, functions.ilks], provider);
+      // const ilkPromises = [];
+      const contract = new ethers.Contract(
+        VAT,
+        [functions.urns, functions.ilks],
+        this.ethersProvider,
+      );
       cdps.forEach((vaults) => {
         vaults.forEach((vault) => {
           urnPromises.push(contract.urns(vault.ilk, vault.urn));
-          ilkPromises.push(contract.ilks(vault.ilk)); // TODO: this is not user specific. should be in getPoolData or getCacheableData
         });
       });
 
       const urnResults = await Promise.allSettled(urnPromises);
-      const ilkResults = await Promise.allSettled(ilkPromises);
       const output = new Map();
 
       let idx = 0;
       cdps.forEach((vaults, address) => {
         const user = [];
         vaults.forEach((vault) => {
-          const ilkResult = ilkResults[idx];
           const urnResult = urnResults[idx++];
-          if (urnResult.status !== 'fulfilled' || ilkResult.status !== 'fulfilled') return;
+          if (urnResult.status !== 'fulfilled') return;
           const { ink, art } = urnResult.value;
-          const { Art, rate, spot, line, dust } = ilkResult.value;
+
           user.push({
             id: vault.id,
             ilk: vault.ilk,
@@ -252,11 +313,6 @@ export class MakerVault extends EVMCore<
             name: this.ilkToName(vault.ilk),
             ink: ink.toString(), // user colateral
             art: art.toString(), // normalized user debt
-            Art, // total normalized debt
-            rate: rate.toString(), // debt multiplier
-            spot: spot.toString(), // collateral price with safety margin, i.e. the maximum stablecoin allowed per unit of collateral
-            line: line.toString(), // the debt ceiling for a specific collateral type.
-            dust, // the minimum possible debt of a Vault.
           });
         });
         output.set(address, user);
@@ -277,14 +333,23 @@ export class MakerVault extends EVMCore<
       });
 
       const promises = [];
-      const provider = new ethers.providers.JsonRpcProvider(
-        (this.multicall.web3(this.meta.chain).currentProvider as any).host,
-      );
-      const contract = new ethers.Contract(GET_CDPS, [functions.getCdps], provider);
+
+      const contract = new ethers.Contract(GET_CDPS, [functions.getCdps], this.ethersProvider);
+
       proxies.forEach((proxy) => {
-        promises.push(contract.getCdpsAsc(CDP_MANAGER, proxy));
+        // cache per users here?
+        promises.push(
+          // This caches the users list of deposited pools for 15 minutes
+          this.getOrSet(60 * 15, `maker-vault-get-cdps-${proxy}`, () =>
+            contract
+              .getCdpsAsc(CDP_MANAGER, proxy)
+              .map(({ ids, urns, ilks }) => ({ ids, urns, ilks })),
+          ),
+        );
       });
+
       const results = await Promise.allSettled(promises);
+
       const output = new Map();
       let idx = 0;
       proxies.forEach((proxy, address) => {
@@ -306,36 +371,51 @@ export class MakerVault extends EVMCore<
   }
 
   private async getProxyAddresses(addresses: Address[]): Promise<Map<Address, Address>> {
-    try {
-      const calls = new Map();
-      const { functions, contract } = await this.getContract(PROXY_REGISTRY, {
-        proxy: () => (item) => item.name === 'proxies',
-      });
-
-      addresses.forEach((address) => {
-        calls.set(address, contract.createCall(functions.proxy, address));
-      });
-      const results = await this.multicall.handleInBatches(calls, this.meta.chain);
-
-      const output = new Map();
-      addresses.forEach((address) => {
-        output.set(address, results.get(address).output.data.toString());
-      });
-
-      return output;
-    } catch {
-      throw new Error('Failed to resolve proxy addresses');
-    }
+    return new Map(
+      await this.getOrSet(
+        // One Week, These never change, and if it errors it won't be cached
+        60 * 60 * 24 * 7,
+        // ideally address proxies would be cached individually, however then multicall wouldn't work
+        // most users will log in with the same sets of wallets though, so functionally, this should be fine
+        `maker-dao-proxy-resolution-${[...addresses].sort().join('/')}`,
+        async () => {
+          try {
+            const calls = new Map();
+            const { functions, contract } = await this.getContract(PROXY_REGISTRY, {
+              proxy: () => (item) => item.name === 'proxies',
+            });
+            addresses.forEach((address) => {
+              calls.set(address, contract.createCall(functions.proxy, address));
+            });
+            const results = await this.multicall.handleInBatches(calls, this.meta.chain);
+            const output: [Address, Address][] = [];
+            addresses.forEach((address) => {
+              output.push([address, results.get(address).output.data.toString()]);
+            });
+            return output as any;
+          } catch {
+            throw new Error('Failed to resolve proxy addresses');
+          }
+        },
+      ),
+    );
   }
 
   private ilkToName(ilk: Address) {
-    return (
-      chunk(ilk.slice(2).split(''), 2)
-        .map((ch) => String.fromCharCode(Number(`0x${ch.join('')}`)))
-        .join('')
-        // eslint-disable-next-line no-control-regex
-        .replace(/(\x00)+$/, '')
-    );
+    return chunk(ilk.slice(2).split(''), 2)
+      .map((ch) => {
+        const num = Number(`0x${ch.join('')}`);
+        return num ? String.fromCharCode(num) : '';
+      })
+      .join('');
+  }
+
+  private nameToIlk(name: string): Address {
+    return `0x${name
+      .split('')
+      .map((a) => a.charCodeAt(0).toString(16))
+      .join('')
+      .padEnd(64, '0')}`;
   }
 
   private async getContract<
@@ -350,7 +430,7 @@ export class MakerVault extends EVMCore<
 
     return {
       functions: functions as U,
-      contract: new DynamicContract(PROXY_REGISTRY),
+      contract: new DynamicContract(address),
     };
   }
 }

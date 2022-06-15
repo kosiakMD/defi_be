@@ -69,7 +69,7 @@ export abstract class MultiContractProtocol<
   protected abstract fetchOpportunityData(context: { [key: string]: any }): Promise<TMinimalType[]>;
 
   // TODO: Type. The output on this, is the 'data' input on formatUserData
-  protected abstract fetchUserData(addresses: Address[], pools: TOpportunityType[]): Promise<any>;
+  protected abstract fetchUsersData(addresses: Address[], pools: TOpportunityType[]): Promise<any>;
 
   // TODO: type; data: any is the return value from fetchUserData
   protected abstract formatUserData(
@@ -121,7 +121,7 @@ export abstract class MultiContractProtocol<
     );
 
     try {
-      const multicallResults = await this.fetchUserData(addresses, pools);
+      const multicallResults = await this.fetchUsersData(addresses, pools);
 
       addresses.forEach((address) => {
         pools.forEach((pool) => {

@@ -66,7 +66,7 @@ export class KavaClaimable
     const errors = [];
 
     try {
-      const multicallResults = await this.fetchUserData(addresses);
+      const multicallResults = await this.fetchUsersData(addresses);
       const tokens = await this.claimableUsersTokens(multicallResults);
       const opportunityTokens = this.claimableFeatureOpportunity(tokens);
 
@@ -81,7 +81,7 @@ export class KavaClaimable
     return { data: results, errors };
   }
 
-  protected async fetchUserData(addresses: string[]): Promise<Map<string, IKavaUserRewards[]>> {
+  protected async fetchUsersData(addresses: string[]): Promise<Map<string, IKavaUserRewards[]>> {
     const deposits = await Promise.all(addresses.map((address) => this.accountClaimable(address)));
     const claimableMap: Map<string, IKavaUserRewards[]> = new Map();
     const claimableUserMap: Map<string, IKavaUserRewards[]> = new Map();

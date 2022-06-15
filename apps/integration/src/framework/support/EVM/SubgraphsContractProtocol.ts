@@ -17,8 +17,8 @@ export abstract class SubgraphsContractProtocol<
   TProtocolMeta extends IProtocolMeta,
 > extends RootProtocolCacheable<TMinimalType, TOpportunityType, TUserEntryType, TProtocolMeta> {
   protected abstract multicall: MulticallAggregator;
-  protected abstract fetchUserData(addresses: Address[], pools: TOpportunityType[]): Promise<any>;
-  // TODO: type; data: any is the return value from fetchUserData
+  protected abstract fetchUsersData(addresses: Address[], pools: TOpportunityType[]): Promise<any>;
+  // TODO: type; data: any is the return value from getAsyncUserData
   protected abstract formatUserData(
     address: Address,
     pools: TOpportunityType[],
@@ -39,7 +39,7 @@ export abstract class SubgraphsContractProtocol<
     );
 
     try {
-      const usersData = await this.fetchUserData(addresses, pools);
+      const usersData = await this.fetchUsersData(addresses, pools);
 
       for (const address of addresses) {
         const data = this.formatUserData(address, pools, usersData);

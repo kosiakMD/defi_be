@@ -153,7 +153,7 @@ export class KavaLending
     return opportunities;
   }
 
-  protected async fetchUserData(addresses: string[]): Promise<UserLendingMap> {
+  protected async fetchUsersData(addresses: string[]): Promise<UserLendingMap> {
     const result = await Promise.all([
       ...addresses.map((address) => this.userLendingRequest(address, this.hardUserDeposited)),
       ...addresses.map((address) => this.userLendingRequest(address, this.hardUserBorrowed)),

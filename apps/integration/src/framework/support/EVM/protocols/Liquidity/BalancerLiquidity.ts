@@ -153,7 +153,7 @@ export class BalancerLiquidity
     return result;
   }
 
-  protected async fetchUserData(addresses: string[]): Promise<UsersDataResponse> {
+  protected async fetchUsersData(addresses: string[]): Promise<UsersDataResponse> {
     const $data = this.httpService
       .post<IBalancerUsersPoolSharesResponse>(this.GQLEndpoint, {
         query: USERS_POOL_SHARES,

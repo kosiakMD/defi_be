@@ -27,10 +27,6 @@ services:
       - "5432:5432"
     volumes:
     - ./docker/data/pgsql:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_USER=${DB_USERNAME}
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
-      - POSTGRES_DB=${DB_DATABASE}
 
   price-service:
     image: node:14

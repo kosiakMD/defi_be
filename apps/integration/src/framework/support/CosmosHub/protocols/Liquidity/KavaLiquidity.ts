@@ -102,7 +102,7 @@ export class KavaLiquidity
     return pools.map((pool) => this.toFeatureEntryMinimal(pool));
   }
 
-  protected async fetchUserData(addresses: string[]): Promise<Map<string, IKavaDeposits[]>> {
+  protected async fetchUsersData(addresses: string[]): Promise<Map<string, IKavaDeposits[]>> {
     const deposits = await Promise.all(
       addresses.map((address) => this.accountLiquidityDeposits(address)),
     );

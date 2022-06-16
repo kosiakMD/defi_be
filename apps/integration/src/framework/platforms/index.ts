@@ -1,63 +1,16 @@
-export { Arrakis } from './Arrakis';
+import fs from 'fs';
 
-export { AaveV2 } from './AaveV2';
-export { AaveV3 } from './AaveV3';
-export { AlchemixV2 } from './AlchemixV2';
-export { ApeSwap } from './ApeSwap';
+const exclude = new Set(['index.ts', 'LimeSwap.ts']);
 
-export { BabySwap } from './BabySwap';
-export { BalancerV2 } from './BalancerV2';
-export { Bancor } from './Bancor';
-export { Belt } from './Belt';
-export { Benqi } from './Benqi';
-export { BiSwap } from './BiSwap';
-export { Blizz } from './Blizz';
-export { CafeSwap } from './CafeSwap';
-export { CheesecakeSwap } from './CheesecakeSwap';
-export { CherrySwap } from './CherrySwap';
-export { CryptoComDefiSwap } from './CryptoComDefiSwap';
-export { CubFinance } from './CubFinance';
-export { DfynNetwork } from './DfynNetwork';
-export { Ellipsis } from './Ellipsis';
-export { Evodefi } from './Evodefi';
-export { Frax } from './Frax';
-export { Geist } from './Geist';
-export { Goose } from './Goose';
-export { IronBank } from './IronBank';
-export { Kava } from './Kava';
-export { KnightSwap } from './KnightSwap';
-export { KyberSwap } from './KyberSwap';
-export { Lido } from './Lido';
-export { Liquity } from './Liquity';
-export { MakerDAO } from './MakerDAO';
-export { MarsEcosystem } from './MarsEcosystem';
-export { Mdex } from './Mdex';
-export { Mojitoswap } from './Mojitoswap';
-export { Moola } from './Moola';
-export { MuesliSwap } from './MuesliSwap';
-export { Nereus } from './Nereus';
-export { Netswap } from './Netswap';
-export { PaintSwap } from './PaintSwap';
-export { PancakeSwap } from './PancakeSwap';
-export { Quarry } from './Quarry';
-export { QuickSwap } from './QuickSwap';
-export { RocketPool } from './RocketPool';
-export { RuneFarm } from './RuneFarm';
-export { SashimiSwap } from './SashimiSwap';
-export { Solend } from './Solend';
-export { SpiritSwap } from './SpiritSwap';
-export { SpookySwap } from './SpookySwap';
-export { Stargate } from './Stargate';
-export { Swapr } from './Swapr';
-export { Synapse } from './Synapse';
-export { TombFinance } from './TombFinance';
-export { TreeDefi } from './TreeDefi';
-export { WaultFinance } from './WaultFinance';
-export { YelFinance } from './YelFinance';
-export { YetiFinance } from './YetiFinance';
-export { Zenlink } from './Zenlink';
-export { AutoFarm } from './AutoFarm';
-export { BeefyFinance } from './BeefyFinance';
-export { IronFinance } from './IronFinance';
-export { SolanaStaking } from './SolanaStaking';
-export { CardanoStaking } from './CardanoStaking';
+export default (async () => {
+  const files = fs.readdirSync('apps/integration/src/framework/platforms');
+  const promises = files
+    .filter((file) => !exclude.has(file))
+    .map((file) => {
+      return import(`./${file.split('.')[0]}`);
+    });
+  return (await Promise.all(promises)).reduce((acc, curr) => {
+    Object.assign(acc, curr);
+    return acc;
+  }, {});
+})();

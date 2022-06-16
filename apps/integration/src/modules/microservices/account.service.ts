@@ -87,7 +87,7 @@ export class AccountService implements AccountServiceInterface {
         chunk(addresses, 250).map(async (addressChunk) => {
           const { data } = await logExecutionTime(
             this.logger,
-            `Get Assets for ${addresses.length} assets, ${chainIds.length} chain`,
+            `Get Assets for ${addressChunk.length} assets, ${chainIds.length} chain`,
             () =>
               firstValueFrom(
                 this.httpService.get(this.getAssetsUrl, {

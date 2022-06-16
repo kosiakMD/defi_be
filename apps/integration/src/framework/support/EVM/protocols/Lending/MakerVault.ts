@@ -237,6 +237,7 @@ export class MakerVault extends EVMCore<
         const positions = [];
 
         const vaults = urns.get(address);
+
         vaults.forEach((vault) => {
           const pool = poolsByIlk.get(vault.name);
 
@@ -343,7 +344,7 @@ export class MakerVault extends EVMCore<
           this.getOrSet(60 * 15, `maker-vault-get-cdps-${proxy}`, () =>
             contract
               .getCdpsAsc(CDP_MANAGER, proxy)
-              .map(({ ids, urns, ilks }) => ({ ids, urns, ilks })),
+              .then(({ ids, urns, ilks }) => ({ ids, urns, ilks })),
           ),
         );
       });

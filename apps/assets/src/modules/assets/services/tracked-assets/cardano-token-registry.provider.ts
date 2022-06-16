@@ -9,7 +9,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { ChainIdEnum } from '@app/common';
 
 import { AssetProcessingRequest } from '../../types/asset-processing.request';
-import { GithubService } from './helpers/github.helper';
+import { GithubService } from '../helpers/github.helper';
 import { TrackedAssetsProvider } from './tracked-assets.provider';
 
 @Injectable()

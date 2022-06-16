@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   init-read-env:
-    image: public.ecr.aws/u0p0n5o0/envread:latest
+    image: public.ecr.aws/defiyield/envread:1.2
     environment:
       - ENV_READER_PRIORITY=local
     env_file:
@@ -27,10 +27,6 @@ services:
       - "5432:5432"
     volumes:
     - ./docker/data/pgsql:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_USER=${DB_USERNAME}
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
-      - POSTGRES_DB=${DB_DATABASE}
 
   price-service:
     image: node:14

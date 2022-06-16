@@ -262,7 +262,10 @@ export class AlchemixV2Vaults
     };
   }
 
-  protected async fetchUserData(addresses: Address[], pools: IAlchemixLendingFeatureOpportunity[]) {
+  protected async fetchUsersData(
+    addresses: Address[],
+    pools: IAlchemixLendingFeatureOpportunity[],
+  ) {
     const contract = this.getMainContract();
     const calls = new Map();
 
@@ -297,7 +300,7 @@ export class AlchemixV2Vaults
     );
 
     try {
-      const multicallResults = await this.fetchUserData(addresses, pools);
+      const multicallResults = await this.fetchUsersData(addresses, pools);
 
       addresses.forEach((address) => {
         const supplyTokens: ISupplyTokenUserEntry[] = [];

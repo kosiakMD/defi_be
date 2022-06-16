@@ -151,7 +151,7 @@ export class BalancesService {
   }
 
   public async getUserDelegations(addresses: Address[]): Promise<Record<Address, any>[]> {
-    return Promise.all(addresses.map(this.getDelegationsForAddress, this));
+    return Promise.all(addresses.map((a) => this.getDelegationsForAddress(a)));
   }
 
   async getBlockFromDate(target: Date, web3: Web3): Promise<BlockTimestamp> {

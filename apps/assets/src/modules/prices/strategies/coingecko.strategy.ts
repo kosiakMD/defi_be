@@ -19,7 +19,6 @@ type Config = {
   requestDelay?: number;
 };
 
-// TODO: Change it based on coingeko id
 export class CoingeckoStrategy extends BaseStrategy<Config> {
   private readonly coinGeckoClient = new CoinGeckoClient({
     timeout: 10000,
@@ -41,7 +40,8 @@ export class CoingeckoStrategy extends BaseStrategy<Config> {
       new Array<string>(),
     );
 
-    const chunkSize = config?.chunkSize || 2000;
+    const maxChunkSize = 500;
+    const chunkSize = config?.chunkSize ? Math.min(config?.chunkSize, maxChunkSize) : maxChunkSize;
     this.logger.log(
       `${uniqueCoinIds.length} unique coingecko coins loaded. Chunk size: ${chunkSize}`,
     );

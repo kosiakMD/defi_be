@@ -38,12 +38,44 @@ export abstract class RootPlatform implements IRootPlatform {
   // To get a decluttered list from defilama
   // $ curl https://api.llama.fi/protocols | jq '.[] | to_entries | map(select(.key | in({ name: true, twitter: true, url: true, logo: true }) )) | from_entries'
   protected protocols: Set<IRootProtocol> = new Set();
+  protected protocolErrors: Map<IRootProtocol, Error> = new Map();
+
   protected async registerProtocol<TProtocolMeta extends IProtocolMeta = IProtocolMeta>(
     protocol: ClassConstructor<IRootProtocol>,
     meta: TProtocolMeta,
   ) {
+    // Register protocol with regular dependency injection enabled
     const instance = await this.moduleRef.create(protocol);
+
+    // Assign metadata to protocol
     instance.registerMeta(meta);
+
+    // Run initialization if required.
+    // this sets all required function predicates and ABI items
+    // this is needed to happen infrequently (currently once at boot)
+    // but isn't strictly required to register as the 'meta' has all the info
+    // needed to display the list of protocols.
+    // Pros of including here
+    //   - runs once at start and is done
+    //   - central for all protocols/platforms
+    //   - if a protocol fails to load for any reason it can automatically be removed from the protocols list
+    // Cons
+    //   - slow to start
+    //   - requests many ABI's at once so higher chance of rate limits (assuming protocol list is the first request)
+    //   - means registerProtocol needs to be async
+    // Possible solution:
+    // seperate 'register' and 'boot' actions. Register is called to list
+    // the protocol list, however doesn't touch the ABI's or predicates etc.
+    // boot is run every getPools or getUserData, however it will usually
+    // be loaded from cache so performance impact to users should be minimal
+    // + faster startup times, faster protocols-list time
+    // - potentially slower getUserData time
+
+    // All protocols would be listed, and failed ones would display an error
+    // (or retry_ when accessed instead of simply being absent after boot
+
+    // TODO: initialize could be replaced with proper nestjs lifecycle hooks
+    // https://docs.nestjs.com/fundamentals/lifecycle-events#lifecycle-events-1
     if (instance.initialize) {
       try {
         this.logger.log(
@@ -53,6 +85,7 @@ export abstract class RootPlatform implements IRootPlatform {
 
         await instance.initialize();
       } catch (err) {
+        this.protocolErrors.set(instance, err);
         this.logger.error(err.message, err.stack, 'RootPlatform');
         return;
       }
@@ -68,6 +101,8 @@ export abstract class RootPlatform implements IRootPlatform {
     this.protocols.add(instance);
   }
 
+  // if seperated as commented above, register could be sync and
+  // registrationLocked would not be required
   async initialize() {
     await this.register();
     this.registrationLocked = true;
@@ -102,14 +137,31 @@ export abstract class RootPlatform implements IRootPlatform {
     // TODO: Comment that out as cannot switch log level (to be reverted)
     // this.logger.debug(`Finish getting meta for: ${this.meta.name}`);
   }
+  private async validatedProtocols(): Promise<[Set<IRootProtocol<IProtocolMeta>>, Error[]]> {
+    const errors: Error[] = [];
+
+    if (!this.protocolErrors.size) return [this.protocols, errors];
+
+    for (const [protocol] of this.protocolErrors) {
+      try {
+        await protocol.initialize();
+        this.protocolErrors.delete(protocol);
+        this.protocols.add(protocol);
+      } catch (err) {
+        errors.push(err);
+      }
+    }
+    return [this.protocols, errors];
+  }
 
   async getUsersData(chains: ChainId[], addresses: Address[]): Promise<IUserDataPlatformResponse> {
+    const [protocols, errors] = await this.validatedProtocols(); // TODO: for performance, we could only retry failed protocols during sync
+
     this.logger.log(`Start getting user data for: ${this.meta.name}`);
 
     const promises: Promise<IChainGroupedWallet>[] = [];
-    const errors: Error[] = [];
     const supportedChains = new Set();
-    this.protocols.forEach((protocol) => {
+    protocols.forEach((protocol) => {
       const { chain, list: features } = protocol.getMeta();
       supportedChains.add(chain.id);
 
@@ -186,12 +238,12 @@ export abstract class RootPlatform implements IRootPlatform {
   }
 
   async getPoolData(chains: ChainId[]): Promise<IPoolDataPlatformResponse> {
+    const [protocols, errors] = await this.validatedProtocols();
     this.logger.log(`Start getting pool data: ${this.meta.name}`);
 
     const promises = [];
-    const errors: Error[] = [];
     const supportedChains = new Set();
-    this.protocols.forEach((protocol) => {
+    protocols.forEach((protocol) => {
       const { chain } = protocol.getMeta();
       supportedChains.add(chain.id);
       if (chains.includes(chain.id)) {
@@ -207,14 +259,14 @@ export abstract class RootPlatform implements IRootPlatform {
     });
 
     const protocolResults = await Promise.allSettled(promises);
-    const protocols: IWalletOpportunity[] = [];
+    const userProtocols: IWalletOpportunity[] = [];
 
     this.logger.log(`Start formatting pool data: ${this.meta.name}`);
 
     protocolResults.forEach((protocol) => {
       switch (protocol.status) {
         case 'fulfilled':
-          protocols.push(...protocol.value.data);
+          userProtocols.push(...protocol.value.data);
           errors.push(...protocol.value.errors);
           break;
         case 'rejected':
@@ -224,7 +276,7 @@ export abstract class RootPlatform implements IRootPlatform {
     });
 
     this.logger.log(`Finishing getting pool data: ${this.meta.name}`);
-    return { data: protocols, errors };
+    return { data: userProtocols, errors };
   }
 
   async cachePoolData(chains: ChainId[]) {
@@ -313,6 +365,10 @@ export abstract class RootPlatform implements IRootPlatform {
    * then groups them into an object based on feature.
    * Also builds a list of all supported features, and calculates
    * chain total
+   *
+   * TODO: this was formatted to match as closely to the v2 format as possible
+   * however that compatibility causes extra complexity here. When migrating to /v3
+   * api, I think this could be much simplified
    *
    * @param user
    * @param chain

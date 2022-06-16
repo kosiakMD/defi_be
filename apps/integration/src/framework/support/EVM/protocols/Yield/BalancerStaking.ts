@@ -147,7 +147,7 @@ export class BalancerStaking
     return result;
   }
 
-  protected async fetchUserData(addresses: string[]): Promise<UsersDataResponse> {
+  protected async fetchUsersData(addresses: string[]): Promise<UsersDataResponse> {
     const $data = this.httpService
       .post<IBalancerUsersYieldsResponse>(this.GQLGaugesEndpoint, {
         query: USERS_YIELDS,

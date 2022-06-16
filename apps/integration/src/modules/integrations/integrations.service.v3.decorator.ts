@@ -17,6 +17,7 @@ import { ChainIdEnum } from '@app/common/enum';
 import { LiquidityPoolFeature, PoolTokenDto } from '@app/common/jobs/pools';
 import {
   IntegrationClaimableTokenDto,
+  IntegrationERC20TokenDto,
   IntegrationLockedBalanceTokenDto,
   IntegrationStakingPositionDto,
 } from '@app/common/jobs/staking';
@@ -63,12 +64,12 @@ export class IntegrationsServiceV3Decorator {
     );
     v3Protocols.forEach((v3Protocol) => {
       if (
-        !v2ProtocolsSet.has(v3Protocol.name) &&
-        !this.protocolsV3Exceptions.has(v3Protocol.name)
+        !v2ProtocolsSet.has(v3Protocol.slug) &&
+        !this.protocolsV3Exceptions.has(v3Protocol.slug)
       ) {
         v2Protocols.data.push({
-          project: v3Protocol.name,
-          name: v3Protocol.name,
+          project: v3Protocol.slug,
+          name: v3Protocol.slug,
           features: v3Protocol.features,
           links: v3Protocol.links,
         } as unknown as ProtocolDataDto);
@@ -98,7 +99,8 @@ export class IntegrationsServiceV3Decorator {
     }
 
     const v3AllProtocols = await this.platformService.getProtocolList();
-    const v3Protocol = v3AllProtocols.find((p) => p.name === protocolName);
+
+    const v3Protocol = v3AllProtocols.find((p) => p.slug === protocolName);
     if (v3Protocol) {
       const v3Response = await this.platformService.getUserPositionsForPlatform(
         protocolName,
@@ -110,7 +112,7 @@ export class IntegrationsServiceV3Decorator {
 
     return plainToClass(IntegrationsResponseV2Dto, {
       data: {},
-      errors: [],
+      errors: ['Protocol Not Found'],
     });
   }
 
@@ -259,6 +261,29 @@ export class IntegrationsServiceV3Decorator {
           );
         }
 
+        if (v3WalletChain.positions.delegation) {
+          v2WalletChain[FeatureEnum.delegation] = { totalValue: 0, items: [] };
+          v2WalletChain[FeatureEnum.delegation].items = v3WalletChain.positions.delegation.map(
+            (claimableV3: any) => {
+              const delegationV2 = IntegrationsServiceV3Decorator.delegationToV2(claimableV3);
+
+              // Update V2 Totals
+              v2Response.data.total = safelyAddDecimals(
+                v2Response.data.total,
+                delegationV2.stakingToken.value,
+              );
+              v2WalletChain[FeatureEnum.delegation].totalValue = safelyAddDecimals(
+                v2WalletChain[FeatureEnum.delegation].totalValue,
+                delegationV2.stakingToken.value,
+              );
+
+              // v2WalletChain[FeatureEnum.delegation].totalValue += claimableV2.claimableData.value;
+
+              return delegationV2;
+            },
+          );
+        }
+
         if (v3WalletChain.positions.lending) {
           v2WalletChain.features.push(
             ...[FeatureEnum.claimable, FeatureEnum.borrowing, FeatureEnum.health],
@@ -335,6 +360,38 @@ export class IntegrationsServiceV3Decorator {
     });
 
     return v2Response;
+  }
+
+  static delegationToV2(item) {
+    const [supply] = item.supplied;
+    const [reward] = item.rewarded;
+    return {
+      validator: item.meta.validator,
+      stakingToken: plainToClass(IntegrationERC20TokenDto, {
+        address: supply.token.address,
+        name: supply.token.name,
+        symbol: supply.token.symbol,
+        decimals: supply.token.decimals,
+        price: supply.token.price,
+        value: supply.value,
+        balance: supply.amount,
+        staked: supply.amount.toString(),
+      }),
+      rewards: [
+        plainToClass(IntegrationClaimableTokenDto, {
+          address: reward.token.address,
+          name: reward.token.name,
+          symbol: reward.token.symbol,
+          decimals: reward.token.decimals,
+          price: reward.token.price,
+          claimableData: {
+            balance: reward.amount,
+            value: reward.value,
+          },
+          apr: reward.apr?.year * 100,
+        }),
+      ],
+    };
   }
 
   static lendingToV2(v3Items): LendingPositionDto[] {
@@ -495,6 +552,8 @@ export class IntegrationsServiceV3Decorator {
   }
 }
 
-// competing es-lint rules
-// eslint-disable-next-line newline-per-chained-call
-const safelyAddDecimals = (dec1, dec2) => new BigNumber(dec1).plus(new BigNumber(dec2)).toNumber();
+const safelyAddDecimals = (dec1, dec2) => {
+  return new BigNumber(dec1) //
+    .plus(new BigNumber(dec2))
+    .toNumber();
+};

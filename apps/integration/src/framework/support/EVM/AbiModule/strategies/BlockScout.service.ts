@@ -8,6 +8,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import type { Address, ChainId, Logger } from '@app/common';
 import { ChainIdEnum } from '@app/common';
+import { gql } from '@app/common/utils';
 
 import { AbiSource } from '../abi.source.interface';
 
@@ -54,13 +55,15 @@ export class BlockScout implements AbiSource {
       this.endpoints[chain],
       {
         variables: { address },
-        query: `query FetchAbi($address: AddressHash) {
-          address(hash: $address) {
-            smartContract {
-              abi
+        query: gql`
+          query FetchAbi($address: AddressHash) {
+            address(hash: $address) {
+              smartContract {
+                abi
+              }
             }
           }
-        }`,
+        `,
       },
       {
         headers: {

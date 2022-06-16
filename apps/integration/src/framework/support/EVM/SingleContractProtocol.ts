@@ -6,7 +6,6 @@ import {
   INamedFunctionPredicates,
   INamedFunctions,
   IProtocolMeta,
-  IUserDataProtocolResponse,
   IWalletMinimal,
   IWalletOpportunity,
   IWalletUserEntry,
@@ -85,42 +84,6 @@ export abstract class SingleContractProtocol<
   async getCacheableOpportunityData(): Promise<TMinimalType[]> {
     const context = await this.callInputlessFunctions();
     return this.fetchOpportunityData(this.formatContext(context));
-  }
-
-  /**************
-   * User Data
-   */
-
-  /**
-   * Fetches all user positions in this protocol
-   *
-   * @param address user address
-   * @param pools all available pools
-   * @returns pools with balances filled in
-   */
-  async getUsersData(addresses: Address[]): Promise<IUserDataProtocolResponse<TUserEntryType>> {
-    const { data: pools, errors } = await this.getPoolData();
-
-    const results = new Map<Address, TUserEntryType[]>(
-      addresses.map((address) => [address, [] as TUserEntryType[]]),
-    );
-
-    await Promise.allSettled(
-      addresses.map(async (address) => {
-        try {
-          const userPools = await this.fetchUserData(address, pools);
-          // An array of undefined values can be obtained
-          const filteredPools = userPools.filter((data) => data);
-          if (filteredPools.length) {
-            results.get(address).push(...filteredPools);
-          }
-        } catch (err) {
-          errors.push(err);
-        }
-      }),
-    );
-
-    return { data: results, errors };
   }
 
   /**************

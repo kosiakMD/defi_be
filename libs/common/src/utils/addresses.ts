@@ -4,7 +4,7 @@ import { isAddress as isETHAddress, toChecksumAddress } from 'web3-utils';
 
 import { Address } from '@app/common';
 
-import { CARDANO_COIN_ADDRESS, ZERO_ADDRESS } from '../constant';
+import { ZERO_ADDRESS } from '../constant';
 import { ChainIdEnum } from '../enum';
 
 // Extending ChainIdEnum so when new chains are added, validation is not forgotten
@@ -116,8 +116,10 @@ export function isBech32LikeAddress(address: string, length?: number): boolean {
   }
 }
 
-export function isCardanoAddress(address: string): boolean {
-  return isBech32LikeAddress(address, 103) || address === CARDANO_COIN_ADDRESS;
+export function isCardanoAddress(): boolean {
+  // TODO: Method bellow does not count asset addresses so should be changed, temp fix
+  return true;
+  // return isBech32LikeAddress(address, 103) || address === CARDANO_COIN_ADDRESS;
 }
 
 export function isRoninAddress(address: string): boolean {

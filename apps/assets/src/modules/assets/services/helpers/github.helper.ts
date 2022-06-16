@@ -62,6 +62,19 @@ export class GithubService {
     );
   }
 
+  public async getFileContent(owner: string, repo: string, path: string): Promise<string> {
+    return this.cache.getOrLoad(
+      getFileContentCacheKey(owner, repo, path),
+      async () => {
+        const { data } = await this.request(
+          `${this.apiUrl}/repos/${owner}/${repo}/contents/${path}`,
+        );
+        return Buffer.from(data.content, 'base64').toString();
+      },
+      { ttl: 60 * 60 /* 1 hour in seconds */ },
+    );
+  }
+
   private async request(url: string) {
     return firstValueFrom(this.httpService.get(url, { headers: this.headers }));
   }
@@ -73,4 +86,8 @@ const getTreeItemsCacheKey = (owner: string, repo: string, tree: string): string
 
 const getLatestCommitShaCacheKey = (owner: string, repo: string, branch: string): string => {
   return `${owner}/${repo}/git/branches/${branch}`;
+};
+
+const getFileContentCacheKey = (owner: string, repo: string, path: string): string => {
+  return `${owner}/${repo}/contents/${path}`;
 };

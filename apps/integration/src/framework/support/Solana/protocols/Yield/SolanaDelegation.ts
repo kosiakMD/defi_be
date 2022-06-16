@@ -1,6 +1,6 @@
 import { FakeAssetService } from 'apps/integration/src/modules/microservices/fake.asset.service';
 import { Cache } from 'cache-manager';
-import { firstValueFrom } from 'rxjs/internal/firstValueFrom';
+import { firstValueFrom } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 import { HttpService } from '@nestjs/axios';

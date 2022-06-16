@@ -32,8 +32,9 @@ import { AssetsRepository } from './repositories/assets.repository';
 import { assetAnalysers } from './services/analysers/registry';
 import { AssetAnalyserService } from './services/asset-analyser.service';
 import { AssetsService } from './services/assets.service';
+import { CosmosHelper } from './services/helpers/cosmos.helper';
+import { GithubService } from './services/helpers/github.helper';
 import { IconsService } from './services/icons.service';
-import { GithubService } from './services/tracked-assets/helpers/github.helper';
 import { trackedAssetsProviders } from './services/tracked-assets/registry';
 
 const processors = [
@@ -93,6 +94,7 @@ const processors = [
     AssetsService,
     AssetAnalyserService,
     GithubService,
+    CosmosHelper,
   ],
   exports: [],
 })

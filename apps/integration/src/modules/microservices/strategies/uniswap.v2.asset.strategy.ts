@@ -17,6 +17,10 @@ export class UniswapV2LpStrategy implements TokenDataStrategy {
     return new UniswapV2Pair(token);
   }
 
+  protected async multiCallData(calls: Map<any, any>, chain: number) {
+    return await this.multicall.handleInBatches(calls, chain);
+  }
+
   async fillMissingData(tokens: any[], prices: any, chain: number) {
     const calls = new Map();
     // get the missing calls
@@ -34,8 +38,7 @@ export class UniswapV2LpStrategy implements TokenDataStrategy {
       });
     });
 
-    // fetch results
-    const results = await this.multicall.handleInBatches(calls, chain);
+    const results = await this.multiCallData(calls, chain);
 
     // fill in missing data
     tokens.forEach((token: any) => {

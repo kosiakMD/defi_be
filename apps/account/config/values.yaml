@@ -13,7 +13,7 @@ configMaps:
     ETH_URL: https://eth-trace.gateway.pokt.network/v1/lb/619fad2eb2d0dd003950f26b
     BINANCE_URL: https://bsc--mainnet--rpc-archive.datahub.figment.io/apikey/91e126bee34f826357715bff8eac3441
     BSC_URL: https://bsc--mainnet--rpc-archive.datahub.figment.io/apikey/91e126bee34f826357715bff8eac3441
-    POLYGON_URL: https://speedy-nodes-nyc.moralis.io/173c906bbd79b4c01dc6034b/polygon/mainnet/archive
+    POLYGON_URL: https://matic-mainnet--jsonrpc.datahub.figment.io/apikey/91e126bee34f826357715bff8eac3441
     FANTOM_URL: https://rpc.ftm.tools/
     FTM_URL: https://rpc.ftm.tools/
     AVALANCHE_URL: https://avalanche--mainnet--rpc.datahub.figment.io/apikey/eb4092c651b0af2e17fd2ecb0f5966bd/ext/bc/C/rpc

@@ -24,7 +24,14 @@ export class UpdateCurrentPricesProcessor {
     @InjectQueue(QueueName.PRICES) private pricesQueue: Queue,
     @InjectRepository(PriceSourceRepository)
     private readonly priceSourceRepository: PriceSourceRepository,
-  ) {}
+  ) {
+    pricesQueue.on('failed', async (job: Job, error: Error) => {
+      if (error.message === 'job stalled more than allowable limit') {
+        logger.warn(`${job.id} stalled, it will be removed`);
+        await pricesQueue.removeJobs(job.id.toString());
+      }
+    });
+  }
 
   @Process(PriceJobName.UPDATE_CURRENT_PRICES)
   async handle(job: Job) {

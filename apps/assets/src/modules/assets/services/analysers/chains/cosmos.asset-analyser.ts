@@ -69,7 +69,7 @@ export class CosmosAssetAnalyser implements AssetAnalyser {
       metadata: {},
     };
 
-    if (!chainInfo.coinGeckoId.startsWith('pool:')) {
+    if (chainInfo.coinGeckoId && !chainInfo.coinGeckoId.startsWith('pool:')) {
       result.metadata = {
         coingeckoId: chainInfo.coinGeckoId,
       };

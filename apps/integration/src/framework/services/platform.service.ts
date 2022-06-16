@@ -11,6 +11,7 @@ import { getChainById } from '@app/common/utils';
 
 import { ErrorWithHttpInfo } from '../../common/types/error-with-http-info';
 
+import * as Platforms from '../platforms';
 import { RootPlatform } from '../support/RootPlatform';
 import { IPlatformMeta } from '../support/interfaces';
 import {
@@ -25,12 +26,7 @@ export class PlatformService implements OnApplicationBootstrap {
     private readonly moduleRef: ModuleRef,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
   ) {
-    this.init();
-  }
-
-  private async init() {
-    const { default: Platforms } = await import('../platforms');
-    this.registerPlatforms(await Platforms);
+    this.registerPlatforms(Platforms);
   }
 
   platforms: Map<string, ClassConstructor<RootPlatform>> = new Map();

@@ -15,6 +15,7 @@ import { MuesliSwapAccountService } from './MuesliSwapAccountService';
 import { MuesliSwapPriceService } from './MuesliSwapPriceService';
 import { AccountService } from './account.service';
 import { AssetService } from './asset.service';
+import { BeefyAutofarmAssetService } from './beefy-autofarm.asset.service';
 import { EllipsisAssetService } from './ellipsis.asset.service';
 import { FakeAssetService } from './fake.asset.service';
 import { IronFinanceAssetService } from './ironFinance.asset.service';
@@ -24,6 +25,7 @@ import { Puppeteer } from './puppeteer';
 import { SolanaAssetService } from './solana.asset.service';
 import { SonarAssetService } from './sonar.asset.service';
 import { SpiritSwapAssetService } from './spiritSwap.asset.service';
+import { BeefyAutofarmLpStrategy } from './strategies/beefy-autofarm.v2.asset.strategy';
 import { IronFinanceStrategy } from './strategies/ironFinance.asset.strategy';
 import { SpiritSwapStrategy } from './strategies/spiritSwap.asset.strategy';
 import { SynapseStrategy } from './strategies/synapse.asset.strategy';
@@ -61,11 +63,13 @@ import { YetiAssetService } from './yeti.asset.service';
     SonarAssetService,
     YetiAssetService,
     IronFinanceAssetService,
+    BeefyAutofarmAssetService,
     SpiritSwapAssetService,
     // Strategies
     UniswapV2LpStrategy,
     SynapseStrategy,
     IronFinanceStrategy,
+    BeefyAutofarmLpStrategy,
     SpiritSwapStrategy,
 
     // Account Services
@@ -100,6 +104,7 @@ import { YetiAssetService } from './yeti.asset.service';
     Puppeteer,
     CardanoService,
     IronFinanceAssetService,
+    BeefyAutofarmAssetService,
     SpiritSwapAssetService,
   ],
 })

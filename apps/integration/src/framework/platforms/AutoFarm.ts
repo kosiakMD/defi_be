@@ -46,6 +46,9 @@ export class AutoFarm extends RootPlatform {
       name: 'AutoFarmV2',
       feature: FeatureEnum.staking,
       address: '0x864a0b7f8466247a0e44558d29cdc37d4623f213',
+      context: {
+        badPools: [67, 77, 79],
+      },
     });
 
     await this.registerProtocol<IMasterChefMeta>(AutoFarmV2CrossChain, {
@@ -67,6 +70,9 @@ export class AutoFarm extends RootPlatform {
       name: 'AutoFarmV2',
       feature: FeatureEnum.staking,
       address: '0x76b8c3ecdf99483335239e66f34191f11534cbaa',
+      context: {
+        badPools: [75, 76, 87, 89, 93],
+      },
     });
 
     await this.registerProtocol<IMasterChefMeta>(AutoFarmV2CrossChain, {

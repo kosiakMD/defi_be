@@ -70,6 +70,7 @@ export class IntegrationsServiceV3Decorator {
         v2Protocols.data.push({
           project: v3Protocol.slug,
           name: v3Protocol.slug,
+          version: 'v3',
           features: v3Protocol.features,
           links: v3Protocol.links,
         } as unknown as ProtocolDataDto);

@@ -13,6 +13,7 @@ import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregat
 
 import { INamedFunctionPredicates } from '../../../interfaces';
 import { IStakingFeatureMinimal } from '../../../interfaces/feature.staking.interface';
+import { ISupplyTokenOpportunity } from '../../../interfaces/tokens.supplied.interface';
 import { AbiService } from '../../AbiModule/AbiService';
 import { MasterChef } from './MasterChef';
 
@@ -113,5 +114,20 @@ export class IronFinanceStaking extends MasterChef {
 
   protected getLpTokenContract(token: string): UniswapV2Pair {
     return new IronFinanceLpPairs(token);
+  }
+
+  protected modifyUserEntrySupplied(supplied: ISupplyTokenOpportunity, balance: number) {
+    const poolShare = balance / supplied.token.totalSupply;
+    let value = 0;
+    supplied.token.underlying?.forEach((underlying) => {
+      underlying.balance = underlying.reserve * poolShare;
+      underlying.value = underlying.balance * underlying.price;
+      value += underlying.value;
+    });
+
+    return Object.assign(supplied, {
+      amount: balance,
+      value: value > 0 ? value : balance * supplied.token.price,
+    });
   }
 }

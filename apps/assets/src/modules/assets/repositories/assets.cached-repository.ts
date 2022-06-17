@@ -73,27 +73,34 @@ export class AssetsCachedRepository {
     requests: GetAssetRequest[],
   ): Promise<AssetEntity[]> {
     const cacheKeys = requests.map(getAssetCacheKey);
-    const cachedAssets = await this.getAssetFromCacheWithUnderlying(cacheKeys);
+    const cachedAssets = await this.getAssetsFromCacheWithUnderlying(cacheKeys);
     return excludeAssetsByRequests(requests, this.mapCachedAssetsToEntities(cachedAssets));
   }
 
-  private async getAssetFromCacheWithUnderlying(cacheKeys: string[]): Promise<AssetDto[]> {
+  private async getAssetsFromCacheWithUnderlying(
+    cacheKeys: string[],
+    allCacheKeys = [],
+  ): Promise<AssetDto[]> {
     // TODO: This is crashing from time to time
     // TODO: We cannot do many awaits here, we should get all missing underlying and load with single call
-    const cachedAssets = [];
-    for (const cachedAsset of (await this.cache.mget<AssetDto>(cacheKeys)).filter(Boolean)) {
-      cachedAssets.push(cachedAsset);
+    const cachedAssets = (await this.cache.mget<AssetDto>(cacheKeys)).filter(Boolean);
+    const assetCacheKeys = [];
+    for (const cachedAsset of cachedAssets) {
       if (cachedAsset.underlying?.length) {
-        cachedAssets.push(
-          ...(await this.getAssetFromCacheWithUnderlying(
-            cachedAsset.underlying.map(({ address }) =>
-              getAssetCacheKey({ address, chainId: cachedAsset.chainId }),
-            ),
-          )),
-        );
+        cachedAsset.underlying.forEach(({ address }) => {
+          const key = getAssetCacheKey({ address, chainId: cachedAsset.chainId });
+          if (!allCacheKeys.includes(key)) {
+            assetCacheKeys.push(key);
+            allCacheKeys.push(key);
+          }
+        });
       }
     }
-    return cachedAssets;
+    return cachedAssets.concat(
+      assetCacheKeys.length
+        ? await this.getAssetsFromCacheWithUnderlying(assetCacheKeys, allCacheKeys)
+        : [],
+    );
   }
 
   private mapCachedAssetsToEntities(cachedAssets: AssetDto[]): AssetEntity[] {
@@ -148,16 +155,28 @@ export class AssetsCachedRepository {
   }
 
   async save(asset: AssetEntity): Promise<AssetEntity> {
+    // TODO: update asset cache mapping to avoid this additional call
+    if (asset.id && asset.underlying?.length) {
+      const existingUndelyings = await this.assetsRepository.manager
+        .getRepository(AssetUnderlyingEntity)
+        .find({
+          where: asset.underlying?.map((underlying) => ({
+            asset,
+            underlyingAsset: underlying.underlyingAsset,
+          })),
+          relations: ['underlyingAsset'],
+        });
+      for (const underlying of asset.underlying) {
+        const existingUnderlying = existingUndelyings.find(
+          ({ position, underlyingAsset: { address } }) =>
+            position === underlying.position && address === underlying.underlyingAsset.address,
+        );
+        if (existingUnderlying) {
+          underlying.id = existingUnderlying.id;
+        }
+      }
+    }
     const saved = await this.assetsRepository.save(asset);
-    this.saveAssetsToCache([saved]).catch((error) =>
-      this.logger.error(`Saving asset ${asset.address} to cache failed`, error),
-    );
-    return saved;
-  }
-
-  async update(asset: Partial<AssetEntity>): Promise<AssetEntity> {
-    await this.assetsRepository.update(asset.id, asset);
-    const saved = await this.assetsRepository.findOne({ id: asset.id });
     this.saveAssetsToCache([saved]).catch((error) =>
       this.logger.error(`Saving asset ${asset.address} to cache failed`, error),
     );

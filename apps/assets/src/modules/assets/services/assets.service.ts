@@ -116,10 +116,13 @@ export class AssetsService extends CrudService<AssetsRepository> {
 
   private async getAssets(requests: GetAssetRequest[]): Promise<AssetEntity[]> {
     const assets = await this.assetsRepository.findManyByAddressesAndChainIds(requests);
-    const assetsToProcess = this.excludeFoundAssets(requests, assets);
-    if (assetsToProcess.length) {
-      this.processAssets(assetsToProcess).catch((error) =>
-        this.logger.error(`Sending ${assetsToProcess.length} assets for processing failed`, error),
+    const requestsToProcess = this.excludeFoundAssets(requests, assets);
+    if (requestsToProcess.length) {
+      this.processAssets(requestsToProcess).catch((error) =>
+        this.logger.error(
+          `Sending ${requestsToProcess.length} assets for processing failed`,
+          error,
+        ),
       );
     }
 

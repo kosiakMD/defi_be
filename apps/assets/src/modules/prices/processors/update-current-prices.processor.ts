@@ -9,6 +9,7 @@ import { formatError } from '@app/common/utils';
 
 import { PriceJobName } from '../../../common/enum/job-name.enum';
 import { QueueName } from '../../../common/enum/queue-name.enum';
+import { BullQueueService } from '../../../common/services/bull-queue.service';
 
 import { PriceSourceRepository } from '../repositories/price-source.repository';
 import { PriceSource } from '../types/price-source.type';
@@ -24,13 +25,17 @@ export class UpdateCurrentPricesProcessor {
     @InjectQueue(QueueName.PRICES) private pricesQueue: Queue,
     @InjectRepository(PriceSourceRepository)
     private readonly priceSourceRepository: PriceSourceRepository,
+    private readonly bullQueueService: BullQueueService,
   ) {
-    pricesQueue.on('failed', async (job: Job, error: Error) => {
-      if (error.message === 'job stalled more than allowable limit') {
-        logger.warn(`${job.id} stalled, it will be removed`);
-        await pricesQueue.removeJobs(job.id.toString());
-      }
-    });
+    //https://defiyield.atlassian.net/browse/ID-4678
+    // We use bull queue for the price jobs processing.
+    // We generate jobId by ourselves to replace existing job(s) in the queue if any.
+    // At some point of time some jobs may get stalled and as a result such jobs
+    // will never be re-processed. 'stalled' EventListener removes such jobs,
+    // but there is still a possibility that process is killed before stalled job is removed.
+    // So we clean failed jobs once on start-up to guarantee correct processing
+    bullQueueService.cleanAllFailedJobs(pricesQueue);
+    bullQueueService.setupStalledJobRemovingHandler(pricesQueue);
   }
 
   @Process(PriceJobName.UPDATE_CURRENT_PRICES)

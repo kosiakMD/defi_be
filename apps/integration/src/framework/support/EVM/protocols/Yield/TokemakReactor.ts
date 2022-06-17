@@ -7,7 +7,6 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { Address } from '@app/common';
 import { Logger } from '@app/common';
 import { normalizeDecimals } from '@app/common/utils';
-import { TokemakToken } from '@app/common/web3provider/contracts/protocols/tokemak/TokemakToken';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
 import { AssetService } from '../../../../../modules/microservices/asset.service';
@@ -19,6 +18,7 @@ import {
 } from '../../../interfaces/feature.staking.interface';
 import { AbiService } from '../../AbiModule/AbiService';
 import { SingleContractProtocol } from '../../SingleContractProtocol';
+import { TokemakToken } from '../../contracts/TokemakToken';
 
 export class TokemakReactor extends SingleContractProtocol<
   IStakingFeatureMinimal,

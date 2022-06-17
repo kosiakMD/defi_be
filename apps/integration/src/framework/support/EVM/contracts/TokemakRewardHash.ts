@@ -1,6 +1,6 @@
 import { AbiItem } from 'web3-utils';
 
-import { MultiCallAbiProxy } from '../../../multicall.abi.proxy';
+import { MultiCallAbiProxy } from '@app/common/web3provider/multicall.abi.proxy';
 
 export class TokemakRewardHash extends MultiCallAbiProxy {
   static readonly latestCycleIndex: AbiItem = {

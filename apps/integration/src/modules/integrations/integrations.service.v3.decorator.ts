@@ -403,13 +403,20 @@ export class IntegrationsServiceV3Decorator {
           item.apy?.stableApy ??
           item.apy?.variableApy;
 
-      return plainToClass(LendingPositionDto, {
+      const resultItem = plainToClass(LendingPositionDto, {
         address: item.token.address,
         balance: item.amount,
         value: item.value,
         apy,
         token: item.token,
+        isCollateral: Boolean(item.isCollateral),
       });
+
+      if (item.healthFactor) {
+        // case for the sushiSwap borrowing position
+        resultItem['healthFactor'] = item.healthFactor;
+      }
+      return resultItem;
     });
   }
 

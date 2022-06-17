@@ -10,6 +10,7 @@ import {
 import { rpcValidation } from '@app/common/config/components/rpcs.config';
 
 import { blockscanConfig } from './components/blockscan';
+import { blockscoutConfig } from './components/blockscout';
 import { dataSourceConfig } from './components/dataSources';
 
 export const validationSchema = Joi.object({
@@ -38,6 +39,7 @@ export const validationSchema = Joi.object({
 
   ...dataSourceConfig,
   ...blockscanConfig,
+  ...blockscoutConfig,
 });
 
 export const validationOptions = {

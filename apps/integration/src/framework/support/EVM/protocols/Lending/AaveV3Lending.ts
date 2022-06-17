@@ -213,6 +213,10 @@ export class AaveV3Lending
       },
     );
 
+    if (!this.meta.context.allATokens) {
+      await this.callInputlessFunctions();
+    }
+
     const calls = new Map();
     calls.set(
       `${address}.rewards`,

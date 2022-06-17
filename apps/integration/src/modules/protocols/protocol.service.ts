@@ -152,7 +152,7 @@ export class ProtocolService {
       raydiumProtocol,
       saberProtocol,
       spookySwapProtocol,
-      sushiswapProtocolV2,
+      // sushiswapProtocolV2,
       terraswapProtocol,
       traderjoeProtocol,
       trisolarisProtocol,

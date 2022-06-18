@@ -5,7 +5,7 @@ import { Inject, LoggerService } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Address, ChainId } from '@app/common';
+import { Address } from '@app/common';
 import { formatAddress, formatError, isZeroAddress } from '@app/common/utils';
 
 import { AssetJobName } from '../../../common/enum/job-name.enum';
@@ -13,18 +13,15 @@ import { QueueName } from '../../../common/enum/queue-name.enum';
 import { AssetReference } from '../../../common/types';
 
 import { AssetsCategoryRepository } from '../../assets-category/repositories/assets-category.repository';
-import { AssetInvalidEntity } from '../entities/asset-invalid.entity';
 import { AssetUnderlyingEntity } from '../entities/asset-underlying.entity';
 import { AssetEntity } from '../entities/asset.entity';
-import { AssetsInvalidRepository } from '../repositories/assets-invalid.repository';
 import { AssetsCachedRepository } from '../repositories/assets.cached-repository';
 import { AssetIcon } from '../services/analysers/core/asset.analyser';
 import { AssetAnalyserService } from '../services/asset-analyser.service';
 import { IconsService } from '../services/icons.service';
+import { InvalidAssetService } from '../services/invalid-asset.service';
 import { AssetMetadata } from '../types/asset-metadata.type';
 import { AssetProcessingRequest } from '../types/asset-processing.request';
-
-const MAX_INVALID_ASSET_RETRY = 5;
 
 /*
  Main Assets processor that analyses and stores assets.
@@ -37,8 +34,7 @@ export class AssetsProcessor {
     private readonly assetsRepository: AssetsCachedRepository,
     @InjectRepository(AssetsCategoryRepository)
     private readonly assetsCategoryRepository: AssetsCategoryRepository,
-    @InjectRepository(AssetsInvalidRepository)
-    private readonly assetsInvalidRepository: AssetsInvalidRepository,
+    private readonly invalidAssetService: InvalidAssetService,
     private readonly iconsService: IconsService,
     private readonly assetAnalyserService: AssetAnalyserService,
   ) {}
@@ -73,7 +69,10 @@ export class AssetsProcessor {
     try {
       this.logger.debug(`Process asset data ${JSON.stringify(assetRequest)}`);
 
-      if (await this.isAssetInvalid(chainId, address)) {
+      if (
+        !assetRequest.forceUpdate &&
+        (await this.invalidAssetService.isAssetInvalid(chainId, address))
+      ) {
         this.logger.debug(`Skip processing invalid asset ${JSON.stringify(assetRequest)}`);
         return;
       }
@@ -100,7 +99,7 @@ export class AssetsProcessor {
       const asset = await this.assetAnalyserService.analyseAsset({ chainId, address });
       if (!asset) {
         this.logger.warn(`Asset chainId: ${chainId} address: ${address} cannot be analysed`);
-        await this.increaseInvalidRetries(chainId, address);
+        await this.invalidAssetService.increaseInvalidRetries(chainId, address);
         return;
       }
 
@@ -139,7 +138,7 @@ export class AssetsProcessor {
       const savedAsset = await this.assetsRepository.save(processingAsset);
 
       // Asset was stored so we removed it from invalid list
-      await this.assetsInvalidRepository.removeByChainIdAndAddress(chainId, address);
+      await this.invalidAssetService.cleanInvalidAsset(chainId, address);
 
       return savedAsset;
     } catch (error) {
@@ -149,7 +148,7 @@ export class AssetsProcessor {
         error: formatError(error),
       });
 
-      await this.increaseInvalidRetries(chainId, address);
+      await this.invalidAssetService.increaseInvalidRetries(chainId, address);
 
       throw error;
     }
@@ -221,23 +220,5 @@ export class AssetsProcessor {
       asset.isTracked = request.isTracked;
     }
     return await this.assetsRepository.save(asset);
-  }
-
-  private async isAssetInvalid(chainId: ChainId, address: Address) {
-    const invalidAsset = await this.assetsInvalidRepository.getByChainAndAddress(chainId, address);
-    return invalidAsset?.retries >= MAX_INVALID_ASSET_RETRY;
-  }
-
-  private async increaseInvalidRetries(chainId: ChainId, address: Address) {
-    let invalidAsset = await this.assetsInvalidRepository.getByChainAndAddress(chainId, address);
-    if (!invalidAsset) {
-      invalidAsset = new AssetInvalidEntity();
-      invalidAsset.chainId = chainId;
-      invalidAsset.address = address;
-      invalidAsset.retries = 0;
-    }
-
-    invalidAsset.retries += 1;
-    await this.assetsInvalidRepository.save(invalidAsset);
   }
 }

@@ -19,7 +19,7 @@ import { PricesModule } from '../prices/prices.module';
 import { AssetsHistoricalPriceRepository } from '../prices/repositories/asset-historical-price.repository';
 import { PriceSourceRepository } from '../prices/repositories/price-source.repository';
 import { AssetCandidateEntity } from './entities/asset-candidate.entity';
-import { AssetInvalidAddressEntity } from './entities/asset-invalid-address.entity';
+import { AssetInvalidEntity } from './entities/asset-invalid.entity';
 import { AssetUnderlyingEntity } from './entities/asset-underlying.entity';
 import { AssetEntity } from './entities/asset.entity';
 import { AssetsProcessor } from './processors/assets.processor';
@@ -27,6 +27,7 @@ import { ReprocessNoIconAssetsProcessor } from './processors/reprocess-no-icon-a
 import { Univ2LikeAssetsLPProcessor } from './processors/univ2-like-assets-lp.processor';
 import { UpdateTrackedAssetsProcessor } from './processors/update-tracked-assets.processor';
 import { AssetsCandidateRepository } from './repositories/assets-candidate.repository';
+import { AssetsInvalidRepository } from './repositories/assets-invalid.repository';
 import { AssetsCachedRepository } from './repositories/assets.cached-repository';
 import { AssetsRepository } from './repositories/assets.repository';
 import { assetAnalysers } from './services/analysers/registry';
@@ -78,7 +79,8 @@ const processors = [
       AssetsRepository,
       AssetHistoricalPriceEntity,
       AssetsHistoricalPriceRepository,
-      AssetInvalidAddressEntity,
+      AssetInvalidEntity,
+      AssetsInvalidRepository,
       AssetUnderlyingEntity,
     ]),
     PricesModule,

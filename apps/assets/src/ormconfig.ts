@@ -16,7 +16,6 @@ export default {
   entities: [
     `dist/apps/assets/src/modules/assets/entities/**/*.entity.ts`,
     `dist/apps/assets/src/modules/assets-category/entities/**/*.entity.ts`,
-    `dist/apps/assets/src/modules/icons/entities/**/*.entity.ts`,
     `dist/apps/assets/src/modules/prices/entities/**/*.entity.ts`,
   ],
   migrations: [`dist/apps/assets/src/database/migrations/**/*.ts`],

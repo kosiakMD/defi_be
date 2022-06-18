@@ -69,14 +69,6 @@ export class AssetsProcessor {
     try {
       this.logger.debug(`Process asset data ${JSON.stringify(assetRequest)}`);
 
-      if (
-        !assetRequest.forceUpdate &&
-        (await this.invalidAssetService.isAssetInvalid(chainId, address))
-      ) {
-        this.logger.debug(`Skip processing invalid asset ${JSON.stringify(assetRequest)}`);
-        return;
-      }
-
       const existingAsset = await this.assetsRepository.findOneByAddressAndChain(address, chainId);
       if (existingAsset) {
         // TODO: Outdated asset is not handled
@@ -92,6 +84,14 @@ export class AssetsProcessor {
         this.logger.debug(
           `Asset id: ${existingAsset.id} chainId: ${chainId} address: ${address} found, but force reload requested`,
         );
+      }
+
+      if (
+        !assetRequest.forceUpdate &&
+        (await this.invalidAssetService.isAssetInvalid(chainId, address))
+      ) {
+        this.logger.debug(`Skip processing invalid asset ${JSON.stringify(assetRequest)}`);
+        return;
       }
 
       const processingAsset = existingAsset || new AssetEntity();

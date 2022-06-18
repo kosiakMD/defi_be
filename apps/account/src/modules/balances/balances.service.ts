@@ -19,6 +19,7 @@ import { retry } from '@app/common/utils/retry';
 import { BLACKLISTED_TOKENS } from '../../common/constant';
 import { BalancesLoadingStrategy } from '../../common/interfaces';
 import { Web3Provider } from '../../common/providers/chainRelated/web3.provider';
+import { AssetService } from '../../common/providers/microservices/assets/asset.service';
 import { PriceService } from '../../common/providers/microservices/price/price.service';
 import { excludeSecondArray } from '../../common/utils';
 
@@ -62,6 +63,7 @@ export class BalancesService {
     @InjectRepository(AssetsEntity)
     private readonly assetsRepository: Repository<AssetsEntity>,
     private readonly priceService: PriceService,
+    private readonly assetService: AssetService,
     private readonly blacklistService: BlacklistService,
     private readonly web3Provider: Web3Provider,
     private readonly networkBalancesStrategy: NetworkBalancesStrategy,

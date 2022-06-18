@@ -154,7 +154,11 @@ export class AssetsService extends CrudService<AssetsRepository> {
 
   private async processAssets(requests: GetAssetRequest[]): Promise<void> {
     requests.map(async (request) => {
-      if (await this.invalidAssetService.isAssetInvalid(request.chainId, request.address)) {
+      // TODO: Move sending to queue to another class
+      if (
+        !request.forceUpdate &&
+        (await this.invalidAssetService.isAssetInvalid(request.chainId, request.address))
+      ) {
         this.logger.debug(`Skip processing invalid asset ${JSON.stringify(request)}`);
         return;
       }

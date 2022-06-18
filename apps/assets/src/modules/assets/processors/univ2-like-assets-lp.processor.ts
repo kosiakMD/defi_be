@@ -7,7 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, ChainId } from '@app/common';
-import { chunkRunAsync, formatAddress, isZeroAddress } from '@app/common/utils';
+import { chunkRunAsync, formatAddress, formatError, isZeroAddress } from '@app/common/utils';
 import { DynamicContract } from '@app/common/web3provider/contracts/DynamicContract';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
@@ -57,7 +57,10 @@ export class Univ2LikeAssetsLPProcessor {
         await Promise.all(promises);
       }
     } catch (e) {
-      this.logger.error(`Error updating UniSwap V2 like LPs: ${job.name}`, e);
+      this.logger.error({
+        message: `Error updating UniSwap V2 like LPs: ${job.name}`,
+        error: formatError(e),
+      });
       throw e;
     }
   }

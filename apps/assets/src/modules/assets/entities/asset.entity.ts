@@ -92,6 +92,6 @@ export class AssetEntity extends BaseEntity {
 
   @Expose()
   get isLpToken(): boolean {
-    return this.categories.some(({ code }) => code === AssetCategory.LpToken);
+    return this.categories?.some(({ code }) => code === AssetCategory.LpToken) || false;
   }
 }

@@ -75,8 +75,6 @@ export interface AssembledAssetInterface {
   // weight
   reserve?: number;
 
-  // isTracked?: boolean;
-  // disabled?: boolean;
   categories: AssetCategoryInterface[];
   historicalPrices?: AssetHistoricalPriceInterface[];
   underlying: AssembledAssetInterface[];

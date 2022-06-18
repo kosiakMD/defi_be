@@ -1,3 +1,4 @@
+import { AssetServiceInterface } from '@sdk/assets/interfaces';
 import { UniswapV2AssetService } from 'apps/integration/src/modules/microservices/uniswap.asset.service';
 import BigNumber from 'bignumber.js';
 import { Cache } from 'cache-manager';
@@ -50,25 +51,34 @@ const REWARD_REGEX = /^(\w+)(per)((block|sec(ond)?))$/;
  * Classic masterchef. Deposit a token, or LP token into
  * a pool, and receive a portion of the pool emissions
  */
-export class MasterChef
+export class MasterChef<
+    TStakingFeatureMinimal extends IStakingFeatureMinimal = IStakingFeatureMinimal,
+    TStakingFeatureOpportunity extends IStakingFeatureOpportunity = IStakingFeatureOpportunity,
+    TStakingFeatureUserEntry extends IStakingFeatureUserEntry = IStakingFeatureUserEntry,
+    TMasterChefMeta extends IMasterChefMeta = IMasterChefMeta,
+  >
   extends SingleContractProtocol<
-    IStakingFeatureMinimal,
-    IStakingFeatureOpportunity,
-    IStakingFeatureUserEntry,
-    IMasterChefMeta
+    TStakingFeatureMinimal,
+    TStakingFeatureOpportunity,
+    TStakingFeatureUserEntry,
+    TMasterChefMeta
   >
   implements IRootProtocol
 {
+  protected assetService: AssetServiceInterface;
   constructor(
     protected abiService: AbiService,
     protected multicall: MulticallAggregator,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected logger: Logger,
     @Inject(CACHE_MANAGER) protected cache: Cache,
-    protected assetService: UniswapV2AssetService,
+    assetService?: UniswapV2AssetService,
   ) {
     super();
     if (this.updateFunctionPredicates) {
       this.updateFunctionPredicates();
+    }
+    if (assetService) {
+      this.assetService = assetService;
     }
   }
 
@@ -127,7 +137,7 @@ export class MasterChef
    */
   protected async fetchOpportunityData(context: {
     [key: string]: any;
-  }): Promise<IStakingFeatureMinimal[]> {
+  }): Promise<TStakingFeatureMinimal[]> {
     // parse/format the supplied context data
     const poolIds = Array.from(Array(context.poolLength).keys());
 
@@ -158,7 +168,7 @@ export class MasterChef
     poolInfo: IMasterChefPoolInfo,
     totalStaked: string,
     context: { [key: string]: any },
-  ): IStakingFeatureMinimal {
+  ): TStakingFeatureMinimal {
     const rewardShare = poolInfo.allocPoint / context.totalAllocPoint;
 
     const rewardPerSecond = new BigNumber(context.rewardPerSecond) //
@@ -184,7 +194,7 @@ export class MasterChef
         },
       ],
       interactive: this.formatOpportunityInteractiveFunctions(poolInfo),
-    };
+    } as TStakingFeatureMinimal;
   }
 
   protected formatOpportunityInteractiveFunctions(poolInfo: { poolId: number }) {
@@ -228,8 +238,8 @@ export class MasterChef
 
   protected async fetchUserData(
     address: Address,
-    pools: IStakingFeatureOpportunity[],
-  ): Promise<IStakingFeatureUserEntry[]> {
+    pools: TStakingFeatureOpportunity[],
+  ): Promise<TStakingFeatureUserEntry[]> {
     const results = await this.getUserInfoAndRewardsFromChain(pools, address);
     return pools.reduce((pools, pool) => {
       const userPool = this.formatUserData(address, pool, results);
@@ -265,7 +275,6 @@ export class MasterChef
   }
 
   protected modifyUserEntrySupplied(supplied: ISupplyTokenOpportunity, balance: number) {
-    // const poolShare = balance / supplied.token['totalSupply'];
     const poolShare = balance / supplied.token.totalSupply;
     supplied.token.underlying?.forEach((underlying) => {
       underlying.balance = underlying.reserve * poolShare;

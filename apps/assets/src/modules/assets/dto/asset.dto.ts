@@ -2,6 +2,7 @@ import { Exclude, Expose } from 'class-transformer';
 
 import { ApiProperty } from '@nestjs/swagger';
 
+import { AssetMetadata } from '../types/asset-metadata.type';
 import { AssetCategoryDto } from './asset-category.dto';
 import { AssetHistoricalPriceDto } from './asset-historical-price.dto';
 import { AssetUnderlyingDto } from './asset-underlying.dto';
@@ -69,4 +70,8 @@ export class AssetDto {
   @Expose()
   @ApiProperty({ type: [AssetUnderlyingDto] })
   underlying: AssetUnderlyingDto[] = [];
+
+  @Expose({ toClassOnly: true })
+  @ApiProperty({ type: 'json', nullable: false, default: {} })
+  public metadata: AssetMetadata;
 }

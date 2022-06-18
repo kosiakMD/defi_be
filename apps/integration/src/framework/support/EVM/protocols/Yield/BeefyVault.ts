@@ -1,4 +1,4 @@
-import { UniswapV2AssetService } from 'apps/integration/src/modules/microservices/uniswap.asset.service';
+import { BeefyAutofarmAssetService } from 'apps/integration/src/modules/microservices/beefy-autofarm.asset.service';
 import { Cache } from 'cache-manager';
 import { filter, firstValueFrom, map, mergeMap, toArray } from 'rxjs';
 
@@ -75,7 +75,7 @@ export class BeefyVault
     protected multicall: MulticallAggregator,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected logger: Logger,
     @Inject(CACHE_MANAGER) protected cache: Cache,
-    protected assetService: UniswapV2AssetService,
+    protected assetService: BeefyAutofarmAssetService,
     protected httpService: HttpService,
   ) {
     super();

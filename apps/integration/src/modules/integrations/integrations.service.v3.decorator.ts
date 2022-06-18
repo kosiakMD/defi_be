@@ -70,6 +70,7 @@ export class IntegrationsServiceV3Decorator {
         v2Protocols.data.push({
           project: v3Protocol.slug,
           name: v3Protocol.slug,
+          version: 'v3',
           features: v3Protocol.features,
           links: v3Protocol.links,
         } as unknown as ProtocolDataDto);
@@ -403,13 +404,20 @@ export class IntegrationsServiceV3Decorator {
           item.apy?.stableApy ??
           item.apy?.variableApy;
 
-      return plainToClass(LendingPositionDto, {
+      const resultItem = plainToClass(LendingPositionDto, {
         address: item.token.address,
         balance: item.amount,
         value: item.value,
         apy,
         token: item.token,
+        isCollateral: Boolean(item.isCollateral),
       });
+
+      if (item.healthFactor) {
+        // case for the sushiSwap borrowing position
+        resultItem['healthFactor'] = item.healthFactor;
+      }
+      return resultItem;
     });
   }
 

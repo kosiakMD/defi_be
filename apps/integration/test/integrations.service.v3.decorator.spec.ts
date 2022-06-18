@@ -1,5 +1,3 @@
-import { Test } from '@nestjs/testing';
-
 import { FeatureEnum } from '@app/common';
 
 import { IntegrationsServiceV3Decorator } from '../src/modules/integrations/integrations.service.v3.decorator';
@@ -40,7 +38,6 @@ describe('toV2Response should', () => {
   it('To calculate total lending value correctly', () => {
     expect(wallet.chains[0][FeatureEnum.lending].totalValue).toBe(0.15332893952);
   });
-
 
   it('To map correct balance to first lending item', () => {
     expect(firstLendingItem.balance).toBe(0.001517139);

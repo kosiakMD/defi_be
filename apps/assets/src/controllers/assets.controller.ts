@@ -32,6 +32,21 @@ export class AssetsController {
     return response;
   }
 
+  @Get('/accounted')
+  @ApiQuery({
+    name: 'chainId',
+    type: Number,
+    description: 'Chain id',
+    example: 5,
+    required: true,
+  })
+  @ApiResponse({ status: HttpStatus.OK, type: GetAssetsResponse })
+  async getAccountedAssets(@Query() { chainId }: { chainId: number }): Promise<GetAssetsResponse> {
+    const response = new GetAssetsResponse();
+    response.assets = await this.assetsService.getAccountedAssetsByChain(chainId);
+    return response;
+  }
+
   @Get('/search')
   @ApiQuery({
     name: 'addresses',

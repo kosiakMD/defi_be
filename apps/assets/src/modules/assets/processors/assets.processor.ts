@@ -118,6 +118,7 @@ export class AssetsProcessor {
         underlying.underlyingAsset = await this.processAsset({
           address: underlyingAddress,
           chainId,
+          forceUpdate: assetRequest.forceUpdate,
         });
         processingAsset.underlying.push(underlying);
       }
@@ -191,17 +192,16 @@ export class AssetsProcessor {
   }
 
   private async updateAsset(asset: AssetEntity, request: AssetProcessingRequest) {
-    const assetDataToUpdate: Partial<AssetEntity> = { id: asset.id };
-    assetDataToUpdate.metadata = {
+    asset.metadata = {
       ...asset.metadata,
       ...request.metadata,
     };
 
-    assetDataToUpdate.rank = this.calculateRank(asset.address, assetDataToUpdate.metadata);
+    asset.rank = this.calculateRank(asset.address, asset.metadata);
     // TODO: Handle case when asset should have price but not be shown in balances
     if (request.isTracked && !asset.isTracked) {
-      assetDataToUpdate.isTracked = request.isTracked;
+      asset.isTracked = request.isTracked;
     }
-    return await this.assetsRepository.update(assetDataToUpdate);
+    return await this.assetsRepository.save(asset);
   }
 }

@@ -10,6 +10,8 @@ module.exports = {
   testEnvironment: 'node',
 
   moduleNameMapper: {
+    '^@sdk/assets$': ['<rootDir>../../../libs/assets/src'],
+    '^@sdk/assets/(.*)$': ['<rootDir>../../../libs/assets/src/$1'],
     '^@app/common$': ['<rootDir>../../../libs/common/src'],
     '^@app/common/(.*)$': ['<rootDir>../../../libs/common/src/$1'],
   },

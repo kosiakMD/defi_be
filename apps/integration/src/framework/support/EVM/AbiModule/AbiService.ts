@@ -101,7 +101,7 @@ export class AbiService {
     return this.parseFunctionsFromAbi(abi, predicates, address, chain, acceptableStateMutability);
   }
 
-  private async parseFunctionsFromAbi(
+  private parseFunctionsFromAbi(
     abi: AbiItem[],
     predicates: INamedFunctionPredicates,
     address: Address,

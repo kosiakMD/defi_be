@@ -6,6 +6,8 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+import { ChainId } from '@app/common';
+import { CacheService } from '@app/common/services/cache.service';
 import { CrudService } from '@app/common/services/crud.service';
 import { isSomeAddress } from '@app/common/utils';
 
@@ -38,6 +40,7 @@ export class AssetsService extends CrudService<AssetsRepository> {
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
     @InjectQueue(QueueName.ASSETS) private readonly assetsQueue: Queue,
+    private readonly cacheService: CacheService,
     private readonly assetsRepository: AssetsCachedRepository,
     @InjectRepository(AssetsHistoricalPriceRepository)
     private readonly assetsHistoricalPriceRepository: AssetsHistoricalPriceRepository,
@@ -113,10 +116,13 @@ export class AssetsService extends CrudService<AssetsRepository> {
 
   private async getAssets(requests: GetAssetRequest[]): Promise<AssetEntity[]> {
     const assets = await this.assetsRepository.findManyByAddressesAndChainIds(requests);
-    const assetsToProcess = this.excludeFoundAssets(requests, assets);
-    if (assetsToProcess.length) {
-      this.processAssets(assetsToProcess).catch((error) =>
-        this.logger.error(`Sending ${assetsToProcess.length} assets for processing failed`, error),
+    const requestsToProcess = this.excludeFoundAssets(requests, assets);
+    if (requestsToProcess.length) {
+      this.processAssets(requestsToProcess).catch((error) =>
+        this.logger.error(
+          `Sending ${requestsToProcess.length} assets for processing failed`,
+          error,
+        ),
       );
     }
 
@@ -184,6 +190,22 @@ export class AssetsService extends CrudService<AssetsRepository> {
     }, new Map<number, AssetHistoricalPriceDto[]>());
     assets.forEach((asset) => (asset.historicalPrices = historicalPrices.get(asset.id) || []));
     return assets;
+  }
+
+  public async getAccountedAssetsByChain(chainId: ChainId): Promise<AssetDto[]> {
+    const assets = await this.cacheService.getOrLoad(
+      `assets_service_balances_assets_${chainId}`,
+      () => this.assetsRepository.findTrackedAssetsByChain(chainId),
+      {
+        ttl: 15 * 60, // 15 minutes
+      },
+    );
+    // NOTE: We don't care about underlying and special assets as we won't show them in balances
+    const assetsForBalances = assets.filter(({ isNotAccounted }) => !isNotAccounted);
+    const dtos = mapAssetsToPlain(assetsForBalances);
+    const dtosWithPrices = await this.addPrices(dtos);
+    // NOTE: Only return assets that have prices as others we don't show on balances
+    return dtosWithPrices.filter(({ price }) => !!price);
   }
 
   public async search(searchParams: SearchParams): Promise<SearchResultsEntryDto[]> {

@@ -26,14 +26,14 @@ export class AssetsRepository extends Repository<AssetEntity> {
   findTrackedAssetsWithoutIcon(): Promise<AssetEntity[]> {
     return this.find({
       where: { disabled: false, isTracked: true, icon: null },
-      relations: ['underlying', 'underlying.underlyingAsset'],
+      relations: UNDERLYING_RELATIONS,
     });
   }
 
   findOneByAddressAndChain(address: string, chainId: ChainIdEnum): Promise<AssetEntity> {
     return this.findOne({
       where: { chainId, address: ILike(address) },
-      relations: ['underlying', 'underlying.underlyingAsset'],
+      relations: UNDERLYING_RELATIONS,
     });
   }
 
@@ -47,7 +47,7 @@ export class AssetsRepository extends Repository<AssetEntity> {
         chainId,
         address: ILike(address),
       })),
-      relations: ['underlying', 'underlying.underlyingAsset'],
+      relations: UNDERLYING_RELATIONS,
     });
   }
 
@@ -127,3 +127,11 @@ export class AssetsRepository extends Repository<AssetEntity> {
     );
   }
 }
+
+const UNDERLYING_RELATIONS = [
+  // TODO: should be handled with recursive
+  'underlying',
+  'underlying.underlyingAsset',
+  'underlying.underlyingAsset.underlying',
+  'underlying.underlyingAsset.underlying.underlyingAsset',
+];

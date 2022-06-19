@@ -195,6 +195,8 @@ export class AssetsProcessor {
   private buildDisplayName(asset: AssetEntity): string {
     if (asset.underlying?.length) {
       let displayName = asset.underlying
+        // TODO: This one is failing sometimes, why we may get it undefined
+        // .filter(({ underlyingAsset }) => !!underlyingAsset)
         .map(({ underlyingAsset }) => this.buildDisplayName(underlyingAsset))
         .join('/');
 

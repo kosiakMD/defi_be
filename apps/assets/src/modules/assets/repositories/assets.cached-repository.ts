@@ -166,6 +166,7 @@ export class AssetsCachedRepository {
           })),
           relations: ['underlyingAsset'],
         });
+
       for (const underlying of asset.underlying) {
         const existingUnderlying = existingUnderlyings.find(
           ({ position, underlyingAsset: { address } }) =>
@@ -176,10 +177,13 @@ export class AssetsCachedRepository {
         }
       }
     }
+
     const saved = await this.assetsRepository.save(asset);
+
     this.saveAssetsToCache([saved]).catch((error) =>
       this.logger.error(`Saving asset ${asset.address} to cache failed`, error),
     );
+
     return saved;
   }
 

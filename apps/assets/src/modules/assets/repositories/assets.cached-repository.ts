@@ -35,7 +35,7 @@ export class AssetsCachedRepository {
     return this.assetsRepository.findAssetsByParams(searchParams);
   }
 
-  findOneByAddressAndChain(address: string, chainId: number): Promise<AssetEntity> {
+  async findOneByAddressAndChain(address: string, chainId: number): Promise<AssetEntity> {
     return this.cache.getOrLoad(getAssetCacheKey({ chainId, address }), () =>
       this.assetsRepository.findOneByAddressAndChain(address, chainId),
     );
@@ -178,8 +178,15 @@ export class AssetsCachedRepository {
       }
     }
 
-    const saved = await this.assetsRepository.save(asset);
-
+    let saved: AssetEntity;
+    if (!asset.id) {
+      const a = await this.assetsRepository.findOne({
+        where: { address: asset.address, chainId: asset.chainId },
+      });
+      saved = await this.assetsRepository.save({ ...asset, ...(a ? { id: a.id } : {}) });
+    } else {
+      saved = await this.assetsRepository.save(asset);
+    }
     this.saveAssetsToCache([saved]).catch((error) =>
       this.logger.error(`Saving asset ${asset.address} to cache failed`, error),
     );

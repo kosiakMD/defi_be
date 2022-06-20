@@ -49,8 +49,8 @@ export class UniswapV2AssetAnalyser
     };
   }
 
-  canHandleCategory(code: string): boolean {
-    return code === AssetCategory.UniSwapV2LikeLP;
+  canHandleCategories(codes: string[]): boolean {
+    return codes.includes(AssetCategory.UniSwapV2LikeLP);
   }
 
   async getPrices(

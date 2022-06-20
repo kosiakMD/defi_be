@@ -5,6 +5,8 @@ export enum AssetCategory {
   LpToken = 'lp-token',
   UniSwapV2LikeLP = 'lp-uniswapv2-like',
   SaberLP = 'saber-lp',
+  WithSingleUnderlyingToken = 'single-underlying',
+  UnderlyingBalanceHeldByBaseContract = 'underlying-balance-held-by-base-contract',
   MinSwapLP = 'minswap-lp',
 }
 

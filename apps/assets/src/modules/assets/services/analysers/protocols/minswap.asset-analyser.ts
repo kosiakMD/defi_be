@@ -48,8 +48,8 @@ export class MinSwapAssetAnalyser
     };
   }
 
-  canHandleCategory(code: string): boolean {
-    return code === AssetCategory.MinSwapLP;
+  canHandleCategories(codes: string[]): boolean {
+    return codes.includes(AssetCategory.MinSwapLP);
   }
 
   async getPrices(

@@ -9,6 +9,8 @@ import { SolanaLabsAssetAnalyzer } from './chains/solana-labs.asset-analyser';
 import { TerraAssetAnalyser } from './chains/terra.asset-analyser';
 import { EvmCoinAssetAnalyser } from './coins/evm-coin.asset-analyser';
 import { NonEvmCoinAssetAnalyser } from './coins/non-evm-coin.asset-analyser';
+import { SingleUnderlyingAssetAnalyser } from './core/single-underlying.asset-analyzer';
+import { SingleUnderlyingTokenPriceProvider } from './core/single-underlying.price-provider';
 import { TrustWalletAssetAnalyser } from './icons/trust-wallet.asset-analyser';
 import { MinSwapAssetAnalyser } from './protocols/minswap.asset-analyser';
 import { SaberAssetAnalyser } from './protocols/saber.asset-analyser';
@@ -34,5 +36,8 @@ export const assetAnalysers = [
 
   SaberAssetAnalyser,
   UniswapV2AssetAnalyser,
+  SingleUnderlyingAssetAnalyser,
+
+  SingleUnderlyingTokenPriceProvider,
   SolanaLabsAssetAnalyzer,
 ];

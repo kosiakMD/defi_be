@@ -52,7 +52,6 @@ export class AssetService implements AssetServiceInterface {
           }),
         ),
     );
-
     const assets = assemble({ assets: requests }, data);
     return assets.map((a) => [a.address, a]);
   }

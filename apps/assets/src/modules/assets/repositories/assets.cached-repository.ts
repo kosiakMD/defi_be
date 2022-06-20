@@ -35,7 +35,7 @@ export class AssetsCachedRepository {
     return this.assetsRepository.findAssetsByParams(searchParams);
   }
 
-  async findOneByAddressAndChain(address: string, chainId: number): Promise<AssetEntity> {
+  findOneByAddressAndChain(address: string, chainId: number): Promise<AssetEntity> {
     return this.cache.getOrLoad(getAssetCacheKey({ chainId, address }), () =>
       this.assetsRepository.findOneByAddressAndChain(address, chainId),
     );

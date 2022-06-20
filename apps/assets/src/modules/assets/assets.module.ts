@@ -24,6 +24,7 @@ import { AssetUnderlyingEntity } from './entities/asset-underlying.entity';
 import { AssetEntity } from './entities/asset.entity';
 import { AssetsProcessor } from './processors/assets.processor';
 import { ReprocessNoIconAssetsProcessor } from './processors/reprocess-no-icon-assets.processor';
+import { StablecoinsCheckerProcessor } from './processors/stablecoins-checker.processor';
 import { Univ2LikeAssetsLPProcessor } from './processors/univ2-like-assets-lp.processor';
 import { UpdateTrackedAssetsProcessor } from './processors/update-tracked-assets.processor';
 import { AssetsCandidateRepository } from './repositories/assets-candidate.repository';
@@ -44,6 +45,7 @@ const processors = [
   UpdateTrackedAssetsProcessor,
   ReprocessNoIconAssetsProcessor,
   Univ2LikeAssetsLPProcessor,
+  StablecoinsCheckerProcessor,
 ];
 
 @Module({

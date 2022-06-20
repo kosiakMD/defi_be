@@ -126,6 +126,13 @@ export class AssetsRepository extends Repository<AssetEntity> {
       [factory, chainId, baseAssets],
     );
   }
+
+  async findByCategoryCodeWithoutCategories(categoryCode: string): Promise<AssetEntity[]> {
+    return this.createQueryBuilder('assets')
+      .leftJoin('assets.categories', 'category')
+      .where('category.code = :categoryCode', { categoryCode })
+      .getMany();
+  }
 }
 
 const UNDERLYING_RELATIONS = [

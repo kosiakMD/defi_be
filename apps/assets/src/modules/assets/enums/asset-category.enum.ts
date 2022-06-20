@@ -1,5 +1,6 @@
 export enum AssetCategory {
   Stablecoin = 'stablecoin',
+  UnverifiedStablecoin = 'unverified-stablecoin',
   NativeCoin = 'native-coin',
   LpToken = 'lp-token',
   UniSwapV2LikeLP = 'lp-uniswapv2-like',
@@ -8,6 +9,7 @@ export enum AssetCategory {
 
 const AssetCategoryNameMap = {
   [AssetCategory.Stablecoin]: 'Stablecoin',
+  [AssetCategory.UnverifiedStablecoin]: 'Unverified Stablecoin',
   [AssetCategory.NativeCoin]: 'Native Coin',
   [AssetCategory.LpToken]: 'LP Token',
   [AssetCategory.UniSwapV2LikeLP]: 'Uniswap V2 like LP Token',

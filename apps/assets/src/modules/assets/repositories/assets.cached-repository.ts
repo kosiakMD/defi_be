@@ -190,6 +190,14 @@ export class AssetsCachedRepository {
   findUniV2LikePairsForTrackedAssets(chainId: ChainId, factory: Address, tokens: Address[]) {
     return this.assetsRepository.findUniV2LikePairsForTrackedAssets(chainId, factory, tokens);
   }
+
+  async findByCategoryCodeWithoutCategories(categoryCode: string): Promise<AssetEntity[]> {
+    return this.assetsRepository.findByCategoryCodeWithoutCategories(categoryCode);
+  }
+
+  async findById(id: number): Promise<AssetEntity> {
+    return this.assetsRepository.findOne({ id });
+  }
 }
 
 function getAssetCacheKey({ address, chainId }: { address: string; chainId: number }) {

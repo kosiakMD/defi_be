@@ -11,14 +11,12 @@ import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregat
 import { AbiModule } from '../../framework/support/EVM/AbiModule/abi.module';
 import { CurveAssetsManager } from '../../framework/support/assets/curve.assets.manager';
 import { CardanoService } from '../protocols/helpers/cardano/cardano.service';
-import { MinSwapAccountService } from './MinSwapAccountService';
 import { MuesliSwapAccountService } from './MuesliSwapAccountService';
 import { MuesliSwapPriceService } from './MuesliSwapPriceService';
 import { AccountService } from './account.service';
 import { AssetService } from './asset.service';
 import { EllipsisAssetService } from './ellipsis.asset.service';
 import { FakeAssetService } from './fake.asset.service';
-import { MinSwapAssetService } from './minswap.asset.service.';
 import { MuesliSwapAssetService } from './muesliswap.asset.service';
 import { PriceService } from './price.service';
 import { Puppeteer } from './puppeteer';
@@ -65,11 +63,9 @@ import { YetiAssetService } from './yeti.asset.service';
     // Account Services
     AccountService,
     MuesliSwapAccountService,
-    MinSwapAccountService,
     // Price Services
     PriceService,
     MuesliSwapPriceService,
-    MinSwapAssetService,
 
     // Helpers
 
@@ -86,8 +82,6 @@ import { YetiAssetService } from './yeti.asset.service';
     EllipsisAssetService,
     MuesliSwapAccountService,
     MuesliSwapAssetService,
-    MinSwapAssetService,
-    MinSwapAccountService,
     SolanaAssetService,
     SonarAssetService,
     YetiAssetService,

@@ -157,7 +157,7 @@ export class AssetsCachedRepository {
   async save(asset: AssetEntity): Promise<AssetEntity> {
     // TODO: update asset cache mapping to avoid this additional call
     if (asset.id && asset.underlying?.length) {
-      const existingUndelyings = await this.assetsRepository.manager
+      const existingUnderlyings = await this.assetsRepository.manager
         .getRepository(AssetUnderlyingEntity)
         .find({
           where: asset.underlying?.map((underlying) => ({
@@ -166,8 +166,9 @@ export class AssetsCachedRepository {
           })),
           relations: ['underlyingAsset'],
         });
+
       for (const underlying of asset.underlying) {
-        const existingUnderlying = existingUndelyings.find(
+        const existingUnderlying = existingUnderlyings.find(
           ({ position, underlyingAsset: { address } }) =>
             position === underlying.position && address === underlying.underlyingAsset.address,
         );
@@ -176,10 +177,13 @@ export class AssetsCachedRepository {
         }
       }
     }
+
     const saved = await this.assetsRepository.save(asset);
+
     this.saveAssetsToCache([saved]).catch((error) =>
       this.logger.error(`Saving asset ${asset.address} to cache failed`, error),
     );
+
     return saved;
   }
 

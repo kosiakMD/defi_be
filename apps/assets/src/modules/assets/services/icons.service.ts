@@ -58,7 +58,9 @@ export class IconsService {
         }),
       );
 
-      const webpStream = responseStream.pipe(sharp().webp());
+      const webpStream = responseStream
+        .pipe(sharp().webp())
+        .on('error', (err) => this.logger.error(`Error '${url}' image processing`, err));
 
       return await this.awsService.uploadFile({
         bucket: this.awsConfigService.rootBucket,

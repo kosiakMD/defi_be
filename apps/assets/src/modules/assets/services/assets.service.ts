@@ -33,6 +33,7 @@ import { HistoricalPriceRequest } from '../types/historical-price-request.type';
 import { mapAssetsToPlain } from '../utils/cache-mapping';
 import { getAssetProcessJobId } from '../utils/jobs.helper';
 import { AssetAnalyserService } from './asset-analyser.service';
+import { InvalidAssetService } from './invalid-asset.service';
 
 @Injectable()
 // TODO: Return underlying assets reserves
@@ -40,15 +41,16 @@ export class AssetsService extends CrudService<AssetsRepository> {
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
     @InjectQueue(QueueName.ASSETS) private readonly assetsQueue: Queue,
+    private readonly config: ConfigService,
     private readonly cacheService: CacheService,
     private readonly assetsRepository: AssetsCachedRepository,
     @InjectRepository(AssetsHistoricalPriceRepository)
     private readonly assetsHistoricalPriceRepository: AssetsHistoricalPriceRepository,
     @InjectRepository(AssetsCandidateRepository)
     private readonly assetsCandidateRepository: AssetsCandidateRepository,
+    private readonly invalidAssetService: InvalidAssetService,
     private readonly priceService: PriceService,
     private readonly assetAnalyserService: AssetAnalyserService,
-    private readonly config: ConfigService,
   ) {
     super(AssetsCachedRepository);
   }
@@ -151,7 +153,16 @@ export class AssetsService extends CrudService<AssetsRepository> {
   }
 
   private async processAssets(requests: GetAssetRequest[]): Promise<void> {
-    requests.map((request) => {
+    requests.map(async (request) => {
+      // TODO: Move sending to queue to another class
+      if (
+        !request.forceUpdate &&
+        (await this.invalidAssetService.isAssetInvalid(request.chainId, request.address))
+      ) {
+        this.logger.debug(`Skip processing invalid asset ${JSON.stringify(request)}`);
+        return;
+      }
+
       this.logger.log(`Send asset for processing: ${JSON.stringify(request)}`);
       return this.assetsQueue.add(
         AssetJobName.ASSET_METADATA,

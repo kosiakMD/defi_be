@@ -7,7 +7,7 @@ import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, ChainId } from '@app/common';
-import { CoinSymbols, isZeroAddress } from '@app/common/utils';
+import { CoinSymbols, isZeroAddress, retry } from '@app/common/utils';
 
 import { AssetReference } from '../../../../../common/types';
 
@@ -27,7 +27,7 @@ export class CoinmarketcapAssetAnalyser implements AssetAnalyser {
   }
 
   async analyseAsset({ chainId, address }: AssetReference): Promise<AssetAnalysisResult> {
-    const response = await this.searchCmcAsset(chainId, address);
+    const response = await retry(() => this.searchCmcAsset(chainId, address));
     if (!response) {
       return;
     }

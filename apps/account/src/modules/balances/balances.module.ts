@@ -10,6 +10,7 @@ import { HttpModule } from '@app/common';
 import { CardanoService } from '../../common/providers/3rdparty/cardano.service';
 import { CovalentService } from '../../common/providers/3rdparty/covalent.service';
 import { RoninService } from '../../common/providers/3rdparty/ronin.service';
+import { AssetService } from '../../common/providers/microservices/assets/asset.service';
 import { PriceService } from '../../common/providers/microservices/price/price.service';
 
 import { BalancesController } from '../../controllers/balances.controller';
@@ -58,6 +59,7 @@ import { TerraBalancesStrategy } from './strategies/terra.balances.strategy';
   controllers: [BalancesController],
   providers: [
     PriceService,
+    AssetService,
     CardanoService,
     CovalentService,
     BalancesService,

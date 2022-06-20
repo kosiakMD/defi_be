@@ -95,12 +95,7 @@ export class AssetsRepository extends Repository<AssetEntity> {
   async findUniV2LikePairsForTrackedAssets(
     chainId: ChainId,
     factory: Address,
-    baseAssets: Address[],
   ): Promise<AssetPair[]> {
-    if (!baseAssets.length) {
-      return [];
-    }
-
     return this.query(
       `
       SELECT a.address AS address, a0.address AS token0, a1.address AS token1 FROM assets a
@@ -111,7 +106,7 @@ export class AssetsRepository extends Repository<AssetEntity> {
          JOIN assets_underlying au1 ON a.id = au1.asset_id AND au1.position = 1
          JOIN assets a1 ON au1.underlying_asset_id = a1.id
       WHERE a.metadata->>'factory' = $1 AND a.chain_id = $2 AND ac.code = 'lp-uniswapv2-like'
-      AND a0.is_tracked AND a1.address = ANY($3)
+      AND a0.is_tracked
       UNION ALL
       SELECT a.address AS address, a0.address AS token0, a1.address AS token1 FROM assets a
          JOIN assets_to_categories atc ON a.id = atc.asset_id
@@ -121,9 +116,9 @@ export class AssetsRepository extends Repository<AssetEntity> {
          JOIN assets_underlying au1 ON a.id = au1.asset_id AND au1.position = 1
          JOIN assets a1 ON au1.underlying_asset_id = a1.id
       WHERE a.metadata->>'factory' = $1 AND a.chain_id = $2 AND ac.code = 'lp-uniswapv2-like'
-      AND a0.address = ANY($3) AND a1.is_tracked
+      AND a1.is_tracked
     `,
-      [factory, chainId, baseAssets],
+      [factory, chainId],
     );
   }
 

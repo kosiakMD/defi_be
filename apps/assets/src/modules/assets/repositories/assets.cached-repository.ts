@@ -187,8 +187,8 @@ export class AssetsCachedRepository {
     return saved;
   }
 
-  findUniV2LikePairsForTrackedAssets(chainId: ChainId, factory: Address, tokens: Address[]) {
-    return this.assetsRepository.findUniV2LikePairsForTrackedAssets(chainId, factory, tokens);
+  findUniV2LikePairsForTrackedAssets(chainId: ChainId, factory: Address) {
+    return this.assetsRepository.findUniV2LikePairsForTrackedAssets(chainId, factory);
   }
 
   async findByCategoryCodeWithoutCategories(categoryCode: string): Promise<AssetEntity[]> {

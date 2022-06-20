@@ -108,6 +108,10 @@ export abstract class RootPlatform implements IRootPlatform {
     this.registrationLocked = true;
   }
 
+  getSupportedChains() {
+    return this.getMeta().features.map((feature) => feature.chain.id);
+  }
+
   getMeta(): IPlatformMeta {
     // Loop through all supported protocols
     // dedupe & merge

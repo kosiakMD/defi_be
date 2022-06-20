@@ -1,0 +1,268 @@
+[
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_unclTokenAddress",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "previousOwner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "OwnershipTransferred",
+    "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "SETTINGS",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "ETH_SPOOL_CREATION_FEE",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "TOKEN_RPOOL_CREATION_FEE",
+        "type": "uint256"
+      },
+      {
+        "internalType": "addresspayable",
+        "name": "ETH_FEE_ADDRESS",
+        "type": "address"
+      },
+      {
+        "internalType": "addresspayable",
+        "name": "TOKEN_FEE_ADDRESS",
+        "type": "address"
+      },
+      {
+        "internalType": "addresspayable",
+        "name": "UNCL_FEE_ADDRESS",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "UNCL_TOKEN_ADDRESS",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "UNCL_BOOST_MAX_PERCENTAGE",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "UNCL_BOOST_MAX_AMOUNT",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "MAX_REWARD_SUBSCRIPTIONS",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getEthFeeAddress",
+    "outputs": [
+      {
+        "internalType": "addresspayable",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getEthSPoolCreationFee",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getMaxRewardSubscriptions",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getRPoolCreationFee",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getTokenFeeAddress",
+    "outputs": [
+      {
+        "internalType": "addresspayable",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getUNCLInfo",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "addresspayable",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "owner",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "renounceOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_ethSPoolCreationFee",
+        "type": "uint256"
+      }
+    ],
+    "name": "setEthSPoolCreationFee",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "addresspayable",
+        "name": "_ethAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "addresspayable",
+        "name": "_tokenFeeAddress",
+        "type": "address"
+      }
+    ],
+    "name": "setFeeAddresses",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_threshold",
+        "type": "uint256"
+      }
+    ],
+    "name": "setMaxRewardSubscriptions",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_tokenFee",
+        "type": "uint256"
+      }
+    ],
+    "name": "setRewardTokenFee",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "transferOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]

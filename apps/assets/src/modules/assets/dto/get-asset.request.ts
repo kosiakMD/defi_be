@@ -33,6 +33,9 @@ export class GetAssetRequest {
     description: 'Timestamps on which historical prices have to be returned',
     required: false,
   })
+  @Transform(({ value }) =>
+    Array.isArray(value) ? value.forEach((v) => Number(v)) : [Number(value)],
+  )
   pricesAt?: number[];
 
   @ApiProperty({

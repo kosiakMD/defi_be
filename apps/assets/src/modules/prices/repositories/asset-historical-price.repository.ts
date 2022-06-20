@@ -10,12 +10,13 @@ import { AssetHistoricalPriceEntity } from '../entities/asset-historical-price.e
 export class AssetsHistoricalPriceRepository extends Repository<AssetHistoricalPriceEntity> {
   public getPrices(requests: HistoricalPriceRequest[]) {
     return this.find({
-      where: requests.flatMap(({ assetId, pricesAt }) =>
+      where: requests.flatMap(({ address, chainId, pricesAt }) =>
         pricesAt.map((priceAt) => {
           const timeRange = getTimeRange(priceAt);
           return {
             asset: {
-              id: assetId,
+              address,
+              chainId,
             },
             timestamp: Between(new Date(priceAt - timeRange), new Date(priceAt + timeRange)),
           };

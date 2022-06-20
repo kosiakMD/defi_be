@@ -1,4 +1,5 @@
 export type HistoricalPriceRequest = {
-  assetId: number;
+  address: string;
+  chainId: number;
   pricesAt: number[];
 };

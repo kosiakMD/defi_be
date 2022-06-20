@@ -24,41 +24,48 @@ import {
   ISupplyTokenUserEntry,
 } from '../../../interfaces/tokens.supplied.interface';
 import { CardanoCore } from '../../CardanoCore';
-import { FARM_POOL_INFO, IFarmInfo, IFarmInfoResponse } from '../../Subgraphs/MinSwapSubgraph';
+import {
+  LOCKED_FARM_INFO,
+  FARM_POOL_INFO,
+  IFarmInfo,
+  IFarmInfoResponse,
+  ILockedFarmInfoResponse,
+} from '../../Subgraphs/MinSwapSubgraph';
 
 type ExtraRewards = { apr: number };
 export type IFeatureEntryMinimal = BaseWithTokens<
-  ISupplyTokenMinimal,
+  ISupplyTokenMinimal[],
   IRewardTokenMinimal<ExtraRewards>[],
   void,
   void
 >;
 export type IFeatureOpportunity = BaseWithTokens<
-  ISupplyTokenOpportunity,
+  ISupplyTokenOpportunity[],
   IRewardTokenOpportunity[],
   void,
   void
 >;
 export type IFeatureUserEntry = BaseWithTokens<
-  ISupplyTokenUserEntry,
+  ISupplyTokenUserEntry[],
   IRewardTokenUserEntry[],
   void,
   void
 >;
 
-export interface IMinSwapStakingMeta extends IProtocolMeta {
+export interface IMinSwapStakingLockingMeta extends IProtocolMeta {
   feature: FeatureEnum.staking;
   context: {
     endpoint: string;
+    mintStakingToken: string;
     rewardedToken: string;
   };
 }
 
-export class MinSwapStaking extends CardanoCore<
+export class MinSwapStakingLocking extends CardanoCore<
   IFeatureEntryMinimal,
   IFeatureOpportunity,
   IFeatureUserEntry,
-  IMinSwapStakingMeta
+  IMinSwapStakingLockingMeta
 > {
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected logger: Logger,
@@ -79,11 +86,11 @@ export class MinSwapStaking extends CardanoCore<
     address: string,
     pools: IFeatureOpportunity[],
   ): Promise<IFeatureUserEntry[]> {
-    const data = await this.fetchFarms(address);
+    const data = await this.fetchLockedFarms(address);
     const poolMap = new Map(pools.map((p) => [p.id, p]));
 
     const userEntry: IFeatureUserEntry[] = [];
-    for (const farm of data.data.farmPoolInfo) {
+    for (const farm of data.data.mintStakingPools) {
       const position = poolMap.get(
         this.toTokenId(farm.lpAsset.currencySymbol, farm.lpAsset.tokenName),
       );
@@ -93,7 +100,7 @@ export class MinSwapStaking extends CardanoCore<
         (x) => x.token.address === this.meta.context.rewardedToken,
       );
       const pendingReward = normalizeDecimals(
-        farm.pendingReward.toString(),
+        farm.estimatedPendingReward.toString(),
         minRewarded.token.decimals,
       );
 
@@ -119,11 +126,24 @@ export class MinSwapStaking extends CardanoCore<
 
       userEntry.push({
         ...position,
-        supply: {
-          ...position.supply,
-          amount: farm.liquidityStaking,
-          value: position.supply.token.price * farm.liquidityStaking,
-        },
+        supplied: position.supplied.map((supply) => {
+          let amount = 0;
+          if (supply.token.address === this.meta.context.mintStakingToken) {
+            amount = normalizeDecimals(farm.amountMint, supply.token.decimals);
+          } else {
+            amount = normalizeDecimals(farm.lpAmount, supply.token.decimals);
+          }
+          const unlockTime = new Date(farm.startedAt);
+          unlockTime.setDate(unlockTime.getDate() + farm.duration);
+          return {
+            ...supply,
+            amount: amount,
+            value: supply.token.price * amount,
+            unlockTime: unlockTime.valueOf(),
+            startedAt: farm.startedAt,
+          };
+        }),
+
         rewarded: [
           {
             ...minRewarded,
@@ -155,6 +175,13 @@ export class MinSwapStaking extends CardanoCore<
     };
   }
 
+  private async fetchLockedFarms(address = ''): Promise<ILockedFarmInfoResponse> {
+    return this.post<ILockedFarmInfoResponse>(this.meta.context.endpoint + '?MintStakingPools', {
+      query: LOCKED_FARM_INFO,
+      variables: { address },
+    });
+  }
+
   private async fetchFarms(address = ''): Promise<IFarmInfoResponse> {
     return this.post<IFarmInfoResponse>(this.meta.context.endpoint + '?FarmPoolInfo', {
       query: FARM_POOL_INFO,
@@ -172,7 +199,7 @@ export class MinSwapStaking extends CardanoCore<
           address: this.meta.context.rewardedToken,
         },
         extra: {
-          apr: pool.baseAPR,
+          apr: pool.boostAPR || pool.baseAPR,
         },
       },
     ];
@@ -194,12 +221,20 @@ export class MinSwapStaking extends CardanoCore<
       id: this.toTokenId(pool.lpAsset.currencySymbol, pool.lpAsset.tokenName),
       chain: this.meta.chain,
       feature: this.meta.feature,
-      supply: {
-        token: {
-          address: this.toTokenId(pool.lpAsset.currencySymbol, pool.lpAsset.tokenName),
+      supplied: [
+        {
+          token: {
+            address: this.toTokenId(pool.lpAsset.currencySymbol, pool.lpAsset.tokenName),
+          },
+          totalSupplied: '0',
         },
-        totalSupplied: pool.totalLiquidityStaking.toString(),
-      },
+        {
+          token: {
+            address: this.meta.context.mintStakingToken,
+          },
+          totalSupplied: '0',
+        },
+      ],
       rewarded: rewarded,
     };
   }

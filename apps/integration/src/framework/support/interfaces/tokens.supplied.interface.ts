@@ -30,4 +30,5 @@ export interface ISupplyTokenUserEntry<TExtra = unknown> extends ITokenUserEntry
   apr?: IRewardRates;
   ltv?: number;
   unlockTime?: number;
+  startedAt?: number;
 }

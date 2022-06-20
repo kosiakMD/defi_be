@@ -1,5 +1,5 @@
 import { AccountService } from 'apps/integration/src/modules/microservices/account.service';
-import { MinSwapAssetService } from 'apps/integration/src/modules/microservices/minswap.asset.service.';
+import { AssetService } from 'apps/integration/src/modules/microservices/asset.service';
 import BigNumber from 'bignumber.js';
 import { Cache } from 'cache-manager';
 import { firstValueFrom, map } from 'rxjs';
@@ -11,7 +11,6 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { Logger } from '@app/common';
 import { CARDANO_COIN_ADDRESS } from '@app/common/constant';
 import { handlePromiseAllSettled } from '@app/common/helpers/promises';
-import { normalizeDecimals } from '@app/common/utils';
 
 import { FeatureEnum } from '../../../enums';
 import { IProtocolMeta } from '../../../interfaces';
@@ -26,7 +25,7 @@ import {
   AVAILABLE_POOLS_QUERY,
   IPoolInfo,
   IPoolInfoResponse,
-} from '../../Subgraphs/MinswapSubgraph';
+} from '../../Subgraphs/MinSwapSubgraph';
 
 export type IFeatureEntryMinimal = BaseWithTokens<ISupplyTokenMinimal[], void, void, void>;
 export type IFeatureOpportunity = BaseWithTokens<ISupplyTokenOpportunity[], void, void, void>;
@@ -49,7 +48,7 @@ export class MinSwapPools extends CardanoCore<
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected logger: Logger,
     @Inject(CACHE_MANAGER) protected cache: Cache,
     protected accountService: AccountService,
-    protected assetService: MinSwapAssetService,
+    protected assetService: AssetService,
     protected httpService: HttpService,
   ) {
     super();

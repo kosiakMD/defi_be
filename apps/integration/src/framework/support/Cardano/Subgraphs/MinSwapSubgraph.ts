@@ -1,5 +1,47 @@
 import { gql } from '@app/common/utils/graphql';
 
+export const LOCKED_FARM_INFO = gql`
+  query MintStakingPools($address: String!) {
+    mintStakingPools(address: $address) {
+      allocPoint
+      assetA {
+        currencySymbol
+        tokenName
+      }
+      assetB {
+        currencySymbol
+        tokenName
+      }
+      lpAsset {
+        currencySymbol
+        tokenName
+      }
+      mintStakings {
+        amountMint
+        baseAPR
+        boostAPR
+        bonusMultiplier
+        duration
+        id
+        mintPerLP
+        lpAmount
+        harvestable
+        startedAt
+        actualPendingReward
+        estimatedPendingReward
+        extraRewards {
+          asset {
+            currencySymbol
+            tokenName
+          }
+          baseAPR
+          pendingReward
+        }
+      }
+    }
+  }
+`;
+
 export const FARM_POOL_INFO = gql`
   query FarmPoolInfo($address: String!) {
     farmPoolInfo(address: $address) {
@@ -76,6 +118,12 @@ export type IFarmInfoResponse = {
   };
 };
 
+export type ILockedFarmInfoResponse = {
+  data: {
+    mintStakingPools: IFarmInfo[];
+  };
+};
+
 export type IPoolInfoResponse = {
   data: {
     topPools: IPoolInfo[];
@@ -92,6 +140,7 @@ export interface IPoolInfo {
 }
 
 export interface IFarmInfo {
+
   totalLiquidityStaking: number;
   liquidityStaking: number;
   pendingReward: number;
@@ -101,6 +150,13 @@ export interface IFarmInfo {
   assetA: CardanoAsset;
   assetB: CardanoAsset;
   lpAsset: CardanoAsset;
+  bonusMultiplier: number;
+  duration: number;
+  lpAmount: string;
+  amountMint: string;
+  startedAt: number;
+  estimatedPendingReward: number;
+
   extraRewards: {
     asset: CardanoAsset;
     baseAPR: number;

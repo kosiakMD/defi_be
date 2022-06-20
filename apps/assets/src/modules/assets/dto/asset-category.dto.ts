@@ -4,7 +4,7 @@ import { ApiProperty } from '@nestjs/swagger';
 
 @Exclude()
 export class AssetCategoryDto {
-  @Expose({ toClassOnly: true })
+  @Expose()
   @ApiProperty()
   id: string;
 

@@ -147,6 +147,7 @@ export class AssetsCachedRepository {
 
   private async saveAssetsToCache(assetsToCache: AssetEntity[]) {
     const ttl = this.config.get('cache.assetsTtl');
+    // TODO: Why do we map to asset dto?! here
     const cacheItems = mapAssetsToPlain(assetsToCache).map((asset) => ({
       key: getAssetCacheKey(asset),
       value: asset,

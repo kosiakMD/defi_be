@@ -73,7 +73,7 @@ export class Web3ProviderService {
     // TODO: To be added
     // this.setMulticall(ChainIdEnum.ronin, '');
     // this.setMulticall(ChainIdEnum.iotex, '');
-    this.setMulticall(ChainIdEnum.milkomeda, '0x18fA376d92511Dd04090566AB6144847c03557d8');
+    this.setMulticall(ChainIdEnum.milkomeda, '0x92A09557707AB4888EACC034122120F27362dA7f');
   }
 
   public getInstanceByChainId(chain: ChainIdEnum) {

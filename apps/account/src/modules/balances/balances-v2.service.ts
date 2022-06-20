@@ -1,42 +1,29 @@
-import BigNumber from 'bignumber.js';
-import { Cache } from 'cache-manager';
+import { AssetResponseObjectInterface } from '@sdk/assets/interfaces';
 import { plainToClass } from 'class-transformer';
-import { In, Raw, Repository } from 'typeorm';
 
-import { CACHE_MANAGER, HttpStatus, Inject } from '@nestjs/common';
+import { HttpStatus, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { InjectRepository } from '@nestjs/typeorm';
+import { ModuleRef } from '@nestjs/core';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Address, Logger } from '@app/common';
-import { getUniqList } from '@app/common/utils';
+import { Address, ChainId, Logger } from '@app/common';
+import { CacheService } from '@app/common/services/cache.service';
+import { getUniqList, normalizeDecimals } from '@app/common/utils';
 import { unifyAddresses } from '@app/common/utils/addresses';
 import { roundToNearestHour } from '@app/common/utils/dates';
 
 import { BLACKLISTED_TOKENS } from '../../common/constant';
 import { BalancesLoadingStrategy } from '../../common/interfaces';
-import { Web3Provider } from '../../common/providers/chainRelated/web3.provider';
 import { AssetService } from '../../common/providers/microservices/assets/asset.service';
 import { PriceService } from '../../common/providers/microservices/price/price.service';
 import { BlocktimeService, BlockTimestamp } from '../../common/services/blocktime.service';
 import { excludeSecondArray } from '../../common/utils';
 
-import { AssetsEntity } from '../assets/entities/assets.entity';
 import { BlacklistService } from '../blacklists/blacklist.service';
-import { ChainsService } from '../chains/chains.service';
 import { getBalancesSafe } from './balances.helpers';
 import { BalancesResponse, ErrorMessage, TokenBalance } from './balances.interfaces';
 import { AccountReturns, ReturnsResponse, TokenChange } from './dto/balance.dto';
-import { CardanoBalancesStrategy } from './strategies/cardano.balances.strategy';
-import { CosmosBalancesStrategy } from './strategies/cosmos.balances.strategy';
-import { CovalentBalancesStrategy } from './strategies/covalent.strategy';
-import { KavaBalancesStrategy } from './strategies/kava.balances.strategy';
-import { NetworkBalancesStrategy } from './strategies/network.strategy';
-import { OsmosisBalancesStrategy } from './strategies/osmosis.balances.strategy';
-import { RoninBalancesStrategy } from './strategies/ronin.balances.strategy';
-import { SecretBalancesStrategy } from './strategies/secret.balances.strategy';
-import { SolanaBalancesStrategy } from './strategies/solana.balances.strategy';
-import { TerraBalancesStrategy } from './strategies/terra.balances.strategy';
+import { getStrategyForNetwork } from './strategies/registry';
 
 type PartialBalancesResponse = {
   address: Address;
@@ -44,48 +31,23 @@ type PartialBalancesResponse = {
   balances: TokenBalance[];
 };
 
-// TODO: This one should be removed as soon as V2 fully working
-export class BalancesService {
+export class BalancesV2Service {
   constructor(
+    private readonly moduleRef: ModuleRef,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
-    @Inject(CACHE_MANAGER) private readonly cache: Cache,
+    private readonly cache: CacheService,
     private readonly configService: ConfigService,
-    @InjectRepository(AssetsEntity)
-    private readonly assetsRepository: Repository<AssetsEntity>,
     private readonly priceService: PriceService,
     private readonly assetService: AssetService,
     private readonly blacklistService: BlacklistService,
-    private readonly web3Provider: Web3Provider,
     private readonly blocktimeService: BlocktimeService,
-    private readonly networkBalancesStrategy: NetworkBalancesStrategy,
-    private readonly covalentBalancesStrategy: CovalentBalancesStrategy,
-    private readonly solanaBalancesStrategy: SolanaBalancesStrategy,
-    private readonly terraBalancesStrategy: TerraBalancesStrategy,
-    private readonly cardanoBalancesStrategy: CardanoBalancesStrategy,
-    private readonly cosmosBalancesStrategy: CosmosBalancesStrategy,
-    private readonly kavaBalancesStrategy: KavaBalancesStrategy,
-    private readonly osmosisBalancesStrategy: OsmosisBalancesStrategy,
-    private readonly secretBalancesStrategy: SecretBalancesStrategy,
-    private readonly roninBalancesStrategy: RoninBalancesStrategy,
-    private readonly chainsService: ChainsService,
   ) {}
-
-  balanceStrategies = [
-    this.solanaBalancesStrategy,
-    this.terraBalancesStrategy,
-    this.cardanoBalancesStrategy,
-    this.cosmosBalancesStrategy,
-    this.kavaBalancesStrategy,
-    this.osmosisBalancesStrategy,
-    this.secretBalancesStrategy,
-    this.roninBalancesStrategy,
-  ];
 
   public async getBalance(
     addresses: Address[],
-    chains?: number[],
+    chains: ChainId[],
     assets?: Address[],
-    blocks?: Map<number, BlockTimestamp>,
+    atTime?: Date,
   ): Promise<BalancesResponse> {
     try {
       const chainsToHandle = getUniqList(chains);
@@ -97,42 +59,44 @@ export class BalancesService {
         return {};
       }
 
-      const balances = await this.getRawBalances(chainsToHandle, addressesToHandle, assets, blocks);
-
-      return this.mapResults(balances);
-    } catch (e) {
-      // TODO: This should be handled with global error handler
-      this.logger.error(
-        `Unhandled error while getting balances for ${JSON.stringify(
-          addresses,
-        )} networks ${JSON.stringify(chains)}`,
-        e,
-      );
-
-      throw e;
+      const balances = await this.getRawBalances(chainsToHandle, addressesToHandle, assets, atTime);
+      return this.mergeBalances(balances);
+    } catch (error) {
+      this.logger.error({
+        message: 'Unhandled error while getting balances',
+        addresses,
+        chains,
+        error,
+      });
+      throw error;
     }
   }
 
   public async get24HourReturns(
     addresses: Address[],
-    chains: number[],
+    chains: ChainId[],
     assets?: Address[],
   ): Promise<ReturnsResponse> {
-    const offset = 86400; // seconds ago from now 86400 = 1 day
-    const date = this.getPastDate(offset);
-    const blocks = await this.blocktimeService.getChainBlocksAtDate(chains, date);
+    try {
+      const offset = 86400; // seconds ago from now 86400 = 1 day
+      const date = this.getPastDate(offset);
 
-    // Get current & past balances & prices
-    const [now, then] = await Promise.all([
-      this.getBalance(addresses, chains, assets),
-      this.getBalance(addresses, chains, assets, blocks),
-    ]);
+      // Get current & past balances & prices
+      const [now, then] = await Promise.all([
+        this.getBalance(addresses, chains, assets),
+        this.getBalance(addresses, chains, assets, date),
+      ]);
 
-    return this.calculate24HourReturns(now, then);
-  }
-
-  private getTokenKey(token: TokenBalance): string {
-    return `${token.token.chainId}_${token.token.address}`;
+      return this.calculate24HourReturns(now, then);
+    } catch (error) {
+      this.logger.error({
+        message: 'Unhandled error while getting 24h returns',
+        addresses,
+        chains,
+        error,
+      });
+      throw error;
+    }
   }
 
   private calculate24HourReturns(now: BalancesResponse, then: BalancesResponse): ReturnsResponse {
@@ -203,6 +167,10 @@ export class BalancesService {
     return Object.fromEntries(responseEntries);
   }
 
+  private getTokenKey(token: TokenBalance): string {
+    return `${token.token.chainId}_${token.token.address}`;
+  }
+
   private getTokenChange(
     thenToken: null | TokenBalance,
     nowToken: null | TokenBalance,
@@ -237,7 +205,7 @@ export class BalancesService {
     }
   }
 
-  private getPastDate(seconds) {
+  private getPastDate(seconds: number) {
     const past = new Date(new Date().setSeconds(new Date().getSeconds() - seconds));
     return roundToNearestHour(past);
   }
@@ -248,28 +216,29 @@ export class BalancesService {
   }
 
   private async getRawBalances(
-    chains: number[],
+    chains: ChainId[],
     addresses: Address[],
-    assets: Address[],
-    blocks?: Map<number, BlockTimestamp>,
+    assets?: Address[],
+    atTime?: Date,
   ) {
     const results = await Promise.all(
-      chains.map((chainId) =>
-        this.getBalancesPerChain(chainId, addresses, assets, blocks?.get(chainId)),
-      ),
+      chains.map((chainId) => this.getBalancesPerChain(chainId, addresses, assets, atTime)),
     );
     return results.flat();
   }
 
   private async getBalancesPerChain(
-    chainId: number,
+    chainId: ChainId,
     addresses: Address[],
     assets?: Address[],
-    block: BlockTimestamp = null,
-  ) {
-    const strategies = await this.getBalancesStrategiesPerChain(chainId);
-    const assetsToHandle = await this.getAssetsToHandle(chainId, assets, block);
+    atTime?: Date,
+  ): Promise<PartialBalancesResponse[]> {
+    const strategies = await this.moduleRef.resolve<BalancesLoadingStrategy>(
+      getStrategyForNetwork(chainId),
+    );
+    const assetsToHandle = await this.getAssetsToHandle(chainId, assets);
     const assetAddresses = assetsToHandle.map(({ address }) => address);
+    const block = atTime && (await this.blocktimeService.getBlockAtDate(chainId, atTime));
 
     let results = await Promise.all(
       addresses.map((address) =>
@@ -277,44 +246,47 @@ export class BalancesService {
       ),
     );
 
-    results = BalancesService.addAssetsInformation(results, assetsToHandle);
-    return this.applyPrices(chainId, results, block);
+    results = this.addAssetsInformation(results, assetsToHandle);
+
+    if (block) {
+      // TODO: Handle historical prices separately until assets service not finished
+      return this.applyHistoricalPrices(chainId, results, block);
+    }
+
+    return results;
   }
 
-  private static addAssetsInformation(
+  private addAssetsInformation(
     results: PartialBalancesResponse[],
-    assetsToHandle: AssetsEntity[],
-  ) {
-    const assetsMap = assetsToHandle.reduce((map, { address, name, symbol, decimals }) => {
-      map[address] = {
-        name,
-        symbol,
-        decimals,
-      };
-      return map;
-    }, {});
+    assetsToHandle: AssetResponseObjectInterface[],
+  ): PartialBalancesResponse[] {
+    const assetsMap = new Map(assetsToHandle.map((asset) => [asset.address, asset]));
 
     for (const { balances } of results) {
       for (const balance of balances) {
         const { token } = balance;
-        const asset = assetsMap[token.address];
+        const asset = assetsMap.get(token.address);
         if (asset) {
           token.symbol = asset.symbol;
           token.name = asset.name;
           token.decimals = asset.decimals;
-          balance.decimalsAmount = new BigNumber(balance.amount)
-            .div(new BigNumber(10).pow(asset.decimals))
-            .toNumber();
+          token.icon = asset.icon;
+          balance.decimalsAmount = normalizeDecimals(balance.amount, asset.decimals);
+          if (asset.price) {
+            balance.tokenPriceUSD = asset.price;
+            balance.totalPriceUSD = balance.decimalsAmount * balance.tokenPriceUSD;
+          }
         }
       }
     }
+
     return results;
   }
 
-  private async applyPrices(
-    chain: number,
+  private async applyHistoricalPrices(
+    chain: ChainId,
     results: PartialBalancesResponse[],
-    block?: BlockTimestamp,
+    block: BlockTimestamp,
   ): Promise<PartialBalancesResponse[]> {
     const tokensWithBalances = results
       .map(({ balances }) =>
@@ -324,7 +296,12 @@ export class BalancesService {
       )
       .flat();
 
-    const pricesMap = await this.getTokenPrices(tokensWithBalances, chain, block);
+    const { prices: pricesMap } = await this.priceService.getBulkPriceAtTimestamp(
+      tokensWithBalances,
+      chain,
+      block.timestamp,
+    );
+
     for (const { balances } of results) {
       for (const balance of balances) {
         const price = pricesMap[balance.token.address] || 0;
@@ -338,33 +315,14 @@ export class BalancesService {
     return results;
   }
 
-  private async getTokenPrices(tokens: Address[], chain: number, block?: BlockTimestamp) {
-    // latest/pending/earliest/null
-    if (!block?.block || Number.isNaN(Number(block?.block))) {
-      const { prices: pricesMap } = await this.priceService.fetchTokenPrices(
-        getUniqList(tokens),
-        chain,
-      );
-      return pricesMap;
-    }
-
-    const { prices: pricesMap } = await this.priceService.getBulkPriceAtTimestamp(
-      tokens,
-      chain,
-      block.timestamp,
-    );
-
-    return pricesMap;
-  }
-
   private async getBalancesForChainForAddress(
     chainId: number,
     address: string,
     assets: string[],
-    strategies: BalancesLoadingStrategy[],
+    strategy: BalancesLoadingStrategy,
     block?: BlockTimestamp,
   ): Promise<PartialBalancesResponse> {
-    // If its a historic block we can cache for much longer,
+    // If it's a historic block we can cache for much longer,
     // as the target block only updates once an hour
     const cacheKey = block
       ? [chainId, address, assets, block.block].join('-')
@@ -376,30 +334,25 @@ export class BalancesService {
       return cacheValue;
     }
 
-    const results = await Promise.all(
-      strategies.map(async (strategy) => {
-        return getBalancesSafe(strategy, { chainId, address, tokens: assets, block }, this.logger);
-      }),
+    const results = await getBalancesSafe(
+      strategy,
+      { chainId, address, tokens: assets, block },
+      this.logger,
     );
 
-    const final = results.reduce<PartialBalancesResponse>(
-      (response, curr) =>
-        curr.success
-          ? { ...response, balances: this.mergeBalances(response.balances, curr.balances) }
-          : {
-              ...response,
-              errors: response.errors.concat({
-                chainId,
-                message: curr.error.message,
-                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-              }),
+    const final: PartialBalancesResponse = {
+      address,
+      balances: results.balances,
+      errors: results.error
+        ? [
+            {
+              chainId,
+              message: results.error.message,
+              statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
             },
-      {
-        address,
-        errors: [],
-        balances: [],
-      },
-    );
+          ]
+        : [],
+    };
 
     if (!final.errors.length) {
       await this.cache.set(cacheKey, final, { ttl });
@@ -408,64 +361,23 @@ export class BalancesService {
     return final;
   }
 
-  private mergeBalances(base: TokenBalance[], more: TokenBalance[]): TokenBalance[] {
-    for (const item of more) {
-      const tokenAlreadyIncluded = base.some(
-        ({ token: { address } }) => item.token.address === address,
-      );
-      if (!tokenAlreadyIncluded) {
-        base.push(item);
-      }
-    }
-    return base;
-  }
-
-  private async getBalancesStrategiesPerChain(chain: number): Promise<BalancesLoadingStrategy[]> {
-    const chainEntity = await this.chainsService.get({ id: chain });
-    const strategy = this.balanceStrategies.find((strategy) =>
-      strategy.strategyName.toLowerCase().includes(chainEntity.name.toLowerCase()),
-    );
-    return [strategy ?? this.networkBalancesStrategy];
-  }
-
-  private async getAssetsToHandle(chain: number, requested?: Address[], block?: BlockTimestamp) {
-    // If its a historic block, only return results that where inserted at least 24 hours ago
-    // This fixes the issue with checking 24 hours returns and multicall failing when checking
-    // tokens less than 24 hours old.
-    const createdAtQuery = { createdAt: Raw((alias) => `${alias} < NOW() - INTERVAL '24 HOURS'`) };
-
+  private getAssetsToHandle(chain: ChainId, requested?: Address[]) {
     if (requested?.length) {
-      return this.assetsRepository.find({
-        where: {
-          chain,
-          address: In(requested),
-          ...(block && createdAtQuery),
-        },
-      });
+      // TODO: Get assets by addresses
+      return [];
     }
 
-    const cacheKey = `TRACKED_ASSETS_${chain}-${block ? block.block : 'latest'}`;
-    let cachedAssets = await this.cache.get<AssetsEntity[]>(cacheKey);
-    if (cachedAssets?.length) {
-      return cachedAssets;
-    }
-
-    cachedAssets = await this.assetsRepository.find({
-      where: {
-        chain,
-        isTracked: true,
-        ...(block && createdAtQuery),
+    return this.cache.getOrLoad(
+      `accounted_assets_${chain}`,
+      () => this.assetService.getAccountedAssets(chain),
+      {
+        // TODO: Move to config
+        ttl: 2 * 60,
       },
-    });
-
-    // NOTE: We store data in cache and forget about it
-    this.cache.set<AssetsEntity[]>(cacheKey, cachedAssets, {
-      ttl: this.configService.get<number>('CACHE_ASSETS_TTL'),
-    });
-    return cachedAssets;
+    );
   }
 
-  private mapResults(results: PartialBalancesResponse[]): BalancesResponse {
+  private mergeBalances(results: PartialBalancesResponse[]): BalancesResponse {
     return results.reduce<BalancesResponse>((response, { balances, errors, address }) => {
       const accountBalance = response[address] || {
         account: address,

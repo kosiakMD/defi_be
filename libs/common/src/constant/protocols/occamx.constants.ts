@@ -1,0 +1,1 @@
+export const OCX_TOKEN_ADDRESS = '0xf0c73e6287867baa4f865a17ee711ec989c78ac0';

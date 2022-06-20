@@ -489,7 +489,7 @@ export abstract class RootProtocolCacheable<
       return 0;
     }
 
-    return token.price * normalizeDecimals(total, token.decimals);
+    return token?.price * normalizeDecimals(total, token.decimals);
   }
 
   /**

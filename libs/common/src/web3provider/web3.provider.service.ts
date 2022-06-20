@@ -42,6 +42,7 @@ export class Web3ProviderService {
     this.setProvider(ChainIdEnum.okex, 'OKEX_URL');
     this.setProvider(ChainIdEnum.opt, 'OPT_URL', 'OPTIMISM_URL');
     this.setProvider(ChainIdEnum.plg, 'POLYGON_URL');
+    this.setProvider(ChainIdEnum.milkomeda, 'MILKOMEDA_URL');
     this.setProvider(ChainIdEnum.metis, 'METIS_URL');
     this.setProvider(ChainIdEnum.ronin, 'RONIN_URL');
     this.setProvider(ChainIdEnum.iotex, 'IOTEX_URL');
@@ -67,6 +68,7 @@ export class Web3ProviderService {
     this.setMulticall(ChainIdEnum.okex, '0x11e14AEABbCD1774B37C4EE5E1aD3c831ACc2A2c');
     this.setMulticall(ChainIdEnum.opt, '0xaFE0A0302134df664f0EE212609CA8Fb89255BE4');
     this.setMulticall(ChainIdEnum.plg, '0xa1b2b503959aedd81512c37e9dce48164ec6a94d');
+    this.setMulticall(ChainIdEnum.milkomeda, '0x2ecBF8b054Ef234F3523D605E7ba9cfE9A37703a');
     this.setMulticall(ChainIdEnum.metis, '0x92A09557707AB4888EACC034122120F27362dA7f');
     // TODO: To be added
     // this.setMulticall(ChainIdEnum.ronin, '');

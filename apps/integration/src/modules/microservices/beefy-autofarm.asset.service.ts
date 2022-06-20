@@ -2,6 +2,8 @@ import { AssetRequestObjectInterface, AssembledAssetInterface } from '@sdk/asset
 
 import { Injectable } from '@nestjs/common';
 
+import { normalizeDecimals } from '@app/common/utils';
+
 import { AssetService } from './asset.service';
 import { PriceService } from './price.service';
 import { BeefyAutofarmLpStrategy } from './strategies/beefy-autofarm.v2.asset.strategy';
@@ -40,11 +42,22 @@ export class BeefyAutofarmAssetService {
         const tokens = await this.assetService.getAssets(assetsRequest);
         try {
           const { tokens: updatedTokens } = this.dataStrategy
-            ? await this.dataStrategy.fillMissingData(tokens, [], chain)
+            ? await this.dataStrategy.fillMissingData([...tokens], [], chain)
             : { tokens };
           return updatedTokens;
         } catch (error) {
-          return tokens;
+          return tokens.map((token) => {
+            token[1].underlying.forEach((underlying) => {
+              if (underlying.reserve) {
+                underlying.reserve = normalizeDecimals(
+                  underlying.reserve.toString(),
+                  underlying.decimals,
+                );
+              }
+              return underlying;
+            });
+            return token;
+          });
         }
       }),
     );

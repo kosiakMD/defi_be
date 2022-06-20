@@ -26,9 +26,9 @@ export class BeefyAutofarmLpStrategy implements TokenDataStrategy {
       calls.set(`${token.address}.totalSupply()`, contract.totalSupply());
 
       if (token.underlying?.length !== 2) return;
-      if (token.underlying.every((t) => !!t.reserve)) return;
-
-      calls.set(`${token.address}.getReserves()`, contract.getReserves());
+      if (token.underlying.every((t) => !t.reserve)) {
+        calls.set(`${token.address}.getReserves()`, contract.getReserves());
+      }
       token.underlying.forEach((asset) => {
         const c = new ERC20(asset.address);
         calls.set(`${asset.address}.totalSupply()`, c.totalSupply());
@@ -47,7 +47,7 @@ export class BeefyAutofarmLpStrategy implements TokenDataStrategy {
       if (token.underlying?.length !== 2) return [address, token];
 
       let reserve0, reserve1;
-      if (token.underlying.every((t) => !t.reserve)) {
+      if (token.underlying.every((t) => !t.reserve) && results.has(`${address}.getReserves()`)) {
         const { _reserve0, _reserve1 } = results.get(`${address}.getReserves()`).output.data;
         reserve0 = _reserve0;
         reserve1 = _reserve1;
@@ -63,7 +63,7 @@ export class BeefyAutofarmLpStrategy implements TokenDataStrategy {
         );
 
         u.reserve = normalizeDecimals(
-          (u.reserve = u.positionInPool === 0 ? reserve0 : reserve1).toString(),
+          (u.reserve = u.position === 0 ? reserve0 : reserve1).toString(),
           u.decimals,
         );
       });

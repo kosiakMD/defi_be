@@ -1,4 +1,4 @@
-import { Inject, Injectable, LoggerService } from '@nestjs/common';
+import { Inject, Injectable, LoggerService, OnModuleInit } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
@@ -13,7 +13,7 @@ import { AssetPriceProvider, ComplexAsset } from './analysers/core/price.provide
 import { assetAnalysers } from './analysers/registry';
 
 @Injectable()
-export class AssetAnalyserService {
+export class AssetAnalyserService implements OnModuleInit {
   private analysers: AssetAnalyser[] = [];
   private priceProviders: AssetPriceProvider[] = [];
 
@@ -22,10 +22,11 @@ export class AssetAnalyserService {
     private readonly moduleRef: ModuleRef,
   ) {}
 
-  async analyseAsset(asset: AssetReference): Promise<AssetAnalysisResult> {
-    // TODO: Does not look very good, think on better one
+  async onModuleInit() {
     await this.ensureAnalysersSetup();
+  }
 
+  async analyseAsset(asset: AssetReference): Promise<AssetAnalysisResult> {
     const analysis = await Promise.all(
       this.analysers.map((analyser) => this.analyseAssetByAnalyser(analyser, asset)),
     );
@@ -63,9 +64,6 @@ export class AssetAnalyserService {
 
   // TODO: Update this one, should return prices not work with DTO and refactor this
   async updateSpecificAssetsPrices(assets: AssetDto[]): Promise<AssetDto[]> {
-    // TODO: Does not look very good, think on better one
-    await this.ensureAnalysersSetup();
-
     const assetsWithoutPrices = assets.filter((asset) => !asset.price);
     if (!assetsWithoutPrices) {
       return assets;

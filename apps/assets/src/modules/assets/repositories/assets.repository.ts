@@ -67,9 +67,8 @@ export class AssetsRepository extends Repository<AssetEntity> {
             );
           }
 
-          // TODO: Or seems to be not working here
-          addresses.forEach((address) =>
-            qb.orWhere('address ilike :address', { address: `%${address}%` }),
+          addresses.forEach((address, i) =>
+            qb.orWhere(`address ilike :address_${i}`, { [`address_${i}`]: `%${address}%` }),
           );
         }),
       );

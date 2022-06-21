@@ -5,12 +5,16 @@ export enum AssetCategory {
   LpToken = 'lp-token',
   UniSwapV2LikeLP = 'lp-uniswapv2-like',
   SaberLP = 'saber-lp',
-  WithSingleUnderlyingToken = 'single-underlying',
-  UnderlyingBalanceHeldByBaseContract = 'underlying-balance-held-by-base-contract',
   MinSwapLP = 'minswap-lp',
+  // balance of token represents users position, i.e. staked tokens, lp tokens, yearn/beefy tokens
+  TokenizedPosition = 'tokenized-position',
+  // token has single underlying token
+  WithSingleUnderlyingToken = 'single-underlying',
+  // value of token can be determined by checking contract balance on underlying token
+  UnderlyingBalanceHeldByBaseContract = 'underlying-balance-held-by-base-contract',
 }
 
-const AssetCategoryNameMap = {
+const AssetCategoryNameMap: Record<AssetCategory, string> = {
   [AssetCategory.Stablecoin]: 'Stablecoin',
   [AssetCategory.UnverifiedStablecoin]: 'Unverified Stablecoin',
   [AssetCategory.NativeCoin]: 'Native Coin',
@@ -18,6 +22,10 @@ const AssetCategoryNameMap = {
   [AssetCategory.UniSwapV2LikeLP]: 'Uniswap V2 like LP Token',
   [AssetCategory.SaberLP]: 'Saber LP Token',
   [AssetCategory.MinSwapLP]: 'MinSwap LP Token',
+  [AssetCategory.TokenizedPosition]: 'Tokenized User Position',
+  [AssetCategory.WithSingleUnderlyingToken]: 'Single Underlying Asset',
+  [AssetCategory.UnderlyingBalanceHeldByBaseContract]:
+    'Token value derived from underlying token balance',
 };
 
 export function getDefaultCategoryName(code: string) {

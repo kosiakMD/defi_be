@@ -55,7 +55,7 @@ export class SingleUnderlyingTokenPriceProvider implements AssetPriceProvider {
 
     return assets.map((asset, index) => ({
       asset: { chainId, address: asset.address },
-      reserves: [underlyingTokenHeldByBaseContract[index]],
+      reserves: [underlyingTokenHeldByBaseContract[index].toFixed()],
       price: new BigNumber(normalizeDecimals(baseTokenTotalSupply[index], asset.decimals))
         .dividedBy(
           new BigNumber(
@@ -63,8 +63,9 @@ export class SingleUnderlyingTokenPriceProvider implements AssetPriceProvider {
               underlyingTokenHeldByBaseContract[index],
               asset.underlying[0].decimals,
             ),
-          ).multipliedBy(new BigNumber(asset.underlying[0].price)),
+          ),
         )
+        .multipliedBy(new BigNumber(asset.underlying[0].price))
         .toNumber(),
     }));
   }

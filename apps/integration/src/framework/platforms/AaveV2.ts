@@ -27,6 +27,10 @@ export class AaveV2 extends RootPlatform {
       },
     });
 
+    // AaveV1 check collateral:
+    // https://etherscan.io/address/0x3dfd23a6c5e8bbcfc9581d2e864a68feb6a076d3#readProxyContract
+    // isUserUseReserveAsCollateralEnabled
+
     await this.registerProtocol<IAaveV2Meta>(AaveV2Lending, {
       chain: ChainIdEnum.eth,
       name: 'Lending - Aave',

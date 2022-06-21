@@ -48,7 +48,7 @@ export class Web3ProviderService {
     this.setProvider(ChainIdEnum.iotex, 'IOTEX_URL');
     this.setProvider(ChainIdEnum.milkomeda, 'MILKOMEDA_URL');
 
-    // TODO: Move contracts to configs
+    // okex, kcc, milkomeda, ronin, iotex are absent from https://github.com/mds1/multicall then we can attempt a migration
     this.setMulticall(ChainIdEnum.arbi, '0xAb16069D3E9E352343B2040ce7d7715C585994f9');
     this.setMulticall(ChainIdEnum.avax, '0x92a09557707ab4888eacc034122120f27362da7f');
     this.setMulticall(ChainIdEnum.bnb, '0x1ee38d535d541c55c9dae27b12edf090c608e6fb');

@@ -14,7 +14,7 @@ import { AssetDto } from '../dto/asset.dto';
 import { GetAssetRequest } from '../dto/get-asset.request';
 import { AssetUnderlyingEntity } from '../entities/asset-underlying.entity';
 import { AssetEntity } from '../entities/asset.entity';
-import { mapAssetsToPlain } from '../utils/cache-mapping';
+import { mapAssetsToCachePlain } from '../utils/cache-mapping';
 import { AssetsRepository } from './assets.repository';
 
 // TODO: This one is not working, reprocessed metadata missing
@@ -39,7 +39,7 @@ export class AssetsCachedRepository {
     return this.assetsRepository.findAssetsByParams(searchParams);
   }
 
-  findOneByAddressAndChain(address: string, chainId: number): Promise<AssetEntity> {
+  async findOneByAddressAndChain(address: string, chainId: number): Promise<AssetEntity> {
     return this.cache.getOrLoad(getAssetCacheKey({ chainId, address }), () =>
       this.assetsRepository.findOneByAddressAndChain(address, chainId),
     );
@@ -151,8 +151,7 @@ export class AssetsCachedRepository {
 
   private async saveAssetsToCache(assetsToCache: AssetEntity[]) {
     const ttl = this.config.get('cache.assetsTtl');
-    // TODO: Why do we map to asset dto?! here
-    const cacheItems = mapAssetsToPlain(assetsToCache).map((asset) => ({
+    const cacheItems = mapAssetsToCachePlain(assetsToCache).map((asset) => ({
       key: getAssetCacheKey(asset),
       value: asset,
     }));
@@ -183,8 +182,15 @@ export class AssetsCachedRepository {
       }
     }
 
-    const saved = await this.assetsRepository.save(asset);
-
+    let saved: AssetEntity;
+    if (!asset.id) {
+      const a = await this.assetsRepository.findOne({
+        where: { address: asset.address, chainId: asset.chainId },
+      });
+      saved = await this.assetsRepository.save({ ...asset, ...(a ? { id: a.id } : {}) });
+    } else {
+      saved = await this.assetsRepository.save(asset);
+    }
     this.saveAssetsToCache([saved]).catch((error) =>
       this.logger.error(`Saving asset ${asset.address} to cache failed`, error),
     );

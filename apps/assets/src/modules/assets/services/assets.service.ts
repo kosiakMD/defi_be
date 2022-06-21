@@ -30,7 +30,7 @@ import { AssetsCandidateRepository } from '../repositories/assets-candidate.repo
 import { AssetsCachedRepository } from '../repositories/assets.cached-repository';
 import { AssetsRepository } from '../repositories/assets.repository';
 import { HistoricalPriceRequest } from '../types/historical-price-request.type';
-import { mapAssetsToPlain } from '../utils/cache-mapping';
+import { mapAssetsToAPIPlain } from '../utils/cache-mapping';
 import { getAssetProcessJobId } from '../utils/jobs.helper';
 import { AssetAnalyserService } from './asset-analyser.service';
 import { InvalidAssetService } from './invalid-asset.service';
@@ -61,7 +61,7 @@ export class AssetsService extends CrudService<AssetsRepository> {
 
   public async getBulkAssets(requests: GetAssetRequest[]): Promise<AssetDto[]> {
     const validRequests = requests.filter(({ address }) => isSomeAddress(address));
-    const assets = mapAssetsToPlain(await this.getAssets(validRequests));
+    const assets = mapAssetsToAPIPlain(await this.getAssets(validRequests));
 
     await this.updateAssetsWithHistoricalPrices(requests, assets);
 
@@ -213,7 +213,7 @@ export class AssetsService extends CrudService<AssetsRepository> {
     );
     // NOTE: We don't care about underlying and special assets as we won't show them in balances
     const assetsForBalances = assets.filter(({ isNotAccounted }) => !isNotAccounted);
-    const dtos = mapAssetsToPlain(assetsForBalances);
+    const dtos = mapAssetsToAPIPlain(assetsForBalances);
     const dtosWithPrices = await this.addPrices(dtos);
     // NOTE: Only return assets that have prices as others we don't show on balances
     return dtosWithPrices.filter(({ price }) => !!price);

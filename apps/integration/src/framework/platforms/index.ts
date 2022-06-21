@@ -1,8 +1,8 @@
-export { Arrakis } from './Arrakis';
 export { AaveV2 } from './AaveV2';
 export { AaveV3 } from './AaveV3';
 export { AlchemixV2 } from './AlchemixV2';
 export { ApeSwap } from './ApeSwap';
+export { Arrakis } from './Arrakis';
 export { AutoFarm } from './AutoFarm';
 export { BabySwap } from './BabySwap';
 export { BalancerV2 } from './BalancerV2';

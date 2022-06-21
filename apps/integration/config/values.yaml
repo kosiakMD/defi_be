@@ -122,6 +122,14 @@ configMaps:
     LOG_AWS_ENABLED: true
     LOG_LEVEL: debug
     NODE_ENV: production
+    
+resources:
+  requests:
+    cpu: "1"
+    memory: 2Gi
+  limits:
+    cpu: "1"
+    memory: 2Gi
 
 secrets:
   - database

@@ -6,7 +6,6 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '@app/common';
 import { normalizeDecimals } from '@app/common/utils';
-import { ERC20 } from '@app/common/web3provider/contracts/ERC20';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
 import { INamedFunctionPredicates, IProtocolMeta } from '../../../interfaces';
@@ -26,10 +25,6 @@ import { SingleContractProtocol } from '../../SingleContractProtocol';
 
 export interface InterestBearingTokenMetaInterface extends IProtocolMeta {
   address: '';
-  context: {
-    // badPools?: number[];
-    // poolLength: number;
-  };
 }
 
 type IInterestBearingTokenMinimal = BaseWithTokens<ISupplyTokenMinimal, IRewardTokenMinimal>;

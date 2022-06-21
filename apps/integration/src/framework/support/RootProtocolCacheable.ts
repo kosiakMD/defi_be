@@ -335,7 +335,9 @@ export abstract class RootProtocolCacheable<
     const multi = ['supplied', 'borrowed', 'rewarded'];
     const single = ['supply', 'borrow', 'reward'];
     pools.forEach((pool) => {
-      tokens.add(pool.id); // LP token, yearn/beefy vault, etc
+      if (!['::', '-'].includes(pool.id)) {
+        tokens.add(pool.id); // LP token, yearn/beefy vault, etc
+      }
 
       multi.forEach((featureName) => {
         // array tokens

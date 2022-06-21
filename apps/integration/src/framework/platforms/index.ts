@@ -63,3 +63,4 @@ export { Tokemak } from './Tokemak';
 export { SolanaStaking } from './SolanaStaking';
 export { CardanoStaking } from './CardanoStaking';
 export { SushiSwap } from './SushiSwap';
+export { TraderJoe } from './TraderJoe';

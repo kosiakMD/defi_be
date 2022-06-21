@@ -201,7 +201,8 @@ export class AddPriceSources1654064257502 implements MigrationInterface {
           },
           null,
           2,
-        )}', true);
+        )}', false);
+        // TODO: Disabled as there are strange prices for 0xd586e7f844cea2f87f50152665bcbc2c279d8d70 DAI
     `);
     await queryRunner.query(`
         INSERT INTO price_sources (name, type, config, enabled)

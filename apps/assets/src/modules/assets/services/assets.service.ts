@@ -60,6 +60,8 @@ export class AssetsService extends CrudService<AssetsRepository> {
   }
 
   public async getBulkAssets(requests: GetAssetRequest[]): Promise<AssetDto[]> {
+    this.logger.log(`Loading bulk assets for ${requests.length} requests`);
+
     const validRequests = requests.filter(({ address }) => isSomeAddress(address));
     const assets = mapAssetsToAPIPlain(await this.getAssets(validRequests));
 

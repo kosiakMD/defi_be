@@ -147,6 +147,7 @@ export class AssetsCachedRepository {
 
   private async saveAssetsToCache(assetsToCache: AssetEntity[]) {
     const ttl = this.config.get('cache.assetsTtl');
+    // TODO: Why do we map to asset dto?! here
     const cacheItems = mapAssetsToPlain(assetsToCache).map((asset) => ({
       key: getAssetCacheKey(asset),
       value: asset,
@@ -194,8 +195,16 @@ export class AssetsCachedRepository {
     return saved;
   }
 
-  findUniV2LikePairsForTrackedAssets(chainId: ChainId, factory: Address, tokens: Address[]) {
-    return this.assetsRepository.findUniV2LikePairsForTrackedAssets(chainId, factory, tokens);
+  findUniV2LikePairsForTrackedAssets(chainId: ChainId, factory: Address) {
+    return this.assetsRepository.findUniV2LikePairsForTrackedAssets(chainId, factory);
+  }
+
+  async findByCategoryCodeWithoutCategories(categoryCode: string): Promise<AssetEntity[]> {
+    return this.assetsRepository.findByCategoryCodeWithoutCategories(categoryCode);
+  }
+
+  async findById(id: number): Promise<AssetEntity> {
+    return this.assetsRepository.findOne({ id });
   }
 }
 

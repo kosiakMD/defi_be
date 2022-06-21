@@ -23,15 +23,20 @@ export class AssetsCategoryRepository extends Repository<AssetCategoryEntity> {
     const unknownCodes = codes.filter((code) =>
       categories.every((category) => category.code !== code),
     );
+
     if (!unknownCodes.length) {
       return categories;
     }
 
-    return unknownCodes.map((code) => {
+    let newCategories = unknownCodes.map((code) => {
       const category = new AssetCategoryEntity();
       category.code = code;
       category.name = getDefaultCategoryName(code);
       return category;
     });
+
+    newCategories = await this.save(newCategories);
+
+    return categories.concat(newCategories);
   }
 }

@@ -1,6 +1,6 @@
 import { Address } from '@app/common';
 
-import { BlockTimestamp } from '../../modules/balances/balances.interfaces';
+import { BlockTimestamp } from '../services/blocktime.service';
 
 export type BalancesRequest = {
   address: Address;

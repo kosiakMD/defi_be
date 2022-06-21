@@ -3,7 +3,8 @@ import { Contract } from 'web3-eth-contract';
 
 import { Address } from '@app/common';
 
-import { BlockTimestamp } from '../balances.interfaces';
+import { BlockTimestamp } from '../../../common/services/blocktime.service';
+
 import { BALANCES_ABI } from './balances.contract.abi';
 
 export class BalancesContract {

@@ -41,12 +41,9 @@ export class CoinmarketcapAssetAnalyser implements AssetAnalyser {
     const firstEntry = data[firstEntryKey];
     const coinmarketcapCoin = isZeroAddress(address) ? firstEntry[0] : firstEntry;
 
-    const { id, name, symbol, logo, tags, category } = coinmarketcapCoin as CoinmarketcapAsset;
+    const { id, name, symbol, logo, category } = coinmarketcapCoin as CoinmarketcapAsset;
 
     const categories: AssetCategory[] = [];
-    if (tags?.some((tag) => tag?.indexOf('stablecoin') >= 0)) {
-      categories.push(AssetCategory.Stablecoin);
-    }
 
     if (category === 'coin') {
       categories.push(AssetCategory.NativeCoin);

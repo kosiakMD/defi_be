@@ -1,12 +1,11 @@
 import { Body, Controller, Get, HttpStatus, Post, Query } from '@nestjs/common';
 import { ApiBody, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-import { SearchParams } from '../common/interfaces/search.interfaces';
-
 import { AssetCandidateRequest } from '../modules/assets/dto/asset-candidate.request';
 import { GetAssetRequest } from '../modules/assets/dto/get-asset.request';
 import { GetAssetsRequest } from '../modules/assets/dto/get-assets.request';
 import { GetAssetsResponse } from '../modules/assets/dto/get-assets.response';
+import { SearchAssetRequest } from '../modules/assets/dto/search-asset.request';
 import { SearchResultsEntryDto } from '../modules/assets/dto/search-results-entry.dto';
 import { AssetsService } from '../modules/assets/services/assets.service';
 
@@ -48,33 +47,8 @@ export class AssetsController {
   }
 
   @Get('/search')
-  @ApiQuery({
-    name: 'addresses',
-    type: [String],
-    description: 'address array to search assets by addresses',
-    example: [
-      '0xcd2e72aebe2a203b84f46deec948e6465db51c75',
-      '0xcd2e72aebe2a203b84f46deec948e6465db51c75',
-    ],
-    isArray: true,
-    required: false,
-  })
-  @ApiQuery({
-    name: 'text',
-    type: String,
-    description: 'text to search assets by name or symbol',
-    example: 'CRO',
-    required: false,
-  })
-  @ApiQuery({
-    name: 'limit',
-    type: Number,
-    description: 'maximal number of search result entries',
-    example: 5,
-    required: false,
-  })
   @ApiResponse({ status: HttpStatus.OK, type: [SearchResultsEntryDto] })
-  async search(@Query() query: SearchParams): Promise<SearchResultsEntryDto[]> {
+  async search(@Query() query: SearchAssetRequest): Promise<SearchResultsEntryDto[]> {
     return this.assetsService.search(query);
   }
 

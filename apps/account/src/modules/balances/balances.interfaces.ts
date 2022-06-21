@@ -6,6 +6,7 @@ export interface ERC20Token {
   symbol?: string;
   name?: string;
   chainId?: number;
+  icon?: string;
 }
 
 export interface TokenBalance {
@@ -32,9 +33,3 @@ export interface AccountBalance {
 }
 
 export type BalancesResponse = { [key: string]: AccountBalance };
-
-export interface BlockTimestamp {
-  date: Date;
-  block: number;
-  timestamp: number;
-}

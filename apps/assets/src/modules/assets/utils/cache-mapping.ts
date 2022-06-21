@@ -1,5 +1,6 @@
 import { plainToClass } from 'class-transformer';
 
+import { AssetCategoryDto } from '../dto/asset-category.dto';
 import { AssetDto } from '../dto/asset.dto';
 import { AssetEntity } from '../entities/asset.entity';
 
@@ -7,6 +8,11 @@ import { AssetEntity } from '../entities/asset.entity';
 function getAssetDtosWithUnderlyingReferences(asset: AssetEntity): AssetDto[] {
   const underlyingAssetDtos = [];
   const assetDto = plainToClass(AssetDto, asset);
+  // TODO: Holly crap what are we doing here
+  asset.categories?.forEach((category, index) => {
+    assetDto.categories[index] = plainToClass(AssetCategoryDto, category);
+  });
+
   asset.underlying?.forEach((underlying, index) => {
     const { position, underlyingAsset } = underlying;
     if (underlyingAsset.underlying?.length) {

@@ -150,7 +150,7 @@ function updatePrices(ap: AssetPrices, priceMap: PriceMap, expiredAt: number): A
 
   const updatedPrices = prices
     .filter(
-      ({ sourceId, timestamp }) => sourceId !== updatedPrice.sourceId || timestamp < expiredAt,
+      ({ sourceId, timestamp }) => sourceId !== updatedPrice.sourceId && timestamp >= expiredAt,
     )
     .concat({
       price: updatedPrice.price,

@@ -85,7 +85,6 @@ export class Univ2LikeAssetsLPProcessor {
     const savedPairs = await this.assetsRepository.findUniV2LikePairsForTrackedAssets(
       chainId,
       formatAddress(factory),
-      baseAssets,
     );
 
     const unknownPairs = this.getUnknownPairs(pairs, savedPairs);

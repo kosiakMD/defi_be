@@ -47,8 +47,8 @@ export class SaberAssetAnalyser
     };
   }
 
-  canHandleCategory(code: string): boolean {
-    return code === AssetCategory.SaberLP;
+  canHandleCategories(codes: string[]): boolean {
+    return codes.includes(AssetCategory.SaberLP);
   }
 
   async getPrices(

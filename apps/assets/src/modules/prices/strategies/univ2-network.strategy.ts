@@ -48,7 +48,6 @@ export class Univ2NetworkStrategy extends BaseStrategy<Config> {
     const pairs = await this.assetsRepository.findUniV2LikePairsForTrackedAssets(
       chainId,
       formatAddress(factory),
-      baseAssets,
     );
     if (!pairs.length) {
       return [];

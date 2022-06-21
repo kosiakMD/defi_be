@@ -22,6 +22,7 @@ import { IronFinanceAssetService } from './ironFinance.asset.service';
 import { MuesliSwapAssetService } from './muesliswap.asset.service';
 import { PriceService } from './price.service';
 import { Puppeteer } from './puppeteer';
+import { RpcService } from './rpc.service';
 import { SolanaAssetService } from './solana.asset.service';
 import { SonarAssetService } from './sonar.asset.service';
 import { SpiritSwapAssetService } from './spiritSwap.asset.service';
@@ -78,6 +79,8 @@ import { YetiAssetService } from './yeti.asset.service';
     // Price Services
     PriceService,
     MuesliSwapPriceService,
+
+    RpcService,
 
     // Helpers
 

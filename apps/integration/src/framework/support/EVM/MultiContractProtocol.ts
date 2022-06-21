@@ -20,25 +20,25 @@ import { AbiService } from './AbiModule/AbiService';
 import { EVMCore } from './EVMCore';
 
 interface ICoreMultiContractProtocol extends IProtocolMeta {
-  feature: FeatureEnum.staking;
+  feature: FeatureEnum;
   name: string;
   context?: any;
   address?: string;
 }
 
 interface IHasApiHandler {
-  scrape: never;
-  poolList: never;
+  scrape?: never;
+  poolList?: never;
   api: {
     endpoint: string;
-    handler: (data: unknown) => Address[];
     path: string;
+    handler?: (data: unknown) => Address[];
   };
 }
 
 interface IHasWebScraper {
-  api: never;
-  poolList: never;
+  api?: never;
+  poolList?: never;
   scrape: {
     url: string;
     handler: (...args: any[]) => Address[];
@@ -46,8 +46,8 @@ interface IHasWebScraper {
 }
 
 interface IHasPoolList {
-  api: never;
-  scrape: never;
+  api?: never;
+  scrape?: never;
   poolList: Address[];
 }
 

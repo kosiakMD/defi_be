@@ -5,8 +5,8 @@ import {
   Address,
   AddressesArray,
   ChainIdEnum,
-  ChainsArray,
   ErrorResponseDto,
+  OptionalChainsArray,
   ProtocolParams,
   ProtocolV3NameEnum,
 } from '@app/common';
@@ -59,7 +59,7 @@ export class IntegrationsControllerV3 {
   @Get('/:protocolName/')
   async getUserPositionsForProtocol(
     @Param() { protocolName }: ProtocolParams,
-    @ChainsArray('chains') chains: ChainIdEnum[],
+    @OptionalChainsArray('chains') chains: ChainIdEnum[],
     @AddressesArray('addresses') addresses: Address[],
   ): Promise<IUserEntryResponse> {
     return this.platformService.getUserPositionsForPlatform(protocolName, chains, addresses);
@@ -78,7 +78,7 @@ export class IntegrationsControllerV3 {
   @Get('/:protocolName/opportunities')
   async getOpportunitiesForProtocol(
     @Param() { protocolName }: ProtocolParams,
-    @ChainsArray('chains') chains: ChainIdEnum[],
+    @OptionalChainsArray('chains') chains: ChainIdEnum[],
   ): Promise<IOpportunityResponse> {
     return this.platformService.getOpportunitiesForPlatform(protocolName, chains);
   }
@@ -102,7 +102,7 @@ export class IntegrationsControllerV3 {
   @Get('/:protocolName/sync')
   async cacheAvailablePools(
     @Param() { protocolName }: ProtocolParams,
-    @ChainsArray('chains') chains: ChainIdEnum[],
+    @OptionalChainsArray('chains') chains: ChainIdEnum[],
     @Query() { debug }: { debug?: string },
   ): Promise<any> {
     return this.platformService.cacheOpportunitiesForPlatform(

@@ -114,6 +114,8 @@ export class BalanceTokenDto implements ERC20Token {
   name: string;
   @ApiProperty({ type: String, example: '0x0000000000000000000000000000000000000000' })
   address: string;
+  @ApiProperty({ type: String })
+  icon?: string;
 }
 
 export class AccountTokenBalanceDto implements TokenBalance {

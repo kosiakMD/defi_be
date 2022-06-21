@@ -8,4 +8,5 @@ export const databaseConfig = registerAs('database', () => ({
   password: process.env.DB_PASSWORD,
   synchronize: JSON.parse(process.env.DB_SYNC),
   schema: process.env.DB_SCHEMA,
+  logging: JSON.parse(process.env.DB_LOGGING),
 }));

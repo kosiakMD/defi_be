@@ -78,7 +78,10 @@ export class PlatformService implements OnApplicationBootstrap {
   ): Promise<IUserEntryResponse> {
     const platform = await this.getPlatform(platformName);
 
-    const { data: wallets, errors } = await platform.getUsersData(chains, addresses);
+    const { data: wallets, errors } = await platform.getUsersData(
+      chains.length ? chains : platform.getSupportedChains(),
+      addresses,
+    );
 
     const total = wallets.reduce((total, wallet) => total + wallet.total, 0);
 
@@ -100,7 +103,9 @@ export class PlatformService implements OnApplicationBootstrap {
   ): Promise<IOpportunityResponse> {
     const platform = await this.getPlatform(platformName);
 
-    const { data: items, errors } = await platform.getPoolData(chains);
+    const { data: items, errors } = await platform.getPoolData(
+      chains.length ? chains : platform.getSupportedChains(),
+    );
 
     const errorMessages = this.processErrors(errors, platformName);
 
@@ -156,13 +161,14 @@ export class PlatformService implements OnApplicationBootstrap {
     debug: boolean,
   ): Promise<StandardResponse<any>> {
     const platform = await this.getPlatform(platformName);
+    const requestedChains = chains.length ? chains : platform.getSupportedChains();
 
-    const [cached, errors] = await platform.cachePoolData(chains);
+    const [cached, errors] = await platform.cachePoolData(requestedChains);
 
     const errorMessages = this.processErrors(errors, platformName);
 
     if (debug) {
-      const { data: pools, errors: poolErrors } = await platform.getPoolData(chains);
+      const { data: pools, errors: poolErrors } = await platform.getPoolData(requestedChains);
       const flat = cached.flat();
       const poolErrorMessages = this.processErrors(poolErrors, platformName);
       if (flat.length !== pools.length) {
@@ -207,6 +213,7 @@ export class PlatformService implements OnApplicationBootstrap {
   }
 
   async onApplicationBootstrap() {
+    // Initialize all platforms
     await this.getProtocolList();
   }
 }

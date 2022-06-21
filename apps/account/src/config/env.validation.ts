@@ -42,6 +42,7 @@ export const validationSchema = Joi.object({
   RONIN_URL: Joi.string().required(),
   SOLANA_URL: Joi.string().required(),
   TERRA_URL: Joi.string().required(),
+  MILKOMEDA_URL: Joi.string().required(),
   TERRA_DELEGATION_API_URL: Joi.string().required(),
   SOLANA_DELEGATION_API_URL: Joi.string().required(),
   CARDANO_DELEGATION_API_URL: Joi.string().required(),

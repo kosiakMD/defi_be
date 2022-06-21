@@ -21,15 +21,27 @@ export class CardanoAssetAnalyser extends CardanoBaseAssetAnalyser {
 
   async analyseAsset({ address }: AssetReference): Promise<AssetAnalysisResult> {
     const asset = await this.api.assetsById(address.replace('.', ''));
-    if (!asset?.metadata || !asset?.metadata.ticker || !asset?.metadata.decimals) {
+    if (!asset) {
       return null;
     }
 
-    const { metadata } = asset;
-    return {
-      symbol: metadata.ticker,
-      name: metadata.name,
-      decimals: metadata.decimals,
-    };
+    if (asset.metadata && asset.metadata.ticker && asset.metadata.decimals) {
+      const { metadata } = asset;
+      return {
+        symbol: metadata.ticker,
+        name: metadata.name,
+        decimals: metadata.decimals,
+      };
+    }
+
+    if (asset.asset_name && asset.onchain_metadata && asset.onchain_metadata.name) {
+      return {
+        symbol: Buffer.from(asset.asset_name, 'hex').toString('utf8'),
+        name: asset.onchain_metadata.name,
+        decimals: 0,
+      };
+    }
+
+    return null;
   }
 }

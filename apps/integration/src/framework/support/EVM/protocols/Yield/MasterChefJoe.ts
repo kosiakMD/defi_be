@@ -1,11 +1,17 @@
+import { AssetService } from 'apps/integration/src/modules/microservices/asset.service';
 import BigNumber from 'bignumber.js';
+import { Cache } from 'cache-manager';
 import { cloneDeep } from 'lodash';
 
-import { Address } from '@app/common';
+import { CACHE_MANAGER, Inject } from '@nestjs/common';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+
+import { Address, Logger } from '@app/common';
 import { ZERO_ADDRESS } from '@app/common/constant';
 import { normalizeDecimals } from '@app/common/utils';
 import { DynamicContract } from '@app/common/web3provider/contracts/DynamicContract';
 import { ERC20 } from '@app/common/web3provider/contracts/ERC20';
+import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
 import { INamedFunctionPredicates } from '../../../interfaces';
 import {
@@ -13,6 +19,7 @@ import {
   IStakingFeatureOpportunity,
   IStakingFeatureUserEntry,
 } from '../../../interfaces/feature.staking.interface';
+import { AbiService } from '../../AbiModule/AbiService';
 import { MasterChef } from './MasterChef';
 
 export interface IMasterChefJoePoolInfo {
@@ -23,6 +30,17 @@ export interface IMasterChefJoePoolInfo {
 }
 
 export class MasterChefJoe extends MasterChef {
+  constructor(
+    protected abiService: AbiService,
+    protected multicall: MulticallAggregator,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) protected logger: Logger,
+    @Inject(CACHE_MANAGER) protected cache: Cache,
+    assetService: AssetService,
+  ) {
+    super(abiService, multicall, logger, cache);
+    this.assetService = assetService;
+  }
+
   rewarderPredicates: INamedFunctionPredicates = {
     rewardToken: () => (item) => item.name === 'rewardToken',
   };
@@ -182,6 +200,17 @@ export class MasterChefJoe extends MasterChef {
       amount: rewardBalance,
       value: rewardBalance * poolInfo.rewarded[0].token.price,
     });
+
+    if (!pendingRewards[3].isZero()) {
+      const rewardBalance = normalizeDecimals(
+        pendingRewards[3].toString(),
+        poolInfo.rewarded[1].token.decimals,
+      );
+      Object.assign(poolInfo.rewarded[1], {
+        amount: rewardBalance,
+        value: rewardBalance * poolInfo.rewarded[1].token.price,
+      });
+    }
 
     return poolInfo as IStakingFeatureUserEntry;
   }

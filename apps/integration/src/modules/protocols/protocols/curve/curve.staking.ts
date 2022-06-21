@@ -218,7 +218,7 @@ export class CurveStaking {
       });
       return resultMap;
     } catch (e) {
-      this.logger.error(e, 'getNonEthRewards');
+      this.logger.error(e, `getNonEthRewards, chain: ${chain.id}`);
     }
   }
 }

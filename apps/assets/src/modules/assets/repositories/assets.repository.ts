@@ -19,7 +19,15 @@ export class AssetsRepository extends Repository<AssetEntity> {
 
   findTrackedAssetsByChain(chainId: ChainId) {
     return this.find({
-      where: { disabled: false, isTracked: true, chainId },
+      where: { disabled: false, isTracked: true, chainId: chainId },
+      relations: UNDERLYING_RELATIONS,
+    });
+  }
+
+  getAccountedAssetsByChain(chainId: ChainId) {
+    return this.find({
+      where: { disabled: false, isTracked: true, isNotAccounted: false, chainId: chainId },
+      relations: UNDERLYING_RELATIONS,
     });
   }
 

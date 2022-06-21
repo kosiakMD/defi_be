@@ -1,4 +1,4 @@
-import { AssetResponseObjectInterface } from '@sdk/assets/interfaces';
+import { AssembledAssetInterface } from '@sdk/assets/interfaces';
 import { plainToClass } from 'class-transformer';
 
 import { HttpStatus, Inject } from '@nestjs/common';
@@ -32,6 +32,8 @@ type PartialBalancesResponse = {
 };
 
 export class BalancesV2Service {
+  private readonly cacheAssetsTTL: number;
+
   constructor(
     private readonly moduleRef: ModuleRef,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
@@ -41,7 +43,9 @@ export class BalancesV2Service {
     private readonly assetService: AssetService,
     private readonly blacklistService: BlacklistService,
     private readonly blocktimeService: BlocktimeService,
-  ) {}
+  ) {
+    this.cacheAssetsTTL = configService.get<number>('CACHE_ACCOUNTED_ASSETS_TTL') || 2 * 60;
+  }
 
   public async getBalance(
     addresses: Address[],
@@ -240,25 +244,25 @@ export class BalancesV2Service {
     const assetAddresses = assetsToHandle.map(({ address }) => address);
     const block = atTime && (await this.blocktimeService.getBlockAtDate(chainId, atTime));
 
-    let results = await Promise.all(
+    let balances = await Promise.all(
       addresses.map((address) =>
         this.getBalancesForChainForAddress(chainId, address, assetAddresses, strategies, block),
       ),
     );
 
-    results = this.addAssetsInformation(results, assetsToHandle);
+    balances = this.addAssetsInformation(balances, assetsToHandle);
 
     if (block) {
       // TODO: Handle historical prices separately until assets service not finished
-      return this.applyHistoricalPrices(chainId, results, block);
+      return this.applyHistoricalPrices(chainId, balances, block);
     }
 
-    return results;
+    return balances;
   }
 
   private addAssetsInformation(
     results: PartialBalancesResponse[],
-    assetsToHandle: AssetResponseObjectInterface[],
+    assetsToHandle: AssembledAssetInterface[],
   ): PartialBalancesResponse[] {
     const assetsMap = new Map(assetsToHandle.map((asset) => [asset.address, asset]));
 
@@ -342,7 +346,7 @@ export class BalancesV2Service {
 
     const final: PartialBalancesResponse = {
       address,
-      balances: results.balances,
+      balances: results.balances || [],
       errors: results.error
         ? [
             {
@@ -355,24 +359,25 @@ export class BalancesV2Service {
     };
 
     if (!final.errors.length) {
-      await this.cache.set(cacheKey, final, { ttl });
+      this.cache
+        .set(cacheKey, final, { ttl })
+        .catch((error) => this.logger.error('Error saving balances to cache', error));
     }
 
     return final;
   }
 
-  private getAssetsToHandle(chain: ChainId, requested?: Address[]) {
-    if (requested?.length) {
-      // TODO: Get assets by addresses
-      return [];
+  private getAssetsToHandle(chainId: ChainId, addresses?: Address[]) {
+    if (addresses?.length) {
+      const requests = addresses.map((address) => ({ chainId, address }));
+      return this.assetService.getAssets(requests);
     }
 
     return this.cache.getOrLoad(
-      `accounted_assets_${chain}`,
-      () => this.assetService.getAccountedAssets(chain),
+      `accounted_assets_${chainId}`,
+      () => this.assetService.getAccountedAssets(chainId),
       {
-        // TODO: Move to config
-        ttl: 2 * 60,
+        ttl: this.cacheAssetsTTL,
       },
     );
   }

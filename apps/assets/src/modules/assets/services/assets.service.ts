@@ -206,7 +206,7 @@ export class AssetsService extends CrudService<AssetsRepository> {
   public async getAccountedAssetsByChain(chainId: ChainId): Promise<AssetDto[]> {
     const assets = await this.cacheService.getOrLoad(
       `assets_service_balances_assets_${chainId}`,
-      () => this.assetsRepository.findTrackedAssetsByChain(chainId),
+      () => this.assetsRepository.getAccountedAssetsByChain(chainId),
       {
         ttl: 15 * 60, // 15 minutes
       },

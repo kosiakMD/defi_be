@@ -31,6 +31,10 @@ export class AssetsCachedRepository {
     return this.assetsRepository.findTrackedAssetsByChain(chainId);
   }
 
+  getAccountedAssetsByChain(chainId: ChainId) {
+    return this.assetsRepository.getAccountedAssetsByChain(chainId);
+  }
+
   findAssetsByParams(searchParams: SearchParams): Promise<AssetEntity[]> {
     return this.assetsRepository.findAssetsByParams(searchParams);
   }

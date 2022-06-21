@@ -1,15 +1,16 @@
 import { Queue } from 'bull';
 
 import { InjectQueue } from '@nestjs/bull';
-import { Inject, Injectable, LoggerService } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+import { Logger } from '@app/common';
 import { ChainId } from '@app/common';
 import { CacheService } from '@app/common/services/cache.service';
 import { CrudService } from '@app/common/services/crud.service';
-import { isSomeAddress } from '@app/common/utils';
+import { formatError, isSomeAddress } from '@app/common/utils';
 
 import { AssetJobName } from '../../../common/enum/job-name.enum';
 import { JobPriority } from '../../../common/enum/job-priority.enum';
@@ -39,7 +40,7 @@ import { InvalidAssetService } from './invalid-asset.service';
 // TODO: Return underlying assets reserves
 export class AssetsService extends CrudService<AssetsRepository> {
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     @InjectQueue(QueueName.ASSETS) private readonly assetsQueue: Queue,
     private readonly config: ConfigService,
     private readonly cacheService: CacheService,
@@ -60,14 +61,24 @@ export class AssetsService extends CrudService<AssetsRepository> {
   }
 
   public async getBulkAssets(requests: GetAssetRequest[]): Promise<AssetDto[]> {
-    this.logger.log(`Loading bulk assets for ${requests.length} requests`);
+    try {
+      this.logger.log(`Loading bulk assets for ${requests.length} requests`);
 
-    const validRequests = requests.filter(({ address }) => isSomeAddress(address));
-    const assets = mapAssetsToAPIPlain(await this.getAssets(validRequests));
+      const validRequests = requests.filter(({ address }) => isSomeAddress(address));
+      const assets = mapAssetsToAPIPlain(await this.getAssets(validRequests));
 
-    await this.updateAssetsWithHistoricalPrices(requests, assets);
+      await this.updateAssetsWithHistoricalPrices(requests, assets);
 
-    return this.addPrices(assets);
+      const responses = await this.addPrices(assets);
+      this.logger.log(`Loaded ${responses.length} bulk assets for ${requests.length} requests`);
+      return responses;
+    } catch (e) {
+      this.logger.error({
+        message: `Error loading bulk assets for ${requests.length} requests`,
+        error: formatError(e),
+      });
+      throw e;
+    }
   }
 
   private async addPrices(dtos: AssetDto[]): Promise<AssetDto[]> {
@@ -237,10 +248,16 @@ export class AssetsService extends CrudService<AssetsRepository> {
   }
 
   public async saveAssetCandidate({ chainId, address }: AssetCandidateRequest) {
-    this.logger.log('Saving assets candidate', { chainId, address });
+    this.logger.log({
+      message: 'Saving assets candidate',
+      asset: { chainId, address },
+    });
     const existing = await this.assetsCandidateRepository.getBy(chainId, address);
     if (existing) {
-      this.logger.log('Assets candidate already exists', { chainId, address });
+      this.logger.log({
+        message: 'Assets candidate already exists',
+        asset: { chainId, address },
+      });
       return;
     }
 
@@ -249,7 +266,10 @@ export class AssetsService extends CrudService<AssetsRepository> {
       chainId,
     });
     await this.assetsCandidateRepository.save(assetsCandidateEntity);
-    this.logger.log('Saved assets candidate', { chainId, address });
+    this.logger.log({
+      message: 'Saved assets candidate',
+      assets: { chainId, address },
+    });
   }
 }
 

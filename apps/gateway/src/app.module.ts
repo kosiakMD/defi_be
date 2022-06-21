@@ -25,6 +25,7 @@ import { ApprovalsController } from './approvals/approvals.controller';
 import { AssetsV2Controller } from './assets-v2/assets-v2.controller';
 import { AssetsController } from './assets/assets.controller';
 import { BalancesController } from './balances/balances.controller';
+import { BalancesV2Controller } from './balances/balances.v2.controller';
 import { BlacklistController } from './blacklist/blacklist.controller';
 import { ChainsController } from './chains/chains.controller';
 import config from './config';
@@ -94,6 +95,7 @@ import { VaultsModule } from './vaults/vaults.module';
     AssetsV2Controller,
     ApprovalsController,
     BalancesController,
+    BalancesV2Controller,
     BlacklistController,
     ChainsController,
     EndpointsController,

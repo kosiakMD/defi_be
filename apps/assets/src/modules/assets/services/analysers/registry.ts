@@ -13,6 +13,7 @@ import { SingleUnderlyingAssetAnalyser } from './core/single-underlying.asset-an
 import { SingleUnderlyingTokenPriceProvider } from './core/single-underlying.price-provider';
 import { TrustWalletAssetAnalyser } from './icons/trust-wallet.asset-analyser';
 import { AaveV2StakedAssetAnalyser } from './protocols/aave.v2.staked.asset-analyser';
+import { BalancerWeightedAssetAnalyser } from './protocols/balancer.weighted.pools.asset-analyser';
 import { MinSwapAssetAnalyser } from './protocols/minswap.asset-analyser';
 import { SaberAssetAnalyser } from './protocols/saber.asset-analyser';
 import { UniswapV2AssetAnalyser } from './protocols/uniswapv2.asset-analyser';
@@ -38,6 +39,7 @@ export const assetAnalysers = [
   SaberAssetAnalyser,
   UniswapV2AssetAnalyser,
   AaveV2StakedAssetAnalyser,
+  BalancerWeightedAssetAnalyser,
   SingleUnderlyingAssetAnalyser,
 
   SingleUnderlyingTokenPriceProvider,

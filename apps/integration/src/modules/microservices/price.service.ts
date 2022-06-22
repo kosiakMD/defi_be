@@ -1,11 +1,11 @@
 import { firstValueFrom } from 'rxjs';
 
 import { HttpService } from '@nestjs/axios';
-import { Inject, Injectable, LoggerService } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Address, CurrencyIdEnum } from '@app/common';
+import { Address, CurrencyIdEnum, Logger } from '@app/common';
 import { ChainIdEnum } from '@app/common/enum';
 import { logExecutionTime } from '@app/common/utils';
 
@@ -19,7 +19,7 @@ export class PriceService implements PriceServiceInterface {
   private readonly getPriceUrlFetch: string;
 
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
   ) {

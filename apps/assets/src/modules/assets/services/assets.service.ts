@@ -10,7 +10,7 @@ import { Logger } from '@app/common';
 import { ChainId } from '@app/common';
 import { CacheService } from '@app/common/services/cache.service';
 import { CrudService } from '@app/common/services/crud.service';
-import { formatError, isSomeAddress } from '@app/common/utils';
+import { formatError, isSomeAddress, logExecutionTime } from '@app/common/utils';
 
 import { AssetJobName } from '../../../common/enum/job-name.enum';
 import { JobPriority } from '../../../common/enum/job-priority.enum';
@@ -217,17 +217,27 @@ export class AssetsService extends CrudService<AssetsRepository> {
   }
 
   public async getAccountedAssetsByChain(chainId: ChainId): Promise<AssetDto[]> {
-    const assets = await this.cacheService.getOrLoad(
-      `assets_service_balances_assets_${chainId}`,
-      () => this.assetsRepository.getAccountedAssetsByChain(chainId),
-      {
-        ttl: 15 * 60, // 15 minutes
-      },
+    // TODO: Test code, to be deleted
+    const assets = await logExecutionTime(
+      this.logger,
+      `Load accounted assets for chain ${chainId}`,
+      () =>
+        this.cacheService.getOrLoad(
+          `assets_service_balances_assets_${chainId}`,
+          () => this.assetsRepository.getAccountedAssetsByChain(chainId),
+          {
+            ttl: 15 * 60, // 15 minutes
+          },
+        ),
     );
     // NOTE: We don't care about underlying and special assets as we won't show them in balances
     const assetsForBalances = assets.filter(({ isNotAccounted }) => !isNotAccounted);
     const dtos = mapAssetsToAPIPlain(assetsForBalances);
-    const dtosWithPrices = await this.addPrices(dtos);
+    const dtosWithPrices = await logExecutionTime(
+      this.logger,
+      `Load prices for chain ${chainId}`,
+      () => this.addPrices(dtos),
+    );
     // NOTE: Only return assets that have prices as others we don't show on balances
     return dtosWithPrices.filter(({ price }) => !!price);
   }

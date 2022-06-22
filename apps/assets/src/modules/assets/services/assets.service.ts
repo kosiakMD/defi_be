@@ -123,9 +123,16 @@ export class AssetsService extends CrudService<AssetsRepository> {
 
   private updateDtoWithPrices(dto: AssetDto, prices: AssetAvgPrice[]) {
     const assetPrice = prices.find(
-      ({ asset }) => asset.address === dto.address && asset.chainId === dto.chainId,
+      ({ asset }) =>
+        asset.address.toLowerCase() === dto.address.toLowerCase() && asset.chainId === dto.chainId,
     );
-    dto.price = assetPrice?.price;
+    const { price, reserves } = assetPrice;
+    dto.price = price;
+    if (dto.underlying?.length && reserves?.length) {
+      dto.underlying.forEach((underlying, index) => {
+        underlying.reserve = assetPrice?.reserves[index];
+      });
+    }
     return;
   }
 
@@ -297,7 +304,9 @@ function getHistoricalPricesRequests(
     .filter((request) => request.pricesAt?.length)
     .flatMap((request) => {
       const asset = assets.find(
-        (a) => a.address === request.address && a.chainId === request.chainId,
+        (a) =>
+          a.address.toLowerCase() === request.address.toLowerCase() &&
+          a.chainId === request.chainId,
       );
       return asset
         ? [

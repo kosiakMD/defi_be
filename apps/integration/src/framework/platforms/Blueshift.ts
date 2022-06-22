@@ -2,9 +2,14 @@ import { Inject } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Logger } from '@app/common';
+import { ChainIdEnum, Logger } from '@app/common';
 
+import {
+  BlueshiftLiquidity,
+  IBlueshiftMeta,
+} from '../support/EVM/protocols/Liquidity/BlueshiftLiquidity';
 import { RootPlatform } from '../support/RootPlatform';
+import { FeatureEnum } from '../support/enums';
 
 export class Blueshift extends RootPlatform {
   constructor(
@@ -25,6 +30,13 @@ export class Blueshift extends RootPlatform {
         github: 'blueshift-fi',
         telegram: 'BlueshiftGroup',
       },
+    });
+
+    await this.registerProtocol<IBlueshiftMeta>(BlueshiftLiquidity, {
+      chain: ChainIdEnum.milkomeda,
+      name: 'Blueshift - Portfolios',
+      feature: FeatureEnum.staking,
+      address: '0x83e384d119ada05195caca26396b8f56fdda1c91',
     });
   }
 }

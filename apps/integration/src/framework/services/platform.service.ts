@@ -3,6 +3,7 @@ import { ClassConstructor } from 'class-transformer';
 import { filter, from, lastValueFrom, mergeMap, toArray } from 'rxjs';
 
 import { Inject, Injectable, OnApplicationBootstrap } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { ModuleRef } from '@nestjs/core';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
@@ -11,7 +12,7 @@ import { getChainById } from '@app/common/utils';
 
 import { ErrorWithHttpInfo } from '../../common/types/error-with-http-info';
 
-import * as Platforms from '../platforms';
+import getPlatforms from '../platforms';
 import { RootPlatform } from '../support/RootPlatform';
 import { IPlatformMeta } from '../support/interfaces';
 import {
@@ -24,10 +25,9 @@ import {
 export class PlatformService implements OnApplicationBootstrap {
   constructor(
     private readonly moduleRef: ModuleRef,
+    private configService: ConfigService,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
-  ) {
-    this.registerPlatforms(Platforms);
-  }
+  ) {}
 
   platforms: Map<string, ClassConstructor<RootPlatform>> = new Map();
   platformsInitialized: Map<string, RootPlatform> = new Map();
@@ -213,7 +213,9 @@ export class PlatformService implements OnApplicationBootstrap {
   }
 
   async onApplicationBootstrap() {
-    // Initialize all platforms
+    const platforms = await getPlatforms(this.configService.get('PLATFORMS_TO_EXCLUDE').split(','));
+    await this.registerPlatforms(platforms);
+
     await this.getProtocolList();
   }
 }

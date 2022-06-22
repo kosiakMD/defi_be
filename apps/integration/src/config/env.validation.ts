@@ -38,6 +38,8 @@ export const validationSchema = Joi.object({
   COVALENT_KEY: Joi.string().required(),
   TENDERLY_API_KEY: Joi.string().optional(),
 
+  PLATFORMS_TO_EXCLUDE: Joi.string().allow(''),
+
   ...dataSourceConfig,
   ...blockscanConfig,
   ...blockscoutConfig,

@@ -1,64 +1,24 @@
-export { AaveV2 } from './AaveV2';
-export { AaveV3 } from './AaveV3';
-export { AlchemixV2 } from './AlchemixV2';
-export { ApeSwap } from './ApeSwap';
-export { Arrakis } from './Arrakis';
-export { AutoFarm } from './AutoFarm';
-export { BabySwap } from './BabySwap';
-export { BalancerV2 } from './BalancerV2';
-export { Bancor } from './Bancor';
-export { BeefyFinance } from './BeefyFinance';
-export { Belt } from './Belt';
-export { Benqi } from './Benqi';
-export { BiSwap } from './BiSwap';
-export { Blizz } from './Blizz';
-export { CafeSwap } from './CafeSwap';
-export { CardanoStaking } from './CardanoStaking';
-export { CheesecakeSwap } from './CheesecakeSwap';
-export { CherrySwap } from './CherrySwap';
-export { CryptoComDefiSwap } from './CryptoComDefiSwap';
-export { CubFinance } from './CubFinance';
-export { DfynNetwork } from './DfynNetwork';
-export { Ellipsis } from './Ellipsis';
-export { Evodefi } from './Evodefi';
-export { Frax } from './Frax';
-export { Geist } from './Geist';
-export { Goose } from './Goose';
-export { IronBank } from './IronBank';
-export { IronFinance } from './IronFinance';
-export { Kava } from './Kava';
-export { KnightSwap } from './KnightSwap';
-export { KyberSwap } from './KyberSwap';
-export { Lido } from './Lido';
-export { Liquity } from './Liquity';
-export { MakerDAO } from './MakerDAO';
-export { MarsEcosystem } from './MarsEcosystem';
-export { Mdex } from './Mdex';
-export { Mojitoswap } from './Mojitoswap';
-export { Moola } from './Moola';
-export { MuesliSwap } from './MuesliSwap';
-export { Nereus } from './Nereus';
-export { Netswap } from './Netswap';
-export { OccamX } from './OccamX';
-export { PaintSwap } from './PaintSwap';
-export { PancakeSwap } from './PancakeSwap';
-export { Quarry } from './Quarry';
-export { QuickSwap } from './QuickSwap';
-export { RocketPool } from './RocketPool';
-export { RuneFarm } from './RuneFarm';
-export { SashimiSwap } from './SashimiSwap';
-export { SolanaStaking } from './SolanaStaking';
-export { Solend } from './Solend';
-export { SpiritSwap } from './SpiritSwap';
-export { SpookySwap } from './SpookySwap';
-export { Stargate } from './Stargate';
-export { SushiSwap } from './SushiSwap';
-export { Swapr } from './Swapr';
-export { Synapse } from './Synapse';
-export { Tokemak } from './Tokemak';
-export { TombFinance } from './TombFinance';
-export { TreeDefi } from './TreeDefi';
-export { WaultFinance } from './WaultFinance';
-export { YelFinance } from './YelFinance';
-export { YetiFinance } from './YetiFinance';
-export { Zenlink } from './Zenlink';
+import fs from 'fs';
+
+import { RootPlatform } from '../support/RootPlatform';
+
+const getPlatforms = async (platformsToExclude: string[]) => {
+  const exclude = new Set(platformsToExclude);
+  const files = fs.readdirSync(__dirname);
+  const promises = files
+    .filter((file) => {
+      return !exclude.has(file.split('.')[0]);
+    })
+    .map((file) => {
+      return import(`./${file.split('.')[0]}`);
+    });
+  return (await Promise.all(promises)).reduce((acc, curr) => {
+    const [platform]: any[] = Object.values(curr);
+    if (platform.prototype instanceof RootPlatform) {
+      Object.assign(acc, curr);
+    }
+    return acc;
+  }, {});
+};
+
+export default getPlatforms;

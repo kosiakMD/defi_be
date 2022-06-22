@@ -65,7 +65,7 @@ export class UniswapV2AssetAnalyser
       return all.concat([contract.createCall(getReservesAbi), contract.createCall(totalSupplyAbi)]);
     }, new Array<CallData>());
 
-    const responses = await chunkRunAsync(calls, 1000, (chunk) =>
+    const responses = await chunkRunAsync(calls, 500, (chunk) =>
       this.multicall.callArray(chunk, chainId),
     );
 

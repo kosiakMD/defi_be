@@ -109,7 +109,6 @@ export class CompoundFinanceLending extends EVMCore<
     const lendingAddressPosition = lendingPositions.find((x) => x.address === address);
     if (!lendingAddressPosition) return [];
 
-    const userResponse: ILendingFeatureUserEntry[] = [];
     const supplyEntry: ISupplyTokenUserEntry[] = [];
     const borrowEntry: IBorrowTokenUserEntity[] = [];
 
@@ -134,16 +133,16 @@ export class CompoundFinanceLending extends EVMCore<
       }
     }
 
-    userResponse[0] = {
-      id: 'compound-finance-lending',
-      chain: this.meta.chain,
-      feature: this.meta.feature,
-      borrowed: borrowEntry,
-      supplied: supplyEntry,
-      debtRatio: Number(lendingAddressPosition.health.value),
-    };
-
-    return userResponse;
+    return [
+      {
+        id: 'compound-finance-lending',
+        chain: this.meta.chain,
+        feature: this.meta.feature,
+        borrowed: borrowEntry,
+        supplied: supplyEntry,
+        debtRatio: Number(lendingAddressPosition.health.value),
+      },
+    ];
   }
 
   protected async fetchUsersData(addresses: string[]): Promise<any[]> {

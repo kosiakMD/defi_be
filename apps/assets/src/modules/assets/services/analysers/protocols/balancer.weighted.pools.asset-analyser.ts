@@ -62,19 +62,12 @@ export class BalancerWeightedAssetAnalyser
     const token = new DynamicContract(asset.address);
     try {
       const [bPool] = await this.multicall.callArray(
-        [
-          token.createCall(bPoolAbi),
-          token.createCall(bFactoryAbi),
-          //   token.createCall(getDenormalizedWeightAbi),
-        ],
+        [token.createCall(bPoolAbi), token.createCall(bFactoryAbi)],
         asset.chainId,
       );
       const pool = new DynamicContract(bPool);
-      const [currentTokens] = await this.multicall.callArray(
-        [
-          pool.createCall(currentTokensAbi),
-          // pool.createCall(weightAbi)
-        ],
+      const currentTokens = await this.multicall.call(
+        pool.createCall(currentTokensAbi),
         asset.chainId,
       );
       return [currentTokens, bPool];
@@ -100,7 +93,7 @@ export class BalancerWeightedAssetAnalyser
     chainId: number,
     assets: ComplexAsset[],
   ): Promise<AssetPriceWithUnderlyingReserves[]> {
-    // TODO: grab metadata from ComplexAsset if possible
+    // TODO: grab metadata from ComplexAsset if/when possible
     const bPoolAbi: AbiItem = findAbiItemByName(BALANCER_WEIGHTED_POOL_ABI, 'bPool');
     const totalSupplyAbi: AbiItem = findAbiItemByName(BALANCER_WEIGHTED_POOL_ABI, 'totalSupply');
 
@@ -109,7 +102,7 @@ export class BalancerWeightedAssetAnalyser
       return [token.createCall(bPoolAbi), token.createCall(totalSupplyAbi)];
     });
 
-    const chunkedAssetResults = chunk(await this.multicall.callArray(assetCalls, chainId), 2); // 2 for number of calls per asset
+    const chunkedAssetResults = chunk(await this.multicall.callArray(assetCalls, chainId), 2); // 2 for number of calls per asset (bPool, totalSupply)
 
     const weightAbi: AbiItem = findAbiItemByName(BALANCER_POOL_TOKEN_ABI, 'getNormalizedWeight');
     const balanceAbi: AbiItem = findAbiItemByName(BALANCER_POOL_TOKEN_ABI, 'getBalance');

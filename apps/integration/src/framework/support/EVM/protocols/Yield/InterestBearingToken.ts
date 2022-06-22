@@ -61,6 +61,7 @@ export class InterestBearingToken extends SingleContractProtocol<
   protected functionPredicates: INamedFunctionPredicates = {
     stakedToken: () => (item) => item.name === 'STAKED_TOKEN',
     rewardToken: () => (item) => item.name === 'REWARD_TOKEN',
+    totalSupply: () => (item) => item.name === 'totalSupply',
     getStakedBalance: () => (item) => item.name === 'balanceOf',
     getRewardBalance: () => (item) => item.name === 'getTotalRewardsBalance',
   };
@@ -75,7 +76,7 @@ export class InterestBearingToken extends SingleContractProtocol<
         feature: this.meta.feature,
         supply: {
           token: { address: context.stakedToken },
-          // totalSupplied: context.totalSupply.toString(), // staked token total supply * exchange rate
+          totalSupplied: context.totalSupply.toFixed(), // staked token total supply * exchange rate
         },
         reward: {
           token: { address: context.rewardToken },
@@ -112,10 +113,12 @@ export class InterestBearingToken extends SingleContractProtocol<
           ...pool.reward,
           amount: rewardAmount,
           value: rewardAmount * pool.reward.token.price,
-          apr: null,
-          apy: null,
         },
       },
     ];
+  }
+
+  protected getYieldBreakdown(): { apr: null; apy: null } {
+    return { apr: null, apy: null };
   }
 }

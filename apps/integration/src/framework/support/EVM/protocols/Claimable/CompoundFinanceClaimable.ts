@@ -1,11 +1,12 @@
 import { AssetService } from 'apps/integration/src/modules/microservices/asset.service';
+import { CompoundLens } from 'apps/integration/src/modules/protocols/protocols/compound/contracts/CompoundLens';
 import { Cache } from 'cache-manager';
-import { startsWith } from 'lodash';
 
 import { CACHE_MANAGER, Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, Logger } from '@app/common';
+import { normalizeDecimals } from '@app/common/utils';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
 import { FeatureEnum } from '../../../enums';
@@ -49,21 +50,63 @@ export class CompoundFinanceClaimable extends SingleContractProtocol<
     super();
   }
 
-  protected functionPredicates: INamedFunctionPredicates = {
-    pendingRewards: () => (item) => startsWith(item.name, 'getCompBalance'),
+  protected functionPredicates: INamedFunctionPredicates = {};
+  protected interactiveFunctionPredicates: INamedFunctionPredicates = {
+    pendingRewards: () => (item) => item.name === 'getCompBalanceMetadataExt',
   };
 
-  protected async fetchOpportunityData(
-    context: Record<string, any>,
-  ): Promise<IFeatureEntryMinimal[]> {}
-
-  protected fetchOpportunityData(context: { [key: string]: any }): Promise<IFeatureEntryMinimal[]> {
-    throw new Error('Method not implemented.');
+  protected async fetchOpportunityData(): Promise<IFeatureEntryMinimal[]> {
+    return [
+      {
+        id: this.meta.address,
+        chain: this.meta.chain,
+        feature: this.meta.feature,
+        supply: {
+          token: {
+            address: this.meta.context.rewardToken,
+          },
+          totalSupplied: '0',
+        },
+      },
+    ];
   }
-  protected fetchUserData(
+
+  protected async fetchUserData(
     address: string,
     pools: IFeatureOpportunity[],
   ): Promise<IFeatureUserEntry[]> {
-    throw new Error('Method not implemented.');
+    const contract = this.getMainContract();
+    // const contract = new CompoundLens(this.meta.address);
+    const pendingRewardsCall = contract.createCall(
+      this.interactiveFunctions.pendingRewards,
+      this.meta.context.rewardToken,
+      this.meta.context.controller,
+      address,
+    );
+
+    const pendingRewards = await this.multicall.call(pendingRewardsCall, this.meta.chain);
+
+    return pools.reduce((pools, pool) => {
+      const userPool = this.formatUserData(pool, pendingRewards);
+      if (userPool) {
+        pools.push(userPool);
+      }
+
+      return pools;
+    }, []);
+  }
+
+  protected formatUserData(pool: IFeatureOpportunity, data: any): IFeatureUserEntry {
+    const rewardBalance = normalizeDecimals(data[3], pool.supply.token.decimals);
+    if (!rewardBalance) return;
+
+    return {
+      ...pool,
+      supply: {
+        ...pool.supply,
+        amount: rewardBalance,
+        value: rewardBalance * pool.supply.token.price,
+      },
+    };
   }
 }

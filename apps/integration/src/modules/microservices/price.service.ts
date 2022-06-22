@@ -7,11 +7,11 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, CurrencyIdEnum } from '@app/common';
 import { ChainIdEnum } from '@app/common/enum';
+import { logExecutionTime } from '@app/common/utils';
 
 import { CurrentPricesPayload, PriceResponseDto } from '../../common/dto';
 
 import { PriceServiceInterface } from './price.service.interface';
-import { logExecutionTime } from './utils';
 
 @Injectable()
 export class PriceService implements PriceServiceInterface {

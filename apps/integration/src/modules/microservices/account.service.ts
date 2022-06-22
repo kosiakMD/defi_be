@@ -10,12 +10,11 @@ import { IAssetResponseDto } from '@app/common';
 import { DetailedResponseDto } from '@app/common/dto';
 import { ChainIdEnum } from '@app/common/enum';
 import { Address, BalancesResponse } from '@app/common/types';
-import { chunk } from '@app/common/utils';
+import { chunk, logExecutionTime } from '@app/common/utils';
 
 import { Asset } from '../../common/interfaces/transactions.interfaces';
 
 import { AccountServiceInterface } from './account.service.interface';
-import { logExecutionTime } from './utils';
 
 @Injectable()
 export class AccountService implements AccountServiceInterface {

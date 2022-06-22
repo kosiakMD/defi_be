@@ -8,7 +8,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, ChainId, Logger } from '@app/common';
 import { CacheService } from '@app/common/services/cache.service';
-import { getUniqList, normalizeDecimals } from '@app/common/utils';
+import { getUniqList, logExecutionTime, normalizeDecimals } from '@app/common/utils';
 import { unifyAddresses } from '@app/common/utils/addresses';
 import { roundToNearestHour } from '@app/common/utils/dates';
 
@@ -240,13 +240,26 @@ export class BalancesV2Service {
     const strategies = await this.moduleRef.resolve<BalancesLoadingStrategy>(
       getStrategyForNetwork(chainId),
     );
-    const assetsToHandle = await this.getAssetsToHandle(chainId, assets);
+
+    // TODO: Test code, to be removed
+    const assetsToHandle = await logExecutionTime(
+      this.logger,
+      `Get assets to handle for chain ${chainId}`,
+      () => this.getAssetsToHandle(chainId, assets),
+    );
+
     const assetAddresses = assetsToHandle.map(({ address }) => address);
     const block = atTime && (await this.blocktimeService.getBlockAtDate(chainId, atTime));
 
     let balances = await Promise.all(
       addresses.map((address) =>
-        this.getBalancesForChainForAddress(chainId, address, assetAddresses, strategies, block),
+        // TODO: Test code, to be removed
+        logExecutionTime(
+          this.logger,
+          `Get balances for chain ${chainId} and address ${address}`,
+          () =>
+            this.getBalancesForChainForAddress(chainId, address, assetAddresses, strategies, block),
+        ),
       ),
     );
 

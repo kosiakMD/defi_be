@@ -177,8 +177,10 @@ export class AssetsCachedRepository {
 
       for (const underlying of asset.underlying) {
         const existingUnderlying = existingUnderlyings.find(
-          ({ position, underlyingAsset: { address } }) =>
-            position === underlying.position && address === underlying.underlyingAsset.address,
+          ({ position, underlyingAsset: { address, chainId } }) =>
+            position === underlying.position &&
+            address === underlying.underlyingAsset.address &&
+            chainId === underlying.underlyingAsset.chainId,
         );
         if (existingUnderlying) {
           underlying.id = existingUnderlying.id;

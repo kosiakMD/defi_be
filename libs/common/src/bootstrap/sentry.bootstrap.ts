@@ -36,6 +36,7 @@ export const initSentry = function (sentryDSN = process.env.SENTRY_DSN as string
     // We recommend adjusting this value in production, or using tracesSampler
     // for finer control
     tracesSampleRate: Number(process.env.SENTRY_SAMPLE_RATE) || 0,
+    release: `${process.env.SERVICE_NAME}@${process.env.npm_package_version}`,
     dsn: sentryDSN,
     environment: process.env.NODE_ENV,
     serverName: process.env.SERVICE_NAME,

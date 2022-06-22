@@ -51,7 +51,7 @@ export class AssetsController {
     // TODO: Test code, to be deleted
     return logExecutionTime(
       this.logger,
-      `Get accounted addresses for chain ${chainId}`,
+      `Get accounted assets for chain ${chainId} (api)`,
       async () => {
         const response = new GetAssetsResponse();
         response.assets = await this.assetsService.getAccountedAssetsByChain(chainId);

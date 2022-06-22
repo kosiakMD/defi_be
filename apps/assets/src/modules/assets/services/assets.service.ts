@@ -220,11 +220,17 @@ export class AssetsService extends CrudService<AssetsRepository> {
     // TODO: Test code, to be deleted
     const assets = await logExecutionTime(
       this.logger,
-      `Load accounted assets for chain ${chainId}`,
+      `Load accounted addresses for chain ${chainId} (db or cache)`,
       () =>
         this.cacheService.getOrLoad(
           `assets_service_balances_assets_${chainId}`,
-          () => this.assetsRepository.getAccountedAssetsByChain(chainId),
+          () =>
+            // TODO: Test code, to be deleted
+            logExecutionTime(
+              this.logger,
+              `Load accounted addresses for chain ${chainId} (db)`,
+              () => this.assetsRepository.getAccountedAssetsByChain(chainId),
+            ),
           {
             ttl: 15 * 60, // 15 minutes
           },

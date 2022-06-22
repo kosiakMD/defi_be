@@ -175,6 +175,7 @@ export class InternalV2Adapter implements IOpportunityAdapter {
         plainToClass(RewardTokenDto, {
           address: reward.address,
           symbol: reward.symbol,
+          displayName: reward.symbol,
           name: reward.name,
         }),
       );
@@ -193,12 +194,14 @@ export class InternalV2Adapter implements IOpportunityAdapter {
     return plainToClass(DepositTokenDto, {
       address: baseToken.address,
       symbol: baseToken.symbol,
+      displayName: baseToken.symbol,
       name: baseToken.name,
       tokens: underlyingTokens?.map((token) => {
         const total = token.reserve * token.price;
         return plainToClass(DepositTokenDto, {
           address: token.address,
           symbol: token.symbol,
+          displayName: token.symbol,
           name: token.name,
           weight: Math.round((total / tvl) * 1000) / 1000,
         });

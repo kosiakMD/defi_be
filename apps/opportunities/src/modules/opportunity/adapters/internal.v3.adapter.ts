@@ -189,6 +189,7 @@ export class InternalV3Adapter implements IOpportunityAdapter {
     return item.rewarded.map((reward: any): RewardTokenDto => {
       return plainToClass(RewardTokenDto, {
         address: reward.token.address,
+        displayName: reward.token.displayName || reward.token.symbol,
         symbol: reward.token.symbol,
         name: reward.token.name,
       });
@@ -204,6 +205,7 @@ export class InternalV3Adapter implements IOpportunityAdapter {
     return plainToClass(DepositTokenDto, {
       address: suppliedToken.token.address,
       symbol: suppliedToken.token.symbol,
+      displayName: suppliedToken.token.displayName || suppliedToken.token.symbol,
       name: suppliedToken.token.name,
       tokens:
         suppliedToken.token.underlying?.map((token) => {
@@ -211,8 +213,9 @@ export class InternalV3Adapter implements IOpportunityAdapter {
           return plainToClass(DepositTokenDto, {
             address: token.address,
             symbol: token.symbol,
+            displayName: token.displayName || token.symbol,
             name: token.name,
-            ...(total && { weight: Math.round((total / tvl) * 1000) / 1000 }),
+            ...(total && { weight: Math.round((total / tvl) * 100) / 100 }),
           });
         }) || [],
     });

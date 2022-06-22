@@ -1,4 +1,3 @@
-import { plainToClass } from 'class-transformer';
 import { Brackets, EntityRepository, Repository, SelectQueryBuilder } from 'typeorm';
 
 import { PaginationResult } from '@app/common/dto/PaginationResult.dto';
@@ -12,6 +11,8 @@ import { chunk } from '@app/common/utils';
 
 import { OpportunityEntity } from '../entities/opportunity.entity';
 
+type StatsInterface = { stats: { chains: IChainStats[]; features: IFeatureStats[] } };
+
 @EntityRepository(OpportunityEntity)
 export class OpportunityRepository extends Repository<OpportunityEntity> {
   /**
@@ -19,9 +20,9 @@ export class OpportunityRepository extends Repository<OpportunityEntity> {
    *
    * Searchable Fields:
    * - farm name
-   * - deposit token address/name/symbol
-   * - deposit underlying token address/name/symbol
-   * - reward token address/name/symbol
+   * - deposit token address/displayName
+   * - deposit underlying token address/displayName
+   * - reward token address/displayName
    *
    * Filterable Fields
    * - categories
@@ -36,7 +37,7 @@ export class OpportunityRepository extends Repository<OpportunityEntity> {
    */
   async search(
     queryParams: OpportunitySearchQueryDto,
-  ): Promise<PaginationResult<OpportunityEntity>> {
+  ): Promise<PaginationResult<OpportunityEntity> & StatsInterface> {
     const {
       search,
       limit,
@@ -77,7 +78,7 @@ export class OpportunityRepository extends Repository<OpportunityEntity> {
       this.getFeatureStats(queryParams),
     ]);
 
-    return plainToClass(PaginationResult, {
+    return {
       items,
       stats: {
         chains: chainStats,
@@ -88,7 +89,7 @@ export class OpportunityRepository extends Repository<OpportunityEntity> {
       limit,
       pages: Math.ceil(total / limit),
       page: page,
-    });
+    };
   }
 
   private internalWhereInCategories(categories: string[]) {
@@ -131,14 +132,11 @@ export class OpportunityRepository extends Repository<OpportunityEntity> {
 
     const parameters = {
       [`farm_${index}`]: fuzzySearch,
-      [`symbol_${index}`]: exactSearch,
-      [`name_${index}`]: fuzzySearch,
+      [`displayName_${index}`]: exactSearch,
       [`address_${index}`]: exactSearch,
-      [`symbolJson_${index}_deposit`]: `[{"symbol": "${exactSearch}" }]`,
-      [`nameJson_${index}_deposit`]: `[{"name": "${exactSearch}" }]`,
+      [`displayNameJson_${index}_deposit`]: `[{"displayName": "${exactSearch}" }]`,
       [`addrJson_${index}_deposit`]: `[{"address": "${exactSearch}" }]`,
-      [`symbolJson_${index}_reward`]: `[{"symbol": "${exactSearch}" }]`,
-      [`nameJson_${index}_reward`]: `[{"name": "${exactSearch}" }]`,
+      [`displayNameJson_${index}_reward`]: `[{"displayName": "${exactSearch}" }]`,
       [`addrJson_${index}_reward`]: `[{"address": "${exactSearch}" }]`,
     };
 
@@ -146,26 +144,21 @@ export class OpportunityRepository extends Repository<OpportunityEntity> {
       query
         .where(`farm.name ILIKE :farm_${index}`)
         // Deposit Token
-        .orWhere(`opportunities.tokens::jsonb -> 'deposit' ->> 'symbol' ILIKE :symbol_${index}`)
-        .orWhere(`opportunities.tokens::jsonb -> 'deposit' ->> 'name' ILIKE :name_${index}`)
+        .orWhere(
+          `opportunities.tokens::jsonb -> 'deposit' ->> 'displayName' ILIKE :displayName_${index}`,
+        )
         .orWhere(`opportunities.tokens::jsonb -> 'deposit' ->> 'address' ILIKE :address_${index}`)
 
         // Underlying deposit tokens
         .orWhere(
-          `LOWER(opportunities.tokens::text)::jsonb->'deposit'->'tokens' @> LOWER(:symbolJson_${index}_deposit)::jsonb`,
-        )
-        .orWhere(
-          `LOWER(opportunities.tokens::text)::jsonb->'deposit'->'tokens' @> LOWER(:nameJson_${index}_deposit)::jsonb`,
+          `LOWER(opportunities.tokens::text)::jsonb->'deposit'->'tokens' @> LOWER(:displayNameJson_${index}_deposit)::jsonb`,
         )
         .orWhere(
           `LOWER(opportunities.tokens::text)::jsonb->'deposit'->'tokens' @> LOWER(:addrJson_${index}_deposit)::jsonb`,
         )
         // reward token
         .orWhere(
-          `LOWER(opportunities.tokens::text)::jsonb->'rewards' @> LOWER(:symbolJson_${index}_reward)::jsonb`,
-        )
-        .orWhere(
-          `LOWER(opportunities.tokens::text)::jsonb->'rewards' @> LOWER(:nameJson_${index}_reward)::jsonb`,
+          `LOWER(opportunities.tokens::text)::jsonb->'rewards' @> LOWER(:displayNameJson_${index}_reward)::jsonb`,
         )
         .orWhere(
           `LOWER(opportunities.tokens::text)::jsonb->'rewards' @> LOWER(:addrJson_${index}_reward)::jsonb`,

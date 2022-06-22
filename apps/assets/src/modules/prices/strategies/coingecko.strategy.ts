@@ -1,10 +1,11 @@
 /* eslint-disable camelcase */
 import { CoinGeckoClient } from 'coingecko-api-v3';
 
-import { Inject, Logger } from '@nestjs/common';
+import { Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+import { Logger } from '@app/common';
 import { delay } from '@app/common/helpers/delay';
 import { CacheService } from '@app/common/services/cache.service';
 import { chunkRunAsync } from '@app/common/utils';

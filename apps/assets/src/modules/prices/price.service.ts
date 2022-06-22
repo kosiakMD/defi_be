@@ -1,8 +1,9 @@
-import { Inject, Injectable, LoggerService } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+import { Logger } from '@app/common';
 import { CacheService } from '@app/common/services/cache.service';
 import { chunkRunAsync } from '@app/common/utils';
 
@@ -18,12 +19,13 @@ import { AssetPrice } from './types/asset-price.type';
 @Injectable()
 export class PriceService {
   private readonly assetPricesTTLInSeconds: number;
+
   constructor(
     @InjectRepository(AssetsRepository)
     private readonly assetsRepository: AssetsRepository,
     @InjectRepository(AssetsHistoricalPriceRepository)
     private readonly assetsHistoricalPriceRepository: AssetsHistoricalPriceRepository,
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     private readonly cache: CacheService,
     private readonly config: ConfigService,
   ) {

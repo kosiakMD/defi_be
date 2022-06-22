@@ -1,9 +1,10 @@
 import { BigNumber } from 'bignumber.js';
 import { AbiItem } from 'web3-utils';
 
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+import { Logger } from '@app/common';
 import { isEVMChain } from '@app/common/utils';
 import { DynamicContract } from '@app/common/web3provider/contracts/DynamicContract';
 import { ERC20 } from '@app/common/web3provider/contracts/ERC20';
@@ -20,6 +21,7 @@ export class SingleUnderlyingAssetAnalyser implements AssetAnalyser {
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     private readonly multicall: MulticallAggregator,
   ) {}
+
   async canAnalyseAsset(asset: AssetReference): Promise<boolean> {
     return isEVMChain(asset.chainId);
   }

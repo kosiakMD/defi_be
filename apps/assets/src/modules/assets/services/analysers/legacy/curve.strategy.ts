@@ -1,8 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { ChainIdEnum } from '@app/common';
-import { Logger } from '@app/common/Logger/Logger.service';
+import { ChainIdEnum, Logger } from '@app/common';
 import { ZERO_ADDRESS } from '@app/common/constant';
 import { CurveAddresses } from '@app/common/constant/curve.addresses';
 import { Web3ProviderService } from '@app/common/web3provider';

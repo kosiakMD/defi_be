@@ -1,10 +1,11 @@
 import { Job, Queue } from 'bull';
 
 import { InjectQueue, Process, Processor } from '@nestjs/bull';
-import { Inject, LoggerService } from '@nestjs/common';
+import { Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+import { Logger } from '@app/common';
 import { formatError } from '@app/common/utils';
 
 import { PriceJobName } from '../../../common/enum/job-name.enum';
@@ -17,11 +18,11 @@ import { PriceSource } from '../types/price-source.type';
 /*
  Refreshes tracked assets prices from defined strategies.
  Should be executed on minutes basis.
-* */
+ * */
 @Processor(QueueName.PRICES)
 export class UpdateCurrentPricesProcessor {
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     @InjectQueue(QueueName.PRICES) private pricesQueue: Queue,
     @InjectRepository(PriceSourceRepository)
     private readonly priceSourceRepository: PriceSourceRepository,

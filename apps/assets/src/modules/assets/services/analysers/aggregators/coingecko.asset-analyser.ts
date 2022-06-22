@@ -1,10 +1,10 @@
 /* eslint-disable camelcase */
 import { CoinGeckoClient } from 'coingecko-api-v3';
 
-import { Inject, Injectable, LoggerService } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { ChainIdEnum, CoingeckoPlatformEnum } from '@app/common';
+import { ChainIdEnum, CoingeckoPlatformEnum, Logger } from '@app/common';
 
 import { AssetReference } from '../../../../../common/types';
 
@@ -20,7 +20,7 @@ export class CoingeckoAssetAnalyser implements AssetAnalyser {
     autoRetry: true,
   });
 
-  constructor(@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService) {}
+  constructor(@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger) {}
 
   canAnalyseAsset() {
     return true;

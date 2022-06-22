@@ -1,12 +1,13 @@
 import { HttpTracingModule, TracingModule } from '@narando/nest-xray';
 import { BullModule } from '@nestjs/bull';
-import { Inject, LoggerService, Module, OnModuleInit } from '@nestjs/common';
+import { Inject, MiddlewareConsumer, Module, OnModuleInit } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_FILTER } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 
+import { Logger, LogRequestMiddleware } from '@app/common';
 import { getWinstonParams } from '@app/common/Logger/logger.config';
 import configuration from '@app/common/config/configuration';
 import { interceptorsOrder } from '@app/common/interceptors';
@@ -83,7 +84,11 @@ import { PricesModule } from './modules/prices/prices.module';
   ],
 })
 export class AppModule implements OnModuleInit {
-  constructor(@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService) {}
+  constructor(@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger) {}
+
+  configure(consumer: MiddlewareConsumer): void {
+    consumer.apply(LogRequestMiddleware).forRoutes('*');
+  }
 
   onModuleInit(): void {
     const { ENV, SERVICE_NAME, SERVICE_PORT, SERVICE_HOST } = process.env;

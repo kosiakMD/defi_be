@@ -65,7 +65,7 @@ export class UniswapV2AssetAnalyser
       return all.concat([contract.createCall(getReservesAbi), contract.createCall(totalSupplyAbi)]);
     }, new Array<CallData>());
 
-    const responses = await chunkRunAsync(calls, 1000, (chunk) =>
+    const responses = await chunkRunAsync(calls, 500, (chunk) =>
       this.multicall.callArray(chunk, chainId),
     );
 
@@ -74,6 +74,14 @@ export class UniswapV2AssetAnalyser
     for (let index = 0; index < assets.length; index++) {
       const asset = assets[index];
       const [asset0, asset1] = asset.underlying;
+
+      if (!asset0 || !asset1) {
+        this.logger.error(
+          `Error to get Uni-v2-like asset price (address: ${asset.address} chainId: ${chainId}, asset0: ${asset0} asset1: ${asset1}`,
+        );
+        continue;
+      }
+
       const { _reserve0, _reserve1 } = responses[2 * index];
       const totalSupply = responses[2 * index + 1];
 

@@ -12,6 +12,7 @@ import { TrackedAssetsProvider } from './tracked-assets.provider';
 
 type SolanaToken = {
   mintAddress: string;
+  priceUst: number;
 };
 
 @Injectable()
@@ -28,8 +29,8 @@ export class SolscanAssetsProvider implements TrackedAssetsProvider {
   }
 
   async getTrackedAssetsCandidates(): Promise<AssetProcessingRequest[]> {
-    const limit = 500;
-    const maxItems = 500;
+    const limit = 100;
+    const maxItems = 1000;
 
     let assetProcessingRequests: AssetProcessingRequest[] = [];
     let offset = 0;
@@ -58,9 +59,11 @@ export class SolscanAssetsProvider implements TrackedAssetsProvider {
       }),
     );
 
-    return assets.map((token) => ({
-      address: token.mintAddress,
-      chainId: ChainIdEnum.sol,
-    }));
+    return assets
+      .filter(({ priceUst }) => !!priceUst)
+      .map((token) => ({
+        address: token.mintAddress,
+        chainId: ChainIdEnum.sol,
+      }));
   }
 }

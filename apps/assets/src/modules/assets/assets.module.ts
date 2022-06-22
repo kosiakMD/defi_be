@@ -12,6 +12,7 @@ import { QueueName } from '../../common/enum/queue-name.enum';
 import { AwsModule } from '../../aws/aws.module';
 import { AssetsController } from '../../controllers/assets.controller';
 import { AssetsCategoryModule } from '../assets-category/assets-category.module';
+import { AssetsCategoryService } from '../assets-category/assets-category.service';
 import { AssetCategoryEntity } from '../assets-category/entities/asset-category.entity';
 import { AssetsCategoryRepository } from '../assets-category/repositories/assets-category.repository';
 import { AssetHistoricalPriceEntity } from '../prices/entities/asset-historical-price.entity';
@@ -101,6 +102,7 @@ const processors = [
     InvalidAssetService,
     GithubService,
     CosmosHelper,
+    AssetsCategoryService,
   ],
   exports: [],
 })

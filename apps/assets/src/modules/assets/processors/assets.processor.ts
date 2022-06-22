@@ -113,6 +113,7 @@ export class AssetsProcessor {
       processingAsset.rank = this.calculateRank(address, asset.metadata);
       processingAsset.isTracked = asset.isTracked || isTracked || false;
       processingAsset.underlying = [];
+      // TODO should we merge existing metadata with new results from analysis instead of overriding ?
       processingAsset.metadata = asset.metadata || {};
 
       processingAsset.icon = await this.loadAssetIcons({ chainId, address }, asset.icons);
@@ -129,6 +130,9 @@ export class AssetsProcessor {
           chainId,
           forceUpdate: assetRequest.forceUpdate,
         });
+        if (!underlying.underlyingAsset) {
+          throw Error(`could not process underlyingAsset: ${underlyingAddress}`);
+        }
         processingAsset.underlying.push(underlying);
       }
 

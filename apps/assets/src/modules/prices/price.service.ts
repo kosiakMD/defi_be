@@ -65,12 +65,19 @@ export class PriceService {
   public async saveSpecificAssetPrices(dtosToUpdatePricesInCache: AssetDto[]) {
     const priceCacheItems = dtosToUpdatePricesInCache
       .filter(({ price }) => price)
-      .map(({ address, chainId, price }) =>
-        toAvgPriceCacheItem({
+      .map(({ address, chainId, price, underlying }) => {
+        const assetAvgPrice = {
           asset: { address, chainId },
           price,
-        }),
-      );
+          reserves: [],
+        };
+        underlying?.forEach(({ reserve }) => {
+          if (reserve) {
+            assetAvgPrice.reserves.push(reserve);
+          }
+        });
+        return toAvgPriceCacheItem(assetAvgPrice);
+      });
     await this.cache.mset(priceCacheItems, { ttl: this.assetPricesTTLInSeconds });
   }
 
@@ -95,8 +102,12 @@ export class PriceService {
 
   async getPrices(assets: AssetReference[]): Promise<AssetAvgPrice[]> {
     const avgPricesCacheKeys = assets.map(getAvgPriceCacheKey);
-    const cachedAssetPrices = await this.cache.mget<number>(avgPricesCacheKeys);
-    return cachedAssetPrices.map((price, index) => ({ price, asset: assets[index] }));
+    const cachedAssetPrices = await this.cache.mget<AvgPrice>(avgPricesCacheKeys);
+    return cachedAssetPrices.map((value, index) => ({
+      price: value?.price,
+      reserves: value?.reserves,
+      asset: assets[index],
+    }));
   }
 }
 
@@ -116,6 +127,12 @@ export type AssetPrices = {
 export type AssetAvgPrice = {
   asset: AssetReference;
   price: number;
+  reserves?: string[];
+};
+
+type AvgPrice = {
+  price: number;
+  reserves?: string[];
 };
 
 function createPriceMap(prices: AssetPrice[]): PriceMap {
@@ -180,10 +197,10 @@ function toSourcePricesCacheItem(assetPrices: AssetPrices) {
   };
 }
 
-function toAvgPriceCacheItem({ asset, price }: AssetAvgPrice) {
+function toAvgPriceCacheItem({ asset, price, reserves }: AssetAvgPrice) {
   return {
     key: getAvgPriceCacheKey(asset),
-    value: price,
+    value: { price, reserves },
   };
 }
 

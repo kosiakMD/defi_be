@@ -7,9 +7,8 @@ import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { ChainId, ChainIdEnum, Logger } from '@app/common';
+import { logExecutionTime } from '@app/common/utils';
 import { join } from '@app/common/utils/urls';
-
-import { logExecutionTime } from './utils';
 
 @Injectable()
 export class RpcService {

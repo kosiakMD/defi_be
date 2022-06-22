@@ -7,6 +7,8 @@ import { HttpModule } from '@app/common';
 import { CommonModule } from '../../common/common.module';
 import { QueueName } from '../../common/enum/queue-name.enum';
 
+import { AssetsCategoryService } from '../assets-category/assets-category.service';
+import { AssetsCategoryRepository } from '../assets-category/repositories/assets-category.repository';
 import { AssetsCandidateRepository } from '../assets/repositories/assets-candidate.repository';
 import { AssetsCachedRepository } from '../assets/repositories/assets.cached-repository';
 import { AssetsRepository } from '../assets/repositories/assets.repository';
@@ -30,6 +32,7 @@ const entities = [PriceSourceEntity, AssetHistoricalPriceEntity];
 const repositories = [
   AssetsRepository,
   AssetsCandidateRepository,
+  AssetsCategoryRepository,
   AssetsHistoricalPriceRepository,
   PriceSourceRepository,
 ];
@@ -67,7 +70,13 @@ const priceStrategies = [
     }),
     TypeOrmModule.forFeature([...entities, ...repositories]),
   ],
-  providers: [...processors, ...priceStrategies, AssetsCachedRepository, PriceService],
+  providers: [
+    ...processors,
+    ...priceStrategies,
+    AssetsCachedRepository,
+    AssetsCategoryService,
+    PriceService,
+  ],
   exports: [PriceService],
 })
 export class PricesModule {}

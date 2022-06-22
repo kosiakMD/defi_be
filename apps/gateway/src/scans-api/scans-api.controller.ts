@@ -30,8 +30,8 @@ export class ScansApiController {
 
   @Get('/')
   @ApiQuery({
-    name: 'addresses',
-    type: String,
+    name: 'addresses[]',
+    type: [String],
     description: 'Array of Addresses (comma separated)',
     example:
       '0xcff17036c5ae141f2244f480fc16ba244ffab33b,0x07471d0262b17529a489d0c696eef988f89464ac',

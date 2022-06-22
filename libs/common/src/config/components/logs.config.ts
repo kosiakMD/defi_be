@@ -25,4 +25,9 @@ export const logsValidation = {
     .allow('')
     .equal('true', 'false'),
   SENTRY_DSN: Joi.string().allow(''),
+  SENTRY_SAMPLE_RATE: Joi.number() //
+    .precision(2)
+    .min(0)
+    .max(1)
+    .optional(),
 };

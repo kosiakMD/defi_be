@@ -33,6 +33,9 @@ const TEST_SENTRY = false;
 export const initSentry = function (sentryDSN = process.env.SENTRY_DSN as string): void {
   if (!TEST_SENTRY && !sentryDSN) return;
   Sentry.init({
+    // We recommend adjusting this value in production, or using tracesSampler
+    // for finer control
+    tracesSampleRate: Number(process.env.SENTRY_SAMPLE_RATE) || 0,
     dsn: sentryDSN,
     environment: process.env.NODE_ENV,
     serverName: process.env.SERVICE_NAME,
@@ -68,8 +71,5 @@ export const initSentry = function (sentryDSN = process.env.SENTRY_DSN as string
 
       return event;
     },
-    // We recommend adjusting this value in production, or using tracesSampler
-    // for finer control
-    tracesSampleRate: 1.0,
   });
 };

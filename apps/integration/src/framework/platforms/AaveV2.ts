@@ -56,13 +56,12 @@ export class AaveV2 extends RootPlatform {
     // this is the same as Beefy X 1
     // poolslist => just the token
     // user balance => balance of main address * exchange rate (underlying could be LP token, etc)
-    // text address: 0x4ca31d938bc2d23e68eab871e5a0a02019f8dce6
+    // test address: 0x4ca31d938bc2d23e68eab871e5a0a02019f8dce6
     await this.registerProtocol(InterestBearingToken, {
       chain: ChainIdEnum.eth,
       name: 'Safety Module',
       feature: FeatureEnum.staking,
       address: '0x4da27a545c0c5b758a6ba100e3a049001de870f5',
-      // underlying: '0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9',
     });
 
     await this.registerProtocol(InterestBearingToken, {
@@ -70,7 +69,6 @@ export class AaveV2 extends RootPlatform {
       name: 'Safety Module',
       feature: FeatureEnum.staking,
       address: '0xa1116930326d21fb917d5a27f1e9943a9595fb47',
-      // underlying: '0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9',
     });
   }
 }

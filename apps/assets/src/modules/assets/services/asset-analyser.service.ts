@@ -136,7 +136,7 @@ export class AssetAnalyserService implements OnModuleInit {
     );
 
     this.analysers = instansiatedAnalyzers.filter(
-      (analyser) => analyser['canAnalyseAsset'] !== undefined,
+      (analyser) => analyser['analyseAsset'] !== undefined,
     ) as any;
 
     this.priceProviders = instansiatedAnalyzers.filter(

@@ -27,7 +27,7 @@ export class PriceService {
     private readonly cache: CacheService,
     private readonly config: ConfigService,
   ) {
-    this.assetPricesTTLInSeconds = this.config.get<number>('ASSET_PRICES_CACHE_TTL') || 60 * 60;
+    this.assetPricesTTLInSeconds = this.config.get<number>('ASSET_PRICES_CACHE_TTL');
   }
 
   public async saveAssetPrices(prices: AssetPrice[]) {

@@ -1,4 +1,3 @@
-import { AAVE_V2_STAKED_ABI } from 'apps/assets/src/common/abis/aave-v2-staked.abi';
 import { BALANCER_POOL_TOKEN_ABI } from 'apps/assets/src/common/abis/balancer-pool-token.abi';
 import { BALANCER_WEIGHTED_POOL_ABI } from 'apps/assets/src/common/abis/balancer-weighted-pool.abi';
 import { AbiItem } from 'web3-utils';
@@ -7,7 +6,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { CallData } from '@app/common/dto/CallData';
-import { chunkRunAsync } from '@app/common/utils';
+import { chunk, chunkRunAsync, normalizeDecimals } from '@app/common/utils';
 import { DynamicContract } from '@app/common/web3provider/contracts/DynamicContract';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
@@ -37,13 +36,13 @@ export class BalancerWeightedAssetAnalyser
 
   async analyseAsset(asset: AssetReference): Promise<AssetAnalysisResult> {
     const [underlying, bPool] = await this.fetchAssetData(asset);
-    console.log({ underlying });
+
     return {
       categories: [
         AssetCategory.LpToken,
         AssetCategory.BalancerLp,
         AssetCategory.BalancerWeightedLpToken,
-      ], // 1:1 wrapped asset?
+      ],
       underlying,
       metadata: {
         bPool,
@@ -94,60 +93,89 @@ export class BalancerWeightedAssetAnalyser
   }
 
   canHandleCategories(codes: string[]): boolean {
-    return codes.includes(AssetCategory.UniSwapV2LikeLP);
+    return codes.includes(AssetCategory.BalancerWeightedLpToken);
   }
 
   async getPrices(
     chainId: number,
     assets: ComplexAsset[],
   ): Promise<AssetPriceWithUnderlyingReserves[]> {
-    // const weightAbi: AbiItem = findAbiItemByName(BALANCER_POOL_TOKEN_ABI, 'getNormalizedWeight');
-    // const balanceAbi: AbiItem = findAbiItemByName(BALANCER_POOL_TOKEN_ABI, 'getBalance');
-    // const calls = assets.reduce((all, asset) => {
-    //   const contract = new DynamicContract(asset.address);
-    //   return all.concat(
-    //     asset.underlying.flatMap((under) => [
-    //       contract.createCall(weightAbi, under.address),
-    //       contract.createCall(balanceAbi, under.address),
-    //     ]),
-    //   );
-    // }, new Array<CallData>());
-    // const responses = await chunkRunAsync(calls, 1000, (chunk) =>
-    //   this.multicall.callArray(chunk, chainId),
-    // );
-    // const prices: AssetPriceWithUnderlyingReserves[] = [];
-    // for (let index = 0; index < assets.length; index++) {
-    //   const asset = assets[index];
-    //   const { underlying } = asset;
-    //   // doesn't work since N tokens
-    //   //   const weight = responses[2 * index];
-    //   //   const balance = responses[2 * index + 1];
-    //   const assetReference = { chainId, address: asset.address };
-    //   if (!asset0.price && !asset1.price) {
-    //     prices.push({
-    //       asset: assetReference,
-    //       price: null,
-    //       reserves: [_reserve0, _reserve1],
-    //     });
-    //     continue;
-    //   }
-    //   const oneTokenPoolValue = asset0.price
-    //     ? toBN(_reserve0) //
-    //         .dividedBy(decimalsDivider(asset0.decimals))
-    //         .multipliedBy(asset0.price)
-    //     : toBN(_reserve1) //
-    //         .dividedBy(decimalsDivider(asset1.decimals))
-    //         .multipliedBy(asset1.price);
-    //   const totalPoolValue = oneTokenPoolValue.multipliedBy(2);
-    //   const price = totalPoolValue
-    //     .multipliedBy(decimalsDivider(asset.decimals))
-    //     .dividedBy(totalSupply);
-    //   prices.push({
-    //     asset: assetReference,
-    //     price: price.toNumber(),
-    //     reserves: [_reserve0, _reserve1],
-    //   });
-    // }
-    // return prices;
+    // TODO: grab metadata from ComplexAsset if possible
+    const bPoolAbi: AbiItem = findAbiItemByName(BALANCER_WEIGHTED_POOL_ABI, 'bPool');
+    const totalSupplyAbi: AbiItem = findAbiItemByName(BALANCER_WEIGHTED_POOL_ABI, 'totalSupply');
+
+    const assetCalls = assets.flatMap((asset) => {
+      const token = new DynamicContract(asset.address);
+      return [token.createCall(bPoolAbi), token.createCall(totalSupplyAbi)];
+    });
+
+    const chunkedAssetResults = chunk(await this.multicall.callArray(assetCalls, chainId), 2); // 2 for number of calls per asset
+
+    const weightAbi: AbiItem = findAbiItemByName(BALANCER_POOL_TOKEN_ABI, 'getNormalizedWeight');
+    const balanceAbi: AbiItem = findAbiItemByName(BALANCER_POOL_TOKEN_ABI, 'getBalance');
+
+    const calls = assets.flatMap((asset, idx) => {
+      const [bPool] = chunkedAssetResults[idx];
+      const contract = new DynamicContract(bPool);
+      return asset.underlying.flatMap((under) => [
+        contract.createCall(weightAbi, under.address),
+        contract.createCall(balanceAbi, under.address),
+      ]);
+    }, new Array<CallData>());
+
+    const responses = await chunkRunAsync(calls, 1000, (chunk) =>
+      this.multicall.callArray(chunk, chainId),
+    );
+
+    const chunks = [];
+    assets.forEach((asset) => {
+      chunks.push(responses.splice(0, asset.underlying.length * 2));
+    });
+
+    const prices: AssetPriceWithUnderlyingReserves[] = [];
+    for (let index = 0; index < assets.length; index++) {
+      const asset = assets[index];
+      const data = chunks[index];
+      const { underlying } = asset;
+      const assetReference = { chainId, address: asset.address };
+      const weights = underlying.map((u, i) => Number(data[i * 2].toString()) / 1e18);
+      const reserves = underlying.map((u, i) => data[i * 2 + 1].toFixed());
+
+      // TODO: get reserves for each token in position
+      const indexFirstWithPrice = underlying.findIndex((t) => t.price);
+
+      if (indexFirstWithPrice === -1) {
+        prices.push({
+          asset: assetReference,
+          price: null,
+          reserves,
+        });
+        continue;
+      }
+
+      /**
+       * @notice Opted to calculate the total LP token price from a single
+       * underlying asset (adjusted for weight) instead of the total underlying value
+       * to reduce likelyhood of an underlying token missing price and not being included
+       */
+
+      // get the TVL of the first token with price
+      const tvlToken =
+        normalizeDecimals(reserves[indexFirstWithPrice], underlying[indexFirstWithPrice].decimals) *
+        underlying[indexFirstWithPrice].price;
+
+      // Offset by token weight to get actual TVL
+      const tvl = tvlToken / weights[indexFirstWithPrice];
+
+      const [, totalSupply] = chunkedAssetResults[index];
+      const price = tvl / weights[indexFirstWithPrice] / normalizeDecimals(totalSupply, 18);
+
+      prices.push({
+        asset: assetReference,
+        price,
+        reserves,
+      });
+    }
+    return prices;
   }
 }

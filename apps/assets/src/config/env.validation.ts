@@ -35,6 +35,8 @@ export const validationSchema = Joi.object({
     .default('metadata'),
   ASSETS_PRICE_JOB_TYPE: Joi.string() //
     .default('prices'),
+  ASSET_PRICES_CACHE_TTL: Joi.number() //
+    .default(60 * 60), // 1 hour (in seconds)
   ASSETS_HISTORICAL_PRICE_JOB_TYPE: Joi.string() //
     .default('historicalPrices'),
   ASSETS_TAKE_SIZE: Joi.number() //

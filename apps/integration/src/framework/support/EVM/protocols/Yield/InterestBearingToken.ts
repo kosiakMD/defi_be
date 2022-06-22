@@ -24,7 +24,7 @@ import { AbiService } from '../../AbiModule/AbiService';
 import { SingleContractProtocol } from '../../SingleContractProtocol';
 
 export interface InterestBearingTokenMetaInterface extends IProtocolMeta {
-  address: '';
+  address: string;
 }
 
 type IInterestBearingTokenMinimal = BaseWithTokens<ISupplyTokenMinimal, IRewardTokenMinimal>;
@@ -57,11 +57,6 @@ export class InterestBearingToken extends SingleContractProtocol<
   ) {
     super();
   }
-
-  // function predicates to find staked & reward tokens
-  // auto compound true/false flag
-  // overridable exchange rate function
-  protected compounding = false;
 
   protected functionPredicates: INamedFunctionPredicates = {
     stakedToken: () => (item) => item.name === 'STAKED_TOKEN',

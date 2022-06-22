@@ -1,8 +1,10 @@
 import { Job, Queue } from 'bull';
 
 import { InjectQueue, Process, Processor } from '@nestjs/bull';
-import { Inject, Logger } from '@nestjs/common';
+import { Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+
+import { Logger } from '@app/common';
 
 import { AssetJobName } from '../../../common/enum/job-name.enum';
 import { JobPriority } from '../../../common/enum/job-priority.enum';
@@ -15,7 +17,7 @@ import { getAssetProcessJobId } from '../utils/jobs.helper';
 /*
  Force reprocesses all assets with missing icons
  Executed on demand.
-* */
+ * */
 @Processor(QueueName.ASSETS)
 export class ReprocessNoIconAssetsProcessor {
   constructor(

@@ -1,6 +1,8 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+
+import { Logger } from '@app/common';
 
 import { Univ2NetworkPriceProviderConfig } from '../../../../common/types';
 
@@ -10,8 +12,8 @@ import { AssetProcessingRequest } from '../../types/asset-processing.request';
 import { TrackedAssetsProvider } from './tracked-assets.provider';
 
 /*
-Assets that are used for price calculation but UniV2 network strategy should be marked as tracked
-* */
+ Assets that are used for price calculation but UniV2 network strategy should be marked as tracked
+ * */
 @Injectable()
 export class PriceStrategyAssetsProvider implements TrackedAssetsProvider {
   constructor(

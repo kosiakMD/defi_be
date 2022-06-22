@@ -1,8 +1,8 @@
-import { Inject, Injectable, LoggerService, OnModuleInit } from '@nestjs/common';
+import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { ChainId } from '@app/common';
+import { ChainId, Logger } from '@app/common';
 import { formatError } from '@app/common/utils';
 
 import { AssetReference } from '../../../common/types';
@@ -18,7 +18,7 @@ export class AssetAnalyserService implements OnModuleInit {
   private priceProviders: AssetPriceProvider[] = [];
 
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     private readonly moduleRef: ModuleRef,
   ) {}
 

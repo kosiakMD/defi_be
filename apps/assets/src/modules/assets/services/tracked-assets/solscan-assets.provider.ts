@@ -2,10 +2,10 @@ import { doWhilst } from 'async';
 import { firstValueFrom } from 'rxjs';
 
 import { HttpService } from '@nestjs/axios';
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { ChainIdEnum } from '@app/common';
+import { ChainIdEnum, Logger } from '@app/common';
 
 import { AssetProcessingRequest } from '../../types/asset-processing.request';
 import { TrackedAssetsProvider } from './tracked-assets.provider';

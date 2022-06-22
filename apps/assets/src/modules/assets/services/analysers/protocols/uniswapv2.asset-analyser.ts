@@ -1,8 +1,9 @@
 import { AbiItem } from 'web3-utils';
 
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+import { Logger } from '@app/common';
 import { CallData } from '@app/common/dto/CallData';
 import { chunkRunAsync, decimalsDivider, toBN } from '@app/common/utils';
 import { DynamicContract } from '@app/common/web3provider/contracts/DynamicContract';
@@ -16,8 +17,8 @@ import { findAbiItemByName } from '../../../utils/abi';
 import { AssetAnalyser, AssetAnalysisResult } from '../core/asset.analyser';
 import { EVMAssetAnalyser } from '../core/evm.asset-analyser';
 import {
-  AssetPriceWithUnderlyingReserves,
   AssetPriceProvider,
+  AssetPriceWithUnderlyingReserves,
   ComplexAsset,
 } from '../core/price.provider';
 

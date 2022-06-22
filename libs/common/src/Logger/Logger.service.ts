@@ -66,10 +66,17 @@ export class Logger extends WinstonLogger implements NestLoggerService {
     return diff;
   }
 
-  // public error(message: any, trace?: string, context?: string): any {
-  //   // TODO: for all exception in the future
-  //   return Logger.logger.error(message, trace, context);
-  // }
+  public error(message: any, traceOrMeta?: string | object, context?: string): any {
+    let trace: string,
+      meta: object = null;
+    if (typeof traceOrMeta === 'object') {
+      meta = traceOrMeta as object;
+    } else if (typeof traceOrMeta === 'string') {
+      trace = traceOrMeta as string;
+    }
+    // TODO: for all exception in the future
+    return Logger.logger.error(meta ? { ...meta, message } : message, trace, context);
+  }
 
   public time(idMessage: string | LogMessage): number {
     const start = Date.now();

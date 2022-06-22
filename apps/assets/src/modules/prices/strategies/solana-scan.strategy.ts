@@ -1,9 +1,10 @@
 import { firstValueFrom } from 'rxjs';
 
 import { HttpService } from '@nestjs/axios';
-import { Inject, Logger } from '@nestjs/common';
+import { Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+import { Logger } from '@app/common';
 import { SOL_COIN_ADDRESS, WRAPPED_SOL_ADDRESS } from '@app/common/constant';
 import { ChainIdEnum } from '@app/common/enum';
 import { delay } from '@app/common/helpers/delay';

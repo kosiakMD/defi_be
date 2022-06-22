@@ -2,10 +2,10 @@ import BigNumber from 'bignumber.js';
 import { firstValueFrom } from 'rxjs';
 
 import { HttpService } from '@nestjs/axios';
-import { Inject, Logger } from '@nestjs/common';
+import { Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { ChainIdEnum } from '@app/common';
+import { ChainIdEnum, Logger } from '@app/common';
 import { CARDANO_COIN_ADDRESS } from '@app/common/constant';
 import { gql, normalizeDecimals } from '@app/common/utils';
 

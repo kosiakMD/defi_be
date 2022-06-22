@@ -256,8 +256,19 @@ export class InternalV3Adapter implements IOpportunityAdapter {
     return false;
   }
 
+  private vaultIsStableCoin(item: any) {
+    // if main token is stable coin, or if LP and every underlying asset is stablecoin
+    return (
+      item.categories?.every((category) => category.code === 'stablecoin') ||
+      item.underlying?.every((under) => this.vaultIsStableCoin(under))
+    );
+  }
+
+  /**
+   * TODO: When asset service is more in use, we can probably
+   * just pass through the 'categories' as sent, without manipulating here
+   */
   private getVaultCategories(item: any) {
-    // TODO: IOpportunityResult type (not any)
     const categories = new Set<VaultTypeEnum>();
     if (this.vaultIsPool(item)) {
       categories.add(VaultTypeEnum.POOL);
@@ -269,6 +280,10 @@ export class InternalV3Adapter implements IOpportunityAdapter {
 
     if (this.vaultIsLending(item)) {
       categories.add(VaultTypeEnum.LENDING);
+    }
+
+    if (this.vaultIsStableCoin(item)) {
+      categories.add(VaultTypeEnum.STABLECOIN);
     }
 
     return Array.from(categories);

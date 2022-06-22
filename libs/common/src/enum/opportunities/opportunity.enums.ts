@@ -9,6 +9,7 @@ export enum OpportunitySortFieldEnum {
 export enum VaultTypeEnum {
   POOL = 'liquidity-pool',
   STABLE_POOL = 'stable-pool',
+  STABLECOIN = 'stablecoin',
   SINGLE_STAKE = 'single-stake',
   NO_IL = 'no-il',
   LENDING = 'lending',

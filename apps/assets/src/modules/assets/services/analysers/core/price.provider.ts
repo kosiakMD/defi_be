@@ -2,6 +2,7 @@ import { AssetReference } from '../../../../../common/types';
 
 export interface AssetPriceProvider {
   canHandleCategories(codes: string[]): boolean;
+
   getPrices(chainId: number, assets: ComplexAsset[]): Promise<AssetPriceWithUnderlyingReserves[]>;
 }
 

@@ -3,11 +3,11 @@ import { Job } from 'bull';
 import { CoinGeckoClient } from 'coingecko-api-v3';
 
 import { Process, Processor } from '@nestjs/bull';
-import { Inject, LoggerService } from '@nestjs/common';
+import { Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { ChainIdEnum, CoingeckoPlatformEnum } from '@app/common';
+import { ChainIdEnum, CoingeckoPlatformEnum, Logger } from '@app/common';
 
 import { AssetJobName } from '../../../common/enum/job-name.enum';
 import { QueueName } from '../../../common/enum/queue-name.enum';
@@ -39,7 +39,7 @@ export class StablecoinsCheckerProcessor {
   });
 
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     private readonly assetsRepository: AssetsCachedRepository,
     @InjectRepository(AssetsCategoryRepository)
     private readonly assetsCategoryRepository: AssetsCategoryRepository,

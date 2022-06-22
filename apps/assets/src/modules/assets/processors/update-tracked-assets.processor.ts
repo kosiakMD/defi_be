@@ -1,10 +1,11 @@
 import { Job, Queue } from 'bull';
 
 import { InjectQueue, Process, Processor } from '@nestjs/bull';
-import { Inject, Logger, OnModuleInit } from '@nestjs/common';
+import { Inject, OnModuleInit } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+import { Logger } from '@app/common';
 import { formatError } from '@app/common/utils';
 
 import { AssetJobName } from '../../../common/enum/job-name.enum';
@@ -20,7 +21,7 @@ import { getAssetProcessJobId } from '../utils/jobs.helper';
 /*
  Refreshes tracked assets based on defined strategies.
  Should be executed daily.
-* */
+ * */
 @Processor(QueueName.ASSETS)
 export class UpdateTrackedAssetsProcessor implements OnModuleInit {
   private readonly trackedAssetsProviders = new Array<TrackedAssetsProvider>();

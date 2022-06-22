@@ -2,11 +2,11 @@ import { Job, Queue } from 'bull';
 import { AbiItem } from 'web3-utils';
 
 import { InjectQueue, Process, Processor } from '@nestjs/bull';
-import { Inject, Logger } from '@nestjs/common';
+import { Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Address, ChainId } from '@app/common';
+import { Address, ChainId, Logger } from '@app/common';
 import { chunkRunAsync, formatAddress, formatError, isZeroAddress } from '@app/common/utils';
 import { DynamicContract } from '@app/common/web3provider/contracts/DynamicContract';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
@@ -29,7 +29,7 @@ import { areStringEqualsIgnoreCase } from '../utils/strings';
 /*
  Tries to find all LP pairs needed for UNIV2 network price calculation strategy
  Should be executed daily.
-* */
+ * */
 @Processor(QueueName.ASSETS)
 export class Univ2LikeAssetsLPProcessor {
   constructor(

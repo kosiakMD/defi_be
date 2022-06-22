@@ -1,10 +1,10 @@
 /* eslint-disable camelcase */
 import { CoinGeckoClient } from 'coingecko-api-v3';
 
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { ChainIdEnum } from '@app/common';
+import { ChainIdEnum, Logger } from '@app/common';
 
 import { ChainService } from '../../../../common/services/chain.service';
 

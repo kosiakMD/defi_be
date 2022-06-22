@@ -46,7 +46,7 @@ export type ILendingFeatureUserEntry = BaseWithTokens<
   void
 > & { debtRatio: number };
 
-export interface ICompoundFinanceMeta extends IProtocolMeta {
+export interface ICompoundFinanceLendingMeta extends IProtocolMeta {
   feature: FeatureEnum.lending;
   name: string;
   address: Address;
@@ -59,7 +59,7 @@ export class CompoundFinanceLending extends EVMCore<
   ILendingFeatureEntryMinimal,
   ILendingFeatureOpportunity,
   ILendingFeatureUserEntry,
-  ICompoundFinanceMeta
+  ICompoundFinanceLendingMeta
 > {
   constructor(
     protected abiService: AbiService,

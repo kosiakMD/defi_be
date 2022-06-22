@@ -10,6 +10,7 @@ import { CacheService } from '@app/common/services/cache.service';
 
 import { SearchParams } from '../../../common/interfaces/search.interfaces';
 
+import { AssetsCategoryService } from '../../assets-category/assets-category.service';
 import { AssetDto } from '../dto/asset.dto';
 import { GetAssetRequest } from '../dto/get-asset.request';
 import { AssetUnderlyingEntity } from '../entities/asset-underlying.entity';
@@ -25,6 +26,7 @@ export class AssetsCachedRepository {
     private readonly cache: CacheService,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
     @InjectRepository(AssetsRepository) private readonly assetsRepository: AssetsRepository,
+    private readonly assetsCategoryService: AssetsCategoryService,
   ) {}
 
   findTrackedAssetsByChain(chainId: ChainId) {
@@ -120,7 +122,9 @@ export class AssetsCachedRepository {
       if (cachedAsset.underlying?.length) {
         underlying.push(...this.getUnderlying(cachedAsset, cachedAssetsMap));
       }
-      assetEntities.push(plainToClass(AssetEntity, { ...cachedAsset, underlying }));
+      if (cachedAsset.underlying?.length === underlying.length) {
+        assetEntities.push(plainToClass(AssetEntity, { ...cachedAsset, underlying }));
+      }
     });
     return assetEntities;
   }
@@ -181,6 +185,14 @@ export class AssetsCachedRepository {
         }
       }
     }
+
+    const categories = await this.assetsCategoryService.findAll();
+    asset.categories.forEach((c) => {
+      const existingCategory = categories.find((category) => category.name === c.name);
+      if (existingCategory) {
+        c.id = existingCategory.id;
+      }
+    });
 
     let saved: AssetEntity;
     if (!asset.id) {

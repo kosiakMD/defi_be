@@ -29,7 +29,7 @@ export class InitialMigration1652560474839 implements MigrationInterface {
       `CREATE TABLE "price_sources" ("id" SERIAL NOT NULL, "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "name" character varying NOT NULL, "type" character varying NOT NULL, "config" json NOT NULL, "enabled" boolean NOT NULL, CONSTRAINT "UQ_a899c6b4195244612aa6e1d96a4" UNIQUE ("name"), CONSTRAINT "PK_cd504be03b6bd35e7928ebba829" PRIMARY KEY ("id"))`,
     );
     await queryRunner.query(
-      `CREATE TABLE "assets_invalid_address" ("id" SERIAL NOT NULL, "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "address" character varying NOT NULL, "chain_id" integer NOT NULL, CONSTRAINT "UQ_d015dee58f6d482dfad5011bf99" UNIQUE ("address", "chain_id"), CONSTRAINT "PK_cb4e45298b22aa5acb261c1eec1" PRIMARY KEY ("id"))`,
+      `CREATE TABLE "assets_invalid_address" ("id" SERIAL NOT NULL, "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "address" character varying NOT NULL, "chain_id" integer NOT NULL, "retries" integer NOT NULL, CONSTRAINT "UQ_d015dee58f6d482dfad5011bf99" UNIQUE ("address", "chain_id"), CONSTRAINT "PK_cb4e45298b22aa5acb261c1eec1" PRIMARY KEY ("id"))`,
     );
     await queryRunner.query(
       `CREATE TABLE "assets_to_categories" ("asset_id" integer NOT NULL, "category_id" integer NOT NULL, CONSTRAINT "PK_85c3c6ccdb45d2b9d8679f562fb" PRIMARY KEY ("asset_id", "category_id"))`,

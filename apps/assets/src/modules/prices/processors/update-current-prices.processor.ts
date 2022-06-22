@@ -26,21 +26,15 @@ export class UpdateCurrentPricesProcessor {
     @InjectRepository(PriceSourceRepository)
     private readonly priceSourceRepository: PriceSourceRepository,
     private readonly bullQueueService: BullQueueService,
-  ) {
-    //https://defiyield.atlassian.net/browse/ID-4678
-    // We use bull queue for the price jobs processing.
-    // We generate jobId by ourselves to replace existing job(s) in the queue if any.
-    // At some point of time some jobs may get stalled and as a result such jobs
-    // will never be re-processed. 'stalled' EventListener removes such jobs,
-    // but there is still a possibility that process is killed before stalled job is removed.
-    // So we clean failed jobs once on start-up to guarantee correct processing
-    bullQueueService.cleanAllFailedJobs(pricesQueue);
-    bullQueueService.setupStalledJobRemovingHandler(pricesQueue);
-  }
+  ) {}
 
   @Process(PriceJobName.UPDATE_CURRENT_PRICES)
   async handle(job: Job) {
     try {
+      // We generate jobId by ourselves to replace existing job(s) in the queue if any.
+      // At some point of time some jobs may get stalled and as a result such jobs
+      // will never be re-processed. To make them re-process we remove failed jobs
+      await this.bullQueueService.cleanAllFailedJobs(this.pricesQueue);
       const priceSources = await this.priceSourceRepository.find({
         where: { enabled: true },
       });

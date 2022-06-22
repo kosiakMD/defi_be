@@ -6,10 +6,6 @@ import { ApiProperty } from '@nestjs/swagger';
 export class AssetCategoryDto {
   @Expose()
   @ApiProperty()
-  id: string;
-
-  @Expose()
-  @ApiProperty()
   name: string;
 
   @ApiProperty()

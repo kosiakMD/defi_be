@@ -19,21 +19,29 @@ export class AssetsRepository extends Repository<AssetEntity> {
 
   findTrackedAssetsByChain(chainId: ChainId) {
     return this.find({
-      where: { disabled: false, isTracked: true, chainId },
+      where: { disabled: false, isTracked: true, chainId: chainId },
+      relations: UNDERLYING_RELATIONS,
+    });
+  }
+
+  getAccountedAssetsByChain(chainId: ChainId) {
+    return this.find({
+      where: { disabled: false, isTracked: true, isNotAccounted: false, chainId: chainId },
+      relations: UNDERLYING_RELATIONS,
     });
   }
 
   findTrackedAssetsWithoutIcon(): Promise<AssetEntity[]> {
     return this.find({
       where: { disabled: false, isTracked: true, icon: null },
-      relations: ['underlying', 'underlying.underlyingAsset'],
+      relations: UNDERLYING_RELATIONS,
     });
   }
 
   findOneByAddressAndChain(address: string, chainId: ChainIdEnum): Promise<AssetEntity> {
     return this.findOne({
       where: { chainId, address: ILike(address) },
-      relations: ['underlying', 'underlying.underlyingAsset'],
+      relations: UNDERLYING_RELATIONS,
     });
   }
 
@@ -47,7 +55,7 @@ export class AssetsRepository extends Repository<AssetEntity> {
         chainId,
         address: ILike(address),
       })),
-      relations: ['underlying', 'underlying.underlyingAsset'],
+      relations: UNDERLYING_RELATIONS,
     });
   }
 
@@ -67,9 +75,8 @@ export class AssetsRepository extends Repository<AssetEntity> {
             );
           }
 
-          // TODO: Or seems to be not working here
-          addresses.forEach((address) =>
-            qb.orWhere('address ilike :address', { address: `%${address}%` }),
+          addresses.forEach((address, i) =>
+            qb.orWhere(`address ilike :address_${i}`, { [`address_${i}`]: `%${address}%` }),
           );
         }),
       );
@@ -84,15 +91,18 @@ export class AssetsRepository extends Repository<AssetEntity> {
       .getMany();
   }
 
+  async findCoingeckoAssets() {
+    return this.createQueryBuilder('assets')
+      .select()
+      .where('disabled is false')
+      .andWhere(`metadata->>'coingeckoId' IS NOT NULL`)
+      .getMany();
+  }
+
   async findUniV2LikePairsForTrackedAssets(
     chainId: ChainId,
     factory: Address,
-    baseAssets: Address[],
   ): Promise<AssetPair[]> {
-    if (!baseAssets.length) {
-      return [];
-    }
-
     return this.query(
       `
       SELECT a.address AS address, a0.address AS token0, a1.address AS token1 FROM assets a
@@ -103,7 +113,7 @@ export class AssetsRepository extends Repository<AssetEntity> {
          JOIN assets_underlying au1 ON a.id = au1.asset_id AND au1.position = 1
          JOIN assets a1 ON au1.underlying_asset_id = a1.id
       WHERE a.metadata->>'factory' = $1 AND a.chain_id = $2 AND ac.code = 'lp-uniswapv2-like'
-      AND a0.is_tracked AND a1.address = ANY($3)
+      AND a0.is_tracked
       UNION ALL
       SELECT a.address AS address, a0.address AS token0, a1.address AS token1 FROM assets a
          JOIN assets_to_categories atc ON a.id = atc.asset_id
@@ -113,9 +123,24 @@ export class AssetsRepository extends Repository<AssetEntity> {
          JOIN assets_underlying au1 ON a.id = au1.asset_id AND au1.position = 1
          JOIN assets a1 ON au1.underlying_asset_id = a1.id
       WHERE a.metadata->>'factory' = $1 AND a.chain_id = $2 AND ac.code = 'lp-uniswapv2-like'
-      AND a0.address = ANY($3) AND a1.is_tracked
+      AND a1.is_tracked
     `,
-      [factory, chainId, baseAssets],
+      [factory, chainId],
     );
   }
+
+  async findByCategoryCodeWithoutCategories(categoryCode: string): Promise<AssetEntity[]> {
+    return this.createQueryBuilder('assets')
+      .leftJoin('assets.categories', 'category')
+      .where('category.code = :categoryCode', { categoryCode })
+      .getMany();
+  }
 }
+
+const UNDERLYING_RELATIONS = [
+  // TODO: should be handled with recursive
+  'underlying',
+  'underlying.underlyingAsset',
+  'underlying.underlyingAsset.underlying',
+  'underlying.underlyingAsset.underlying.underlyingAsset',
+];

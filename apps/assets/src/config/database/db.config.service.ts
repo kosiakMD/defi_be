@@ -1,14 +1,21 @@
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { TypeOrmOptionsFactory, TypeOrmModuleOptions } from '@nestjs/typeorm';
+import { TypeOrmModuleOptions, TypeOrmOptionsFactory } from '@nestjs/typeorm';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+
+import { Logger } from '@app/common';
 
 @Injectable()
 export class DatabaseConfigService implements TypeOrmOptionsFactory {
-  constructor(private readonly configService: ConfigService) {}
+  constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+    private readonly configService: ConfigService,
+  ) {}
 
   public createTypeOrmOptions(): TypeOrmModuleOptions {
+    this.logger.log(`Database user used: ${this.configService.get<string>('database.username')}`);
     return {
       autoLoadEntities: true,
       type: 'postgres',
@@ -19,7 +26,7 @@ export class DatabaseConfigService implements TypeOrmOptionsFactory {
       password: this.configService.get<string>('database.password'),
       database: this.configService.get<string>('database.name'),
       synchronize: this.configService.get<boolean>('database.synchronize'),
-      logging: false,
+      logging: this.configService.get<boolean>('database.logging'),
       namingStrategy: new SnakeNamingStrategy(),
     };
   }

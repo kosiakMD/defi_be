@@ -6,8 +6,8 @@ import { ChainIdEnum, Logger } from '@app/common';
 
 import {
   IMinSwapPoolsMeta,
-  MinSwapPools,
-} from '../support/Cardano/protocols/Liquidity/MinSwapPools';
+  MinSwapLiquidity,
+} from '../support/Cardano/protocols/Liquidity/MinSwapLiquidity';
 import {
   IMinSwapStakingLockingMeta,
   MinSwapStakingLocking,
@@ -60,7 +60,7 @@ export class MinSwap extends RootPlatform {
       },
     });
 
-    await this.registerProtocol<IMinSwapPoolsMeta>(MinSwapPools, {
+    await this.registerProtocol<IMinSwapPoolsMeta>(MinSwapLiquidity, {
       chain: ChainIdEnum.cardano,
       name: 'MinSwapPools',
       feature: FeatureEnum.pools,

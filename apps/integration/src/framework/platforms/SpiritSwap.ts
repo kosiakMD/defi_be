@@ -5,7 +5,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { ChainIdEnum, Logger } from '@app/common';
 
 import { SpiritLiquidity } from '../support/EVM/protocols/Liquidity/SpiritLiquidity';
-import { SpiritLocked } from '../support/EVM/protocols/Locked/SpiritLocked';
+import { RootLocked } from '../support/EVM/protocols/Locked/RootLocked';
 import { IMasterChefMeta, MasterChef } from '../support/EVM/protocols/Yield/MasterChef';
 import { SpiritStaking } from '../support/EVM/protocols/Yield/SpiritStaking';
 import { RootPlatform } from '../support/RootPlatform';
@@ -36,7 +36,7 @@ export class SpiritSwap extends RootPlatform {
       address: '0x9083ea3756bde6ee6f27a6e996806fbd37f6f093',
     });
 
-    await this.registerProtocol(SpiritLocked, {
+    await this.registerProtocol(RootLocked, {
       chain: ChainIdEnum.ftm,
       name: 'Locked - SpiritSwap',
       feature: FeatureEnum.staking,

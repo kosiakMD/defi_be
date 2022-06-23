@@ -7,6 +7,10 @@ import { cacheValidationSchema } from './cache/validation.schema';
 import { databaseValidationSchema } from './database/validation.schema';
 
 export const validationSchema = Joi.object({
+  COSMOS_LCD: Joi.string().required(),
+  KAVA_LCD: Joi.string().required(),
+  OSMOSIS_LCD: Joi.string().required(),
+  SECRET_LCD: Joi.string().required(),
   DEBANK_CHAINS_LIST_URL: Joi.string() //
     .default(''),
   DEBANK_API_ACCESS_KEY: Joi.string() //

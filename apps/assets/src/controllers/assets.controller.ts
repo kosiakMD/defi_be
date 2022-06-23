@@ -1,19 +1,25 @@
-import { Body, Controller, Get, HttpStatus, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Inject, Post, Query } from '@nestjs/common';
 import { ApiBody, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { SearchParams } from '../common/interfaces/search.interfaces';
+import { Logger } from '@app/common';
+import { logExecutionTime } from '@app/common/utils';
 
 import { AssetCandidateRequest } from '../modules/assets/dto/asset-candidate.request';
 import { GetAssetRequest } from '../modules/assets/dto/get-asset.request';
 import { GetAssetsRequest } from '../modules/assets/dto/get-assets.request';
 import { GetAssetsResponse } from '../modules/assets/dto/get-assets.response';
+import { SearchAssetRequest } from '../modules/assets/dto/search-asset.request';
 import { SearchResultsEntryDto } from '../modules/assets/dto/search-results-entry.dto';
 import { AssetsService } from '../modules/assets/services/assets.service';
 
 @ApiTags('Assets')
 @Controller('assets')
 export class AssetsController {
-  constructor(private readonly assetsService: AssetsService) {}
+  constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+    private readonly assetsService: AssetsService,
+  ) {}
 
   @Get('/')
   @ApiResponse({ status: HttpStatus.OK, type: GetAssetsResponse })
@@ -32,34 +38,31 @@ export class AssetsController {
     return response;
   }
 
-  @Get('/search')
+  @Get('/accounted')
   @ApiQuery({
-    name: 'addresses',
-    type: [String],
-    description: 'address array to search assets by addresses',
-    example: [
-      '0xcd2e72aebe2a203b84f46deec948e6465db51c75',
-      '0xcd2e72aebe2a203b84f46deec948e6465db51c75',
-    ],
-    isArray: true,
-    required: false,
-  })
-  @ApiQuery({
-    name: 'text',
-    type: String,
-    description: 'text to search assets by name or symbol',
-    example: 'CRO',
-    required: false,
-  })
-  @ApiQuery({
-    name: 'limit',
+    name: 'chainId',
     type: Number,
-    description: 'maximal number of search result entries',
+    description: 'Chain id',
     example: 5,
-    required: false,
+    required: true,
   })
+  @ApiResponse({ status: HttpStatus.OK, type: GetAssetsResponse })
+  async getAccountedAssets(@Query() { chainId }: { chainId: number }): Promise<GetAssetsResponse> {
+    // TODO: Test code, to be deleted
+    return logExecutionTime(
+      this.logger,
+      `Get accounted assets for chain ${chainId} (api)`,
+      async () => {
+        const response = new GetAssetsResponse();
+        response.assets = await this.assetsService.getAccountedAssetsByChain(chainId);
+        return response;
+      },
+    );
+  }
+
+  @Get('/search')
   @ApiResponse({ status: HttpStatus.OK, type: [SearchResultsEntryDto] })
-  async search(@Query() query: SearchParams): Promise<SearchResultsEntryDto[]> {
+  async search(@Query() query: SearchAssetRequest): Promise<SearchResultsEntryDto[]> {
     return this.assetsService.search(query);
   }
 

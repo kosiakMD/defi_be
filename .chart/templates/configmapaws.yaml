@@ -1,0 +1,19 @@
+{{- if .Values.configMapsAWS }}
+{{- range $name := .Values.configMapsAWS }}
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: {{ $.Values.application.name }}-{{ $.Values.application.environment }}-{{ $name }}
+spec:
+  secretStoreRef:
+    name: secretstore-{{ $.Values.application.environment }}
+    kind: SecretStore  # or ClusterSecretStore
+  refreshInterval: 6h
+  target:
+    name: {{ $.Values.application.name }}-{{ $.Values.application.environment }}-{{ $name }}
+  dataFrom:
+    - extract:
+        key: /ENV/{{ $.Values.application.environment }}/{{ $name }}
+---
+{{ end }}
+{{ end }}

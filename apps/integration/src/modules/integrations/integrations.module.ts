@@ -16,6 +16,7 @@ import { PlatformService } from '../../framework/services/platform.service';
 import { AbiModule } from '../../framework/support/EVM/AbiModule/abi.module';
 import { CurveAssetsManager } from '../../framework/support/assets/curve.assets.manager';
 import { MicroservicesModule } from '../microservices/microservices.module';
+import { RpcService } from '../microservices/rpc.service';
 import { ProtocolModule } from '../protocols/protocol.module';
 import { ProjectsInfoEntity } from './entities/projectsInfo.entity';
 import { FeaturesService } from './features.service';
@@ -53,6 +54,7 @@ import { IntegrationsServiceV3Decorator } from './integrations.service.v3.decora
     Web3SolanaProviderService,
     IntegrationsServiceV3Decorator,
     CurveAssetsManager,
+    RpcService,
   ],
   controllers: [
     IntegrationsController,

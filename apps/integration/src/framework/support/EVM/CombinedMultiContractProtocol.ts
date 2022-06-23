@@ -46,7 +46,7 @@ export abstract class CombinedMultiContractProtocol<
   ): TOpportunityType | void;
 
   // TODO: Type. The output on this, is the 'data' input on formatUserData
-  protected abstract fetchUserData(addresses: Address[], pools: TOpportunityType[]);
+  protected abstract fetchUsersData(addresses: Address[], pools: TOpportunityType[]);
 
   // TODO: type; data: any is the return value from fetchUserData
   protected abstract formatUserData(

@@ -39,6 +39,9 @@ export class CryptoComDefiSwap extends RootPlatform {
       name: 'Locked Staking - CryptoComDefiswap - 1 year',
       feature: FeatureEnum.staking,
       address: '0x6aba3E56AEb3b95aD64161103D793fAc5F6ce4F7',
+      context: {
+        rewardToken: '0xa0b73e1ff0b80914ab6fe0444e65848c4c34450b',
+      },
     });
 
     await this.registerProtocol(CryptoComDefiSwapLocked, {
@@ -46,6 +49,9 @@ export class CryptoComDefiSwap extends RootPlatform {
       name: 'Locked Staking - CryptoComDefiswap - 2 years',
       feature: FeatureEnum.staking,
       address: '0x26388d599A677C6A8BCc4c113F0A34e6Ced9493D',
+      context: {
+        rewardToken: '0xa0b73e1ff0b80914ab6fe0444e65848c4c34450b',
+      },
     });
 
     await this.registerProtocol(CryptoComDefiSwapLocked, {
@@ -53,6 +59,9 @@ export class CryptoComDefiSwap extends RootPlatform {
       name: 'Locked Staking - CryptoComDefiswap - 3 years',
       feature: FeatureEnum.staking,
       address: '0x0A3c6EEC8408bdED9000DA65AfdB8a8fDA99E253',
+      context: {
+        rewardToken: '0xa0b73e1ff0b80914ab6fe0444e65848c4c34450b',
+      },
     });
 
     await this.registerProtocol(CryptoComDefiSwapLocked, {
@@ -60,6 +69,9 @@ export class CryptoComDefiSwap extends RootPlatform {
       name: 'Locked Staking - CryptoComDefiswap - 4 years',
       feature: FeatureEnum.staking,
       address: '0x4f2bC163c8758D7F88771496F7B0Afde767045F3',
+      context: {
+        rewardToken: '0xa0b73e1ff0b80914ab6fe0444e65848c4c34450b',
+      },
     });
   }
 }

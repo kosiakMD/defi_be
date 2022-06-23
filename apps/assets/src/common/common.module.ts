@@ -13,6 +13,7 @@ import { Web3ProviderService, Web3SolanaProviderService } from '@app/common/web3
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
 import { HealthController } from '../controllers/health.controller';
+import { BullQueueService } from './services/bull-queue.service';
 import { ChainService } from './services/chain.service';
 
 @Module({
@@ -63,6 +64,7 @@ import { ChainService } from './services/chain.service';
     Web3SolanaProviderService,
     Web3ProviderService,
     MulticallAggregator,
+    BullQueueService,
   ],
   exports: [
     CacheService,
@@ -71,6 +73,7 @@ import { ChainService } from './services/chain.service';
     Web3SolanaProviderService,
     Web3ProviderService,
     MulticallAggregator,
+    BullQueueService,
   ],
 })
 export class CommonModule {}

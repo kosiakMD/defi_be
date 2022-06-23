@@ -13,13 +13,7 @@ import { BaseService } from '../common/services/base.service';
 import { AddressSuggestionDto } from './dto/address-suggestion.dto';
 import { SearchQueryDto } from './dto/search-query.dto';
 import { SearchResultType } from './interfaces/search.enum';
-import {
-  AddressMetadata,
-  SearchParams,
-  SearchResults,
-  SearchResultsAddressEntry,
-  SearchResultsBaseEntry,
-} from './interfaces/search.interface';
+import { SearchParams, SearchResults, SearchResultsBaseEntry } from './interfaces/search.interface';
 
 @Injectable()
 export class SearchService extends BaseService {
@@ -40,7 +34,6 @@ export class SearchService extends BaseService {
 
   public async getAddressSuggestions(query: SearchQueryDto): Promise<AddressSuggestionDto[]> {
     const { text } = query;
-    // TODO extend this implementation to get all ENS,TNS and etc resolves + check which networks has the query address
     if (isSomeAddress(text)) {
       return [new AddressSuggestionDto(text)];
     }
@@ -48,39 +41,11 @@ export class SearchService extends BaseService {
   }
 
   public async search(query: SearchQueryDto): Promise<SearchResults> {
-    const { text /*, limit*/ } = query;
-    try {
-      const addressesSuggestions = await this.getAddressSuggestions({ text });
-      if (addressesSuggestions.length > 0) {
-        this.logger.debug(`Resolved addresses ${addressesSuggestions}`);
-        // Temp disabling, will be enabled next release
-        // const addresses = addressesSuggestions.map(({ address }) => address);
-        // const { entries: searchResultEntries } = await this.getSearchEntries({
-        //   addresses,
-        //   text,
-        //   limit,
-        // });
-        const entries = [
-          // ...searchResultEntries,
-          ...addressesSuggestions.map((addressSuggestion) =>
-            this.getAddressSearchEntry(addressSuggestion),
-          ),
-        ];
-        return { entries };
-      }
-    } catch (error) {
-      this.logger.debug(`Error to resolve address ${error}`);
-    }
-    // Temp disabling, will be enabled next release
-    //return this.getSearchEntries({ text, limit });
-    return { entries: [] };
-  }
-
-  private getAddressSearchEntry(metadata: AddressMetadata): SearchResultsAddressEntry {
-    return {
-      type: SearchResultType.ADDRESS,
-      metadata,
-    };
+    const { text } = query;
+    return this.getSearchEntries({
+      ...query,
+      ...(isSomeAddress(text) ? { addresses: [text] } : {}),
+    });
   }
 
   private async tryToResolveAddress(query: SearchQueryDto): Promise<AddressSuggestionDto[]> {

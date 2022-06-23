@@ -18,6 +18,7 @@ export class CardanoBalancesStrategy
   extends BaseBalanceStrategy
   implements BalancesLoadingStrategy
 {
+  private readonly MAX_COUNT_PER_PAGE = 100;
   constructor(private readonly cardanoService: CardanoService) {
     super();
   }
@@ -36,7 +37,7 @@ export class CardanoBalancesStrategy
       const stakeAddress = this.cardanoService.getStakeAddress(address);
       const [total, assets] = await Promise.all([
         this.cardanoService.obtainInformationAboutStakedAccount(stakeAddress),
-        this.cardanoService.assetsFromStakeAddress(stakeAddress),
+        this.getAllTokensByAddress(stakeAddress),
       ]);
 
       const isAccountDelegatedToPool = total.pool_id !== null;
@@ -55,6 +56,33 @@ export class CardanoBalancesStrategy
       return this.mapCardanoResponse(assets, tokensFilter, chainId);
     } catch (error) {
       return this.returnZeroBalanceAddressOrError(error, chainId);
+    }
+  }
+
+  private async getAllTokensByAddress(stakeAddress: string): Promise<AssetsBalance> {
+    const fetchedTokens = await this.cardanoService.assetsFromStakeAddress(stakeAddress);
+
+    if (fetchedTokens.length < this.MAX_COUNT_PER_PAGE) {
+      return fetchedTokens;
+    } else {
+      return await this.getTokensByRecursive(stakeAddress, fetchedTokens, 1);
+    }
+  }
+
+  private async getTokensByRecursive(
+    stakeAddress: string,
+    prevTokens: AssetsBalance = [],
+    page = 0,
+  ): Promise<AssetsBalance> {
+    if (prevTokens.length < this.MAX_COUNT_PER_PAGE) {
+      return prevTokens;
+    } else {
+      const fetchedTokens = await this.cardanoService.assetsFromStakeAddress(stakeAddress, {
+        page,
+      });
+      return prevTokens.concat(
+        await this.getTokensByRecursive(stakeAddress, fetchedTokens, page + 1),
+      );
     }
   }
 

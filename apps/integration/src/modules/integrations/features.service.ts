@@ -35,6 +35,7 @@ export class FeaturesService {
       const protocol = plainToClass(ProtocolDataDto, {
         name: protocolName,
         project: projectName,
+        version: 'v2',
         // info: plainToClass(ProtocolFeatureInfoDto, info),
         info: undefined,
         features: [],

@@ -9,6 +9,7 @@ import { MissingOpportunityException, MissingTokenException } from './exceptions
 import {
   IPoolDataProtocolResponse,
   IProtocolMeta,
+  IUserDataProtocolResponse,
   IWalletMinimal,
   IWalletOpportunity,
   IWalletUserEntry,
@@ -488,7 +489,7 @@ export abstract class RootProtocolCacheable<
       return 0;
     }
 
-    return token.price * normalizeDecimals(total, token.decimals);
+    return token?.price * normalizeDecimals(total, token.decimals);
   }
 
   /**
@@ -584,9 +585,37 @@ export abstract class RootProtocolCacheable<
    *
    * @param addresses User Addresses
    */
-  abstract getUsersData(
-    addresses: Address[],
-  ): Promise<{ data: Map<Address, TUserEntry[]>; errors: Error[] }>; // fetch user balances for each pool, and filter to only owned pools
+  protected fetchUserData?(address: Address, pools: TOpportunity[]): Promise<TUserEntry[]>; // fetch user balances for each pool, and filter to only owned pools
+
+  async getUsersData(addresses: Address[]): Promise<IUserDataProtocolResponse<TUserEntry>> {
+    const { data: pools, errors } = await this.getPoolData();
+
+    const results = new Map<Address, TUserEntry[]>(
+      addresses.map((address) => [address, [] as TUserEntry[]]),
+    );
+
+    await Promise.allSettled(
+      addresses.map(async (address) => {
+        try {
+          if (!this.fetchUserData) {
+            const err = new Error(`fetchUserData has no implementation ${this.constructor.name}`);
+            this.logger.error(err.message, err.stack, `${this.constructor.name}/${this.meta.name}`);
+            return;
+          }
+          const userPools = await this.fetchUserData?.(address, pools);
+          // An array of undefined values can be obtained
+          const filteredPools = userPools.filter((data) => data);
+          if (filteredPools.length) {
+            results.get(address).push(...filteredPools);
+          }
+        } catch (err) {
+          errors.push(err);
+        }
+      }),
+    );
+
+    return { data: results, errors };
+  }
 
   /****************************************************
    *

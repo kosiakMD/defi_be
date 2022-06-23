@@ -20,25 +20,25 @@ import { AbiService } from './AbiModule/AbiService';
 import { EVMCore } from './EVMCore';
 
 interface ICoreMultiContractProtocol extends IProtocolMeta {
-  feature: FeatureEnum.staking;
+  feature: FeatureEnum;
   name: string;
   context?: any;
   address?: string;
 }
 
 interface IHasApiHandler {
-  scrape: never;
-  poolList: never;
+  scrape?: never;
+  poolList?: never;
   api: {
     endpoint: string;
-    handler: (data: unknown) => Address[];
     path: string;
+    handler?: (data: unknown) => Address[];
   };
 }
 
 interface IHasWebScraper {
-  api: never;
-  poolList: never;
+  api?: never;
+  poolList?: never;
   scrape: {
     url: string;
     handler: (...args: any[]) => Address[];
@@ -46,8 +46,8 @@ interface IHasWebScraper {
 }
 
 interface IHasPoolList {
-  api: never;
-  scrape: never;
+  api?: never;
+  scrape?: never;
   poolList: Address[];
 }
 
@@ -69,7 +69,7 @@ export abstract class MultiContractProtocol<
   protected abstract fetchOpportunityData(context: { [key: string]: any }): Promise<TMinimalType[]>;
 
   // TODO: Type. The output on this, is the 'data' input on formatUserData
-  protected abstract fetchUserData(addresses: Address[], pools: TOpportunityType[]): Promise<any>;
+  protected abstract fetchUsersData(addresses: Address[], pools: TOpportunityType[]): Promise<any>;
 
   // TODO: type; data: any is the return value from fetchUserData
   protected abstract formatUserData(
@@ -121,7 +121,7 @@ export abstract class MultiContractProtocol<
     );
 
     try {
-      const multicallResults = await this.fetchUserData(addresses, pools);
+      const multicallResults = await this.fetchUsersData(addresses, pools);
 
       addresses.forEach((address) => {
         pools.forEach((pool) => {

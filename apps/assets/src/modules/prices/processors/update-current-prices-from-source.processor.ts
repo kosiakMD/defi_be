@@ -1,10 +1,11 @@
 import { Job } from 'bull';
 
 import { Process, Processor } from '@nestjs/bull';
-import { Inject, LoggerService } from '@nestjs/common';
+import { Inject } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+import { Logger } from '@app/common';
 import { formatError } from '@app/common/utils';
 
 import { PriceJobName } from '../../../common/enum/job-name.enum';
@@ -18,12 +19,12 @@ import { PriceSource } from '../types/price-source.type';
 /*
  Refreshes tracked assets prices from for specific source. Triggered by update current prices job.
  Should be executed on minutes basis.
-* */
+ * */
 @Processor(QueueName.PRICES)
 export class UpdateCurrentPricesFromSourceProcessor {
   constructor(
     private readonly moduleRef: ModuleRef,
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     private readonly priceService: PriceService,
   ) {}
 

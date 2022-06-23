@@ -19,6 +19,7 @@ import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregat
 
 import { Logger } from '../../logger/logger.service';
 import { AccountService } from '../../microservices/account.service';
+import { LiquidityPoolTokenDto } from '../../microservices/dto/account/account.dto';
 import { PriceService } from '../../microservices/price.service';
 import { StoreService } from '../../store/store.service';
 import { TrackedVault } from '../../store/tracked.vault.entity';
@@ -28,7 +29,6 @@ import { TrackedVaultItemsMap } from '../data/tracked.vault.items.map';
 import { TrackedVaultsMap } from '../data/tracked.vaults.map';
 import { StakingFeatureMapping } from '../dto/mappings';
 import { IntegrationDataConverter } from '../integration.data.converter';
-import { ERC20TokenDto } from '../integrations.dto';
 import { JobInterface } from '../job.interface';
 import { Abis } from './abis';
 import { TrisolarisAddresses } from './addresses';
@@ -49,7 +49,6 @@ type ICalculateAprData = {
   poolsInfo: any;
   tvl: number;
   dataRewarders: Map<string, CallData<any>>;
-  tokens: Map<string, ERC20TokenDto>;
   prices: any;
 };
 
@@ -62,6 +61,8 @@ type IPoolInfo = Map<
     lastRewardBlock: BigNumber;
     accTriPerShare: BigNumber;
     poolAddress: string;
+    doubleReward?: string;
+    rewarderAddress?: string;
   }
 >;
 
@@ -115,8 +116,21 @@ export class TrisolarisStaking implements JobInterface {
 
     const poolsInfo: IPoolInfo = await this.getAllPoolInfo();
 
+    const accountTokenDto: LiquidityPoolTokenDto = await this.accountService.saveTrackingAsset(
+      TrisolarisAddresses.tri,
+      this.chain,
+    );
+
+    const rewardToken = plainToClass(IntegrationClaimableTokenDto, {
+      address: accountTokenDto.address,
+      name: accountTokenDto.name,
+      symbol: accountTokenDto.symbol,
+      decimals: accountTokenDto.decimals,
+    });
+
     for (const address of poolsInfo.keys()) {
       try {
+        const poolInfo = poolsInfo.get(address);
         const poolTokenData = await this.accountService.saveTrackingAsset(address, this.chain);
 
         const stakingToken: IntegrationERC20TokenDto = plainToClass(IntegrationERC20TokenDto, {
@@ -140,13 +154,31 @@ export class TrisolarisStaking implements JobInterface {
           });
         }
 
+        const rewards = [rewardToken];
+
+        if (poolInfo.doubleReward) {
+          const rewardToken: LiquidityPoolTokenDto = await this.accountService.saveTrackingAsset(
+            poolInfo.doubleReward,
+            this.chain,
+          );
+
+          rewards.push(
+            plainToClass(IntegrationClaimableTokenDto, {
+              address: rewardToken.address,
+              name: rewardToken.name,
+              symbol: rewardToken.symbol,
+              decimals: rewardToken.decimals,
+            }),
+          );
+        }
+
         const stakingPoolFeature: IntegrationStakingPositionDto = plainToClass(
           IntegrationStakingPositionDto,
           {
-            address: poolsInfo.get(address).poolAddress,
-            poolId: poolsInfo.get(address).id.toString(),
+            address: poolInfo.poolAddress,
+            poolId: poolInfo.id.toString(),
             poolName: null,
-            rewards: [],
+            rewards,
             stakingToken: stakingToken,
           },
         );
@@ -196,6 +228,7 @@ export class TrisolarisStaking implements JobInterface {
           lastRewardBlock: poolInfo.lastRewardBlock,
           accTriPerShare: poolInfo.accTriPerShare,
           poolAddress: poolInfo.poolAddress,
+          doubleReward: poolInfo.doubleReward,
         },
       ]),
     );
@@ -227,14 +260,47 @@ export class TrisolarisStaking implements JobInterface {
           input: { data: [i] },
         }),
       );
+      calls.set(this.rewarderLabel(address, i), {
+        address: address,
+        id: i,
+        abi: Abis.rewarder,
+        input: {
+          data: [i],
+        },
+        output: {},
+      });
     }
 
     const callsRsp = await this.multicallService.handleInBatches(calls, this.chain);
 
+    const callDoubleRewardToken = new Map<string, CallData>();
+    for (let i = 0; i < poolsCount; i++) {
+      const rewarderAddress = callsRsp.get(this.rewarderLabel(address, i)).output.data;
+      if (rewarderAddress !== ZERO) {
+        callDoubleRewardToken.set(concatStrings(Abis.rewardToken.name, i, rewarderAddress), {
+          address: rewarderAddress,
+          abi: Abis.rewardToken,
+          input: {
+            data: [],
+          },
+          output: {},
+        });
+      }
+    }
+    const callDoubleRewardTokenRsp = await this.multicallService.handleInBatches(
+      callDoubleRewardToken,
+      this.chain,
+    );
+
     const poolsInfo = [];
     for (let i = 0; i < poolsCount; i++) {
+      const rewarderAddress = callsRsp.get(this.rewarderLabel(address, i)).output.data;
       poolsInfo.push({
         ...callsRsp.get(this.poolInfoLabel(address, i)).output.data,
+        doubleReward: callDoubleRewardTokenRsp.get(
+          concatStrings(Abis.rewardToken.name, i, rewarderAddress),
+        )?.output.data,
+        rewarderAddress,
         id: i,
         poolAddress: address,
         poolName: [TrisolarisAddresses.MasterChefV1StakingContract],
@@ -263,15 +329,50 @@ export class TrisolarisStaking implements JobInterface {
           input: { data: [i] },
         }),
       );
+      calls.set(this.rewarderLabel(address, i), {
+        address: address,
+        id: i,
+        abi: Abis.rewarder,
+        input: {
+          data: [i],
+        },
+        output: {},
+      });
     }
 
     const callsRsp = await this.multicallService.handleInBatches(calls, this.chain);
 
+    const callDoubleRewardToken = new Map<string, CallData>();
+    for (let i = 0; i < poolsCount; i++) {
+      const rewarderAddress = callsRsp.get(this.rewarderLabel(address, i)).output.data;
+      if (rewarderAddress !== ZERO) {
+        const lpToken = callsRsp.get(this.lpTokenPoolLabel(i)).output.data;
+        callDoubleRewardToken.set(concatStrings(Abis.rewardToken.name, lpToken, rewarderAddress), {
+          address: rewarderAddress,
+          abi: Abis.rewardToken,
+          input: {
+            data: [],
+          },
+          output: {},
+        });
+      }
+    }
+    const callDoubleRewardTokenRsp = await this.multicallService.handleInBatches(
+      callDoubleRewardToken,
+      this.chain,
+    );
+
     const poolsInfo = [];
     for (let i = 0; i < poolsCount; i++) {
+      const lpToken = callsRsp.get(this.lpTokenPoolLabel(i)).output.data;
+      const rewarderAddress = callsRsp.get(this.rewarderLabel(address, i)).output.data;
       poolsInfo.push({
         ...callsRsp.get(this.poolInfoLabel(address, i)).output.data,
-        lpToken: callsRsp.get(this.lpTokenPoolLabel(i)).output.data,
+        doubleReward: callDoubleRewardTokenRsp.get(
+          concatStrings(Abis.rewardToken.name, lpToken, rewarderAddress),
+        )?.output.data,
+        rewarderAddress,
+        lpToken,
         id: i,
         poolAddress: address,
       });
@@ -284,17 +385,15 @@ export class TrisolarisStaking implements JobInterface {
 
     /** reward token */
     // todo: this unique ids must be moved to other place
-    const rewardTokenUniqueId = concatStrings(this.chain, TrisolarisAddresses.tri);
-    const rewardTokenItem: TrackedVaultItem = await this.getDbItem(
-      stakingPosition.rewards[0],
-      rewardTokenUniqueId,
-    );
-    mappedDto.rewards = [
-      {
+    mappedDto.rewards = [];
+    for (const token of stakingPosition.rewards) {
+      const rewardTokenUniqueId = concatStrings(this.chain, token.address);
+      const rewardTokenItem: TrackedVaultItem = await this.getDbItem(token, rewardTokenUniqueId);
+      mappedDto.rewards.push({
         dbId: rewardTokenItem.id,
-        dtoName: stakingPosition.rewards[0].constructor.name,
-      },
-    ];
+        dtoName: token.constructor.name,
+      });
+    }
 
     /** staking token */
     const stakingTokenUniqueId = concatStrings(this.chain, stakingPosition.stakingToken.address);
@@ -404,12 +503,9 @@ export class TrisolarisStaking implements JobInterface {
     const multicallRsp = await this.multicallService.handleInBatches(batchCallsMap, this.chain);
 
     //getting data of Rewarders for Pools if exists
-    const { dataRewarders, tokens } = await this.getDataFromRewarder(multicallRsp);
+    const { dataRewarders } = await this.getDataFromRewarder(multicallRsp);
 
-    const pricedTokenAddresses: string = [
-      ...Array.from(this.getPricedTokensSet()),
-      ...Array.from(tokens.values()).map((t) => t.address),
-    ].join(',');
+    const pricedTokenAddresses: string = Array.from(this.getPricedTokensSet()).join(',');
 
     const { prices } = await this.priceService.getCurrentPrices(
       pricedTokenAddresses,
@@ -457,28 +553,29 @@ export class TrisolarisStaking implements JobInterface {
             m.stats.tvl += m.stakingToken.value;
           }
 
-          const tokensReward = this.calculateAPR({
-            pool: m,
-            multicallRsp,
-            triUsdRatio,
-            poolsInfo,
-            tvl: m.stats.tvl,
-            dataRewarders,
-            tokens,
-            prices,
-          });
+          const tokensReward = new Map(
+            this.calculateAPR({
+              pool: m,
+              multicallRsp,
+              triUsdRatio,
+              poolsInfo,
+              tvl: m.stats.tvl,
+              dataRewarders,
+              prices,
+            }).map((tr) => [tr.token, tr]),
+          );
 
-          m.rewards = tokensReward.map((t) => {
-            const token = tokens.get(t.token.toLowerCase());
-            return plainToClass(IntegrationClaimableTokenDto, {
-              address: token.address,
-              name: token.name,
-              symbol: token.symbol,
-              decimals: token.decimals,
-              price: Number(prices[t.token.toLowerCase()]),
-              apr: t.apr,
-            });
-          });
+          const rewards = [];
+          for (const token of m.rewards) {
+            const tokenReward = tokensReward.get(token.address);
+            if (tokenReward) {
+              token.apr = tokenReward.apr;
+              token.price = Number(prices[tokenReward.token.toLowerCase()]);
+              rewards.push(token);
+            }
+          }
+
+          m.rewards = rewards;
           return m;
         }
       });
@@ -521,36 +618,13 @@ export class TrisolarisStaking implements JobInterface {
               output: {},
             },
           ],
-          [
-            concatStrings(Abis.rewardToken.name, value.lpAddress, value.output.data),
-            {
-              address: value.output.data,
-              abi: Abis.rewardToken,
-              input: {
-                data: [],
-              },
-              output: {},
-            },
-          ],
         ];
       }),
     );
 
     const dataRewarders = await this.multicallService.handleInBatches(calls, this.chain);
 
-    const filteredOnlyRewarders = Array.from(dataRewarders.entries())
-      .filter(([key]) => key.includes(Abis.rewardToken.name))
-      .map(([, value]) => value.output.data);
-    const tokens = new Map<string, ERC20TokenDto>(
-      (
-        await this.accountService.getAssets(
-          [...filteredOnlyRewarders, TrisolarisAddresses.tri],
-          [this.chain],
-        )
-      ).map((t) => [t.address, t]),
-    );
-
-    return { dataRewarders, tokens };
+    return { dataRewarders };
   }
 
   private getDexTokenUSDRatio(tokenAddress: string, prices?: any) {
@@ -564,7 +638,7 @@ export class TrisolarisStaking implements JobInterface {
     poolsInfo,
     tvl,
     dataRewarders,
-    tokens,
+    // tokens,
     prices,
   }: ICalculateAprData) {
     const rewardTokens = [];
@@ -597,17 +671,15 @@ export class TrisolarisStaking implements JobInterface {
     const rewarderAddress = multicallRsp.get(this.rewarderLabel(pool.address, pool.poolId)).output
       .data;
     if (rewarderAddress !== ZERO) {
-      const rewardToken = dataRewarders.get(
-        concatStrings(Abis.rewardToken.name, pool.stakingToken.address, rewarderAddress),
-      ).output.data;
-
-      const token = tokens.get(rewardToken.toLowerCase());
+      const rewardToken = pool.rewards.find(
+        (t) => t.address.toLowerCase() !== TrisolarisAddresses.tri.toLowerCase(),
+      );
       const rewardPerBlock =
         dataRewarders.get(
           concatStrings(Abis.tokenPerBlock.name, pool.stakingToken.address, rewarderAddress),
         ).output.data /
-        10 ** token.decimals;
-      const doubleRewardUsdRatio = this.getDexTokenUSDRatio(rewardToken, prices);
+        10 ** rewardToken.decimals;
+      const doubleRewardUsdRatio = this.getDexTokenUSDRatio(rewardToken.address, prices);
 
       const totalYearlyRewards = rewardPerBlock * 3600 * 24 * 365;
       const AprDouble =
@@ -616,7 +688,7 @@ export class TrisolarisStaking implements JobInterface {
           : (totalYearlyRewards * 100) / (totalStakedInUSD * doubleRewardUsdRatio);
       rewardTokens.push({
         apr: AprDouble,
-        token: token.address,
+        token: rewardToken.address.toLowerCase(),
       });
     }
 
@@ -649,7 +721,7 @@ export class TrisolarisStaking implements JobInterface {
     if (rewardTokens.length === 0 || (rewardTokens[0]?.apr > 0 && Apr > 0)) {
       rewardTokens.push({
         apr: Apr,
-        token: TrisolarisAddresses.tri,
+        token: TrisolarisAddresses.tri.toLowerCase(),
       });
     }
 
@@ -928,7 +1000,9 @@ export class TrisolarisStaking implements JobInterface {
       } else {
         addressesSet.add(m.stakingToken.address);
       }
-      addressesSet.add(m.rewards[0].address);
+      m.rewards.forEach((r) => {
+        addressesSet.add(r.address);
+      });
     });
     return addressesSet;
   }

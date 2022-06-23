@@ -3,10 +3,10 @@ import BigNumber from 'bignumber.js';
 import { firstValueFrom } from 'rxjs';
 
 import { HttpService } from '@nestjs/axios';
-import { Inject, Logger } from '@nestjs/common';
+import { Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Address } from '@app/common';
+import { Address, Logger } from '@app/common';
 import { COIN_ADDRESS } from '@app/common/constant';
 import { delay } from '@app/common/helpers/delay';
 import { gql } from '@app/common/utils';

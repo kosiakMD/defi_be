@@ -13,26 +13,9 @@ import { AnchorLp } from './anchor/anchor.lp';
 import { AnchorStaking } from './anchor/anchor.staking';
 import { AstroportLp } from './astroport/astroport.lp';
 import { AstroportStaking } from './astroport/astroport.staking';
-import { AutofarmApiService } from './autofarm/autofarm.api.service';
-import { AutofarmStakingAVAX } from './autofarm/autofarm.staking.avax';
-import { AutofarmStakingBSC } from './autofarm/autofarm.staking.bsc';
-import { AutofarmStakingCELO } from './autofarm/autofarm.staking.celo';
-import { AutofarmStakingCRO } from './autofarm/autofarm.staking.cro';
-import { AutofarmStakingHECO } from './autofarm/autofarm.staking.heco';
-import { AutofarmStakingPLG } from './autofarm/autofarm.staking.plg';
 import { BadgerStakingArbi } from './badger/badger.staking.arbi';
 import { BadgerStakingEth } from './badger/badger.staking.eth';
 import { BadgerStakingPLG } from './badger/badger.staking.plg';
-import { BeefyApiService } from './beefy/beefy.api.service';
-import { BeefyStakingArbi } from './beefy/beefy.staking.arbi';
-import { BeefyStakingAvax } from './beefy/beefy.staking.avax';
-import { BeefyStakingBsc } from './beefy/beefy.staking.bsc';
-import { BeefyStakingCelo } from './beefy/beefy.staking.celo';
-import { BeefyStakingCro } from './beefy/beefy.staking.cro';
-import { BeefyStakingFtm } from './beefy/beefy.staking.ftm';
-import { BeefyStakingMoonRiver } from './beefy/beefy.staking.mriver';
-import { BeefyStakingOne } from './beefy/beefy.staking.one';
-import { BeefyStakingPlg } from './beefy/beefy.staking.plg';
 import { ConvexStaking } from './convex/convex.staking';
 import { CurveGauges } from './curve/curve.gauges';
 import { CurveGaugesArbi } from './curve/curve.gauges.arbi';
@@ -92,28 +75,9 @@ import { WingRidersPools } from './wingriders/wingriders.pools';
 
 const Anchor = [AnchorLp, AnchorStaking];
 const Astroport = [AstroportLp, AstroportStaking];
-const AutoFarm = [
-  AutofarmStakingAVAX,
-  AutofarmStakingBSC,
-  AutofarmStakingCELO,
-  AutofarmStakingCRO,
-  AutofarmStakingHECO,
-  AutofarmStakingPLG,
-];
 
 const Badger = [BadgerStakingArbi, BadgerStakingEth, BadgerStakingPLG];
 
-const Beefy = [
-  BeefyStakingCro, // 14
-  BeefyStakingArbi, // 5
-  BeefyStakingAvax, // 6
-  BeefyStakingBsc, // 2
-  BeefyStakingCelo, // 8
-  BeefyStakingOne, // 10
-  BeefyStakingPlg, // 3
-  BeefyStakingFtm, // 4
-  BeefyStakingMoonRiver, // 9
-];
 const Convex = [ConvexStaking];
 const Curve = [
   CurveGauges,
@@ -158,9 +122,7 @@ const WingRiders = [WingRidersPools];
 export const ActiveJobs: ClassConstructor<JobInterface>[] = [
   ...Anchor,
   ...Astroport,
-  ...AutoFarm,
   ...Badger,
-  ...Beefy,
   ...Convex,
   ...Curve,
   ...SushiSwap,
@@ -186,7 +148,7 @@ export const ActiveJobs: ClassConstructor<JobInterface>[] = [
   ...WingRiders,
 ];
 
-const Helpers = [TraderJoeSubgraph, BeefyApiService, AutofarmApiService, DbMapping, MarinadeUtils];
+const Helpers = [TraderJoeSubgraph, DbMapping, MarinadeUtils];
 
 @Module({
   imports: [

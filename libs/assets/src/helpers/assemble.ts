@@ -20,9 +20,10 @@ export const assemble = (
     if (!asset) return acc;
 
     const underlying = [];
-    if (asset.underlying.length) {
+    if (Array.isArray(asset.underlying)) {
       asset.underlying.forEach((under) => {
         const underAsset = map.get(`${asset.chainId}_${under.address}`.toLowerCase());
+
         underlying.push({
           ...underAsset,
           position: under.position,

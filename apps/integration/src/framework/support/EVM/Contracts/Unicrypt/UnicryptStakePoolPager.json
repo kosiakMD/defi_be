@@ -1,0 +1,395 @@
+[
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "previousOwner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "OwnershipTransferred",
+    "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "MAX_GETTER_LENGTH",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "contractIStakePool",
+        "name": "_stakePool",
+        "type": "address"
+      }
+    ],
+    "name": "getNumRewardPools",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "contractIRewardPool",
+        "name": "_rewardPool",
+        "type": "address"
+      }
+    ],
+    "name": "getNumRewardStakers",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "contractIStakePool",
+        "name": "_stakePool",
+        "type": "address"
+      }
+    ],
+    "name": "getNumStakers",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "contractIStakePool",
+        "name": "_stakePool",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      }
+    ],
+    "name": "getNumUserSubscriptions",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "contractIStakePool",
+        "name": "_stakePool",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_start",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_count",
+        "type": "uint256"
+      }
+    ],
+    "name": "getRewardPools",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "pool_address",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "contract_version",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "user_share_weight",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "unharvested",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "farm_state",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "structStakePoolPager.RewardPoolInfo[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "contractIRewardPool",
+        "name": "_rewardPool",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_start",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_count",
+        "type": "uint256"
+      }
+    ],
+    "name": "getRewardStakers",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "user_address",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "share_weight",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "reward_debt",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "unharvested_shares",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "pending_reward",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "structStakePoolPager.RewardStakerInfo[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "contractIStakePool",
+        "name": "_stakePool",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_start",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_count",
+        "type": "uint256"
+      }
+    ],
+    "name": "getStakers",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "user_address",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "share_weight",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "time_boost_percentage",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "uncl_boost_percentage",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "subscriptions_length",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "structIStakePool.UserInfo[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "contractIStakePool",
+        "name": "_stakePool",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_start",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_count",
+        "type": "uint256"
+      }
+    ],
+    "name": "getUserSubscriptions",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "pool_address",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "contract_version",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "user_share_weight",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "unharvested",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "farm_state",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "structStakePoolPager.RewardPoolInfo[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "owner",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "renounceOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_length",
+        "type": "uint256"
+      }
+    ],
+    "name": "setMaxGetterLength",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "transferOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]

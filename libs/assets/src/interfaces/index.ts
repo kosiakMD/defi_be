@@ -20,6 +20,8 @@ export interface AssetUnderlyingInterface {
 export interface AssetRequestObjectInterface {
   chainId: number;
   address: string;
+  // please use with caution, only for local development(!!!)
+  forceUpdate?: boolean;
   pricesAt?: number[];
 }
 
@@ -75,8 +77,6 @@ export interface AssembledAssetInterface {
   // weight
   reserve?: number;
 
-  // isTracked?: boolean;
-  // disabled?: boolean;
   categories: AssetCategoryInterface[];
   historicalPrices?: AssetHistoricalPriceInterface[];
   underlying: AssembledAssetInterface[];

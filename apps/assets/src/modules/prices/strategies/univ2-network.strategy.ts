@@ -1,9 +1,9 @@
 import { AbiItem } from 'web3-utils';
 
-import { Inject, Logger } from '@nestjs/common';
+import { Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Address, ChainId } from '@app/common';
+import { Address, ChainId, Logger } from '@app/common';
 import { COIN_ADDRESS } from '@app/common/constant';
 import { chunkRunAsync, formatAddress, normalizeDecimals } from '@app/common/utils';
 import { DynamicContract } from '@app/common/web3provider/contracts/DynamicContract';
@@ -48,7 +48,6 @@ export class Univ2NetworkStrategy extends BaseStrategy<Config> {
     const pairs = await this.assetsRepository.findUniV2LikePairsForTrackedAssets(
       chainId,
       formatAddress(factory),
-      baseAssets,
     );
     if (!pairs.length) {
       return [];

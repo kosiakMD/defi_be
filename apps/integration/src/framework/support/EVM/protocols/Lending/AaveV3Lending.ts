@@ -20,6 +20,7 @@ import {
   IRootProtocol,
 } from '../../../interfaces';
 import { BaseWithTokens } from '../../../interfaces/new.interfaces';
+import { IRewardRates } from '../../../interfaces/rewards.interface';
 import {
   IBorrowTokenMinimal,
   IBorrowTokenOpportunity as IBaseBorrowTokenOpportunity,
@@ -59,6 +60,8 @@ type IBorrowTokenOpportunity = IBaseBorrowTokenOpportunity<{
   apy: { stable: number; variable: number };
 }>;
 
+type IAaveV3SupplyTokenUserEntry = ISupplyTokenUserEntry & { isCollateral: boolean };
+
 type ILendingFeatureEntryMinimal = BaseWithTokens<
   ISupplyTokenMinimal,
   IRewardTokenMinimal[],
@@ -70,7 +73,7 @@ type ILendingFeatureOpportunity = BaseWithTokens<
   IBorrowTokenOpportunity
 >;
 type ILendingFeatureUserEntry = BaseWithTokens<
-  ISupplyTokenUserEntry[],
+  IAaveV3SupplyTokenUserEntry[],
   IRewardTokenUserEntry[],
   IBorrowTokenUserEntity[]
 > & { debtRatio: number };
@@ -213,6 +216,12 @@ export class AaveV3Lending
       },
     );
 
+    // TODO: fetch allATokens here instead of fetching all functions
+    // and relying on the side effect to fill this.meta.context
+    if (!this.meta.context.allATokens) {
+      await this.callInputlessFunctions();
+    }
+
     const calls = new Map();
     calls.set(
       `${address}.rewards`,
@@ -235,23 +244,31 @@ export class AaveV3Lending
 
     const multicallResults = await this.multicall.handleInBatches(calls, this.meta.chain);
 
-    const supplyTokens = [];
+    const supplyTokens: IAaveV3SupplyTokenUserEntry[] = [];
     const borrowTokens = [];
     let rewardTokens;
     pools.forEach((pool) => {
       if (!rewardTokens) rewardTokens = pool.rewarded.map((reward) => reward.token);
-      const { currentATokenBalance, currentStableDebt, currentVariableDebt } = multicallResults.get(
-        `${pool.id}.userReserveData(${address})`,
-      ).output.data;
+      const {
+        currentATokenBalance,
+        currentStableDebt,
+        currentVariableDebt,
+        usageAsCollateralEnabled,
+      } = multicallResults.get(`${pool.id}.userReserveData(${address})`).output.data;
 
       if (Number(currentATokenBalance) > 0) {
         supplyTokens.push(
-          this.formatLendingUserData(pool.supply, currentATokenBalance, pool.supply.apy.year),
+          this.formatLendingUserDataSupplyToken(
+            pool.supply,
+            currentATokenBalance,
+            pool.supply.apy.year,
+            usageAsCollateralEnabled,
+          ),
         );
       }
       if (Number(currentVariableDebt) > 0) {
         borrowTokens.push(
-          this.formatLendingUserData(
+          this.formatLendingUserDataBorrowToken(
             pool.borrow,
             currentVariableDebt,
             pool.borrow.extra.apy.variable,
@@ -260,7 +277,11 @@ export class AaveV3Lending
       }
       if (Number(currentStableDebt) > 0) {
         borrowTokens.push(
-          this.formatLendingUserData(pool.borrow, currentStableDebt, pool.borrow.extra.apy.stable),
+          this.formatLendingUserDataBorrowToken(
+            pool.borrow,
+            currentStableDebt,
+            pool.borrow.extra.apy.stable,
+          ),
         );
       }
     });
@@ -326,25 +347,49 @@ export class AaveV3Lending
     };
   }
 
-  formatLendingUserData(
-    pool: IBorrowTokenOpportunity | ISupplyTokenOpportunity,
+  formatLendingUserDataSupplyToken(
+    pool: ISupplyTokenOpportunity,
     balance: string,
     apy: number,
-  ) {
+    isCollateral: boolean,
+  ): IAaveV3SupplyTokenUserEntry {
     const userBalance = toDecimals(balance, pool.token.decimals);
+    const breakdown = this.breakdownFromApr(apy);
 
-    const breakdown = {
-      day: apy / 365,
-      week: apy / 52,
-      month: apy / 12,
-      year: apy,
-    };
-
-    return Object.assign({}, pool, {
+    return {
+      ...pool,
+      isCollateral,
       amount: userBalance,
       value: userBalance * pool.token.price,
       apr: breakdown,
       apy: breakdown,
-    });
+    };
+  }
+
+  formatLendingUserDataBorrowToken(
+    pool: IBorrowTokenOpportunity,
+    balance: string,
+    apy: number,
+  ): IBorrowTokenUserEntity {
+    const userBalance = toDecimals(balance, pool.token.decimals);
+
+    const breakdown = this.breakdownFromApr(apy);
+
+    return {
+      ...pool,
+      amount: userBalance,
+      value: userBalance * pool.token.price,
+      apr: breakdown,
+      apy: breakdown,
+    };
+  }
+
+  private breakdownFromApr(apr: number): IRewardRates {
+    return {
+      day: apr / 365,
+      week: apr / 52,
+      month: apr / 12,
+      year: apr,
+    };
   }
 }

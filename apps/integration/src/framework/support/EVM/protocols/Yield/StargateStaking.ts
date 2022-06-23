@@ -1,14 +1,30 @@
-import { CurrentPricesPayload } from '@app/common';
+import { StargateAssetService } from 'apps/integration/src/modules/microservices/stargate.asset.service';
+import { Cache } from 'cache-manager';
+
+import { CACHE_MANAGER, Inject } from '@nestjs/common';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+
+import { Logger } from '@app/common';
 import { ERC20 } from '@app/common/web3provider/contracts/ERC20';
+import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
 import { INamedFunctionPredicates } from '../../../interfaces';
 import { IStakingFeatureMinimal } from '../../../interfaces/feature.staking.interface';
-import { ERC20Token } from '../../../interfaces/tokens.common.interface';
 import { ISupplyTokenOpportunity } from '../../../interfaces/tokens.supplied.interface';
-import { updateStargateLpTokens } from '../Liquidity/StargateLiquidity';
+import { AbiService } from '../../AbiModule/AbiService';
 import { MasterChef } from './MasterChef';
 
 export class StargateStaking extends MasterChef {
+  constructor(
+    protected abiService: AbiService,
+    protected multicall: MulticallAggregator,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) protected logger: Logger,
+    @Inject(CACHE_MANAGER) protected cache: Cache,
+    protected assetService: StargateAssetService,
+  ) {
+    super(abiService, multicall, logger, cache);
+  }
+
   functionPredicates: INamedFunctionPredicates = {
     totalStaked: () => (item) => item.name === 'lpBalances',
     poolInfo: () => (item) => item.name === 'poolInfo',
@@ -50,23 +66,5 @@ export class StargateStaking extends MasterChef {
       amount,
       value,
     });
-  }
-
-  protected async updateTokenData(
-    tokens: any[],
-    prices: CurrentPricesPayload,
-  ): Promise<ERC20Token[]> {
-    try {
-      return updateStargateLpTokens(
-        tokens,
-        prices,
-        this.multicall,
-        this.abiService,
-        this.meta.chain,
-      );
-    } catch (err) {
-      this.logger.error(err.message, err.stack, 'StargateStaking');
-      return tokens;
-    }
   }
 }

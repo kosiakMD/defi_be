@@ -1,12 +1,13 @@
 import { firstValueFrom } from 'rxjs';
 
 import { HttpService } from '@nestjs/axios';
-import { Inject, Logger } from '@nestjs/common';
+import { Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+import { Logger } from '@app/common';
+import { SOL_COIN_ADDRESS, WRAPPED_SOL_ADDRESS } from '@app/common/constant';
 import { ChainIdEnum } from '@app/common/enum';
 import { delay } from '@app/common/helpers/delay';
-import { ChainCoinAddresses } from '@app/common/utils/chains';
 
 import { AssetPrice } from '../types/asset-price.type';
 import { PriceSource } from '../types/price-source.type';
@@ -32,7 +33,7 @@ export class SolanaScanStrategy extends BaseStrategy<Config> {
   }
 
   public async fetchPrices({ sourceId, config }: PriceSource<Config>): Promise<AssetPrice[]> {
-    const { maxItems = 500, chunkSize = 500, requestDelay = 2 * 1000 } = config;
+    const { maxItems = 500, chunkSize = 100, requestDelay = 2 * 1000 } = config;
 
     let prices: AssetPrice[] = [];
 
@@ -65,17 +66,19 @@ export class SolanaScanStrategy extends BaseStrategy<Config> {
       }),
     );
 
+    const wrappedSol = assets.find(({ mintAddress }) => mintAddress === WRAPPED_SOL_ADDRESS);
+    if (wrappedSol && wrappedSol.priceUst) {
+      assets.push({
+        ...wrappedSol,
+        mintAddress: SOL_COIN_ADDRESS,
+      });
+    }
+
     return assets.map((token) => ({
-      address: mapAssetAddress(token.mintAddress),
+      address: token.mintAddress,
       chainId: ChainIdEnum.sol,
       sourceId,
       price: token.priceUst,
     }));
   }
-}
-
-function mapAssetAddress(address: string) {
-  return address === 'So11111111111111111111111111111111111111112'
-    ? ChainCoinAddresses[ChainIdEnum.sol]
-    : address;
 }

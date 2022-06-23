@@ -1,8 +1,9 @@
-import { Inject, Injectable, LoggerService } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+import { Logger } from '@app/common';
 import { CacheService } from '@app/common/services/cache.service';
 import { chunkRunAsync } from '@app/common/utils';
 
@@ -18,12 +19,13 @@ import { AssetPrice } from './types/asset-price.type';
 @Injectable()
 export class PriceService {
   private readonly assetPricesTTLInSeconds: number;
+
   constructor(
     @InjectRepository(AssetsRepository)
     private readonly assetsRepository: AssetsRepository,
     @InjectRepository(AssetsHistoricalPriceRepository)
     private readonly assetsHistoricalPriceRepository: AssetsHistoricalPriceRepository,
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     private readonly cache: CacheService,
     private readonly config: ConfigService,
   ) {
@@ -65,12 +67,19 @@ export class PriceService {
   public async saveSpecificAssetPrices(dtosToUpdatePricesInCache: AssetDto[]) {
     const priceCacheItems = dtosToUpdatePricesInCache
       .filter(({ price }) => price)
-      .map(({ address, chainId, price }) =>
-        toAvgPriceCacheItem({
+      .map(({ address, chainId, price, underlying }) => {
+        const assetAvgPrice = {
           asset: { address, chainId },
           price,
-        }),
-      );
+          reserves: [],
+        };
+        underlying?.forEach(({ reserve }) => {
+          if (reserve) {
+            assetAvgPrice.reserves.push(reserve);
+          }
+        });
+        return toAvgPriceCacheItem(assetAvgPrice);
+      });
     await this.cache.mset(priceCacheItems, { ttl: this.assetPricesTTLInSeconds });
   }
 
@@ -95,8 +104,12 @@ export class PriceService {
 
   async getPrices(assets: AssetReference[]): Promise<AssetAvgPrice[]> {
     const avgPricesCacheKeys = assets.map(getAvgPriceCacheKey);
-    const cachedAssetPrices = await this.cache.mget<number>(avgPricesCacheKeys);
-    return cachedAssetPrices.map((price, index) => ({ price, asset: assets[index] }));
+    const cachedAssetPrices = await this.cache.mget<AvgPrice>(avgPricesCacheKeys);
+    return cachedAssetPrices.map((value, index) => ({
+      price: value?.price,
+      reserves: value?.reserves,
+      asset: assets[index],
+    }));
   }
 }
 
@@ -116,6 +129,12 @@ export type AssetPrices = {
 export type AssetAvgPrice = {
   asset: AssetReference;
   price: number;
+  reserves?: string[];
+};
+
+type AvgPrice = {
+  price: number;
+  reserves?: string[];
 };
 
 function createPriceMap(prices: AssetPrice[]): PriceMap {
@@ -150,7 +169,7 @@ function updatePrices(ap: AssetPrices, priceMap: PriceMap, expiredAt: number): A
 
   const updatedPrices = prices
     .filter(
-      ({ sourceId, timestamp }) => sourceId !== updatedPrice.sourceId || timestamp < expiredAt,
+      ({ sourceId, timestamp }) => sourceId !== updatedPrice.sourceId && timestamp >= expiredAt,
     )
     .concat({
       price: updatedPrice.price,
@@ -180,10 +199,10 @@ function toSourcePricesCacheItem(assetPrices: AssetPrices) {
   };
 }
 
-function toAvgPriceCacheItem({ asset, price }: AssetAvgPrice) {
+function toAvgPriceCacheItem({ asset, price, reserves }: AssetAvgPrice) {
   return {
     key: getAvgPriceCacheKey(asset),
-    value: price,
+    value: { price, reserves },
   };
 }
 

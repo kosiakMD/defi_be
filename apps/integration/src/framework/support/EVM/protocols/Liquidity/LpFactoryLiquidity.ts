@@ -28,8 +28,7 @@ export abstract class LpFactoryLiquidity extends SingleContractProtocol<
   protected async fetchOpportunityData(context: {
     [key: string]: any;
   }): Promise<IPoolFeatureMinimal[]> {
-    const poolIds = Array.from(Array(context.allPoolsLength.toNumber()).keys());
-    const poolsList = await this.fetchRegisteredPools(poolIds);
+    const poolsList = await this.getPoolsList(context);
 
     const totalStakedPerPool = await this.multicall.callArray(
       poolsList.map((p) => {
@@ -52,6 +51,11 @@ export abstract class LpFactoryLiquidity extends SingleContractProtocol<
         },
       ],
     }));
+  }
+
+  async getPoolsList(context?: { [key: string]: any }) {
+    const poolIds = Array.from(Array(context.allPoolsLength.toNumber()).keys());
+    return await this.fetchRegisteredPools(poolIds);
   }
 
   protected async fetchUserData(
@@ -104,7 +108,7 @@ export abstract class LpFactoryLiquidity extends SingleContractProtocol<
     };
     const poolShare = new BN(balanceNormalized).div(pool.supplied[0].token.totalSupply);
 
-    const supplied: ISupplyTokenUserEntry[] = pool.supplied[0].token.underlying.map(
+    const supplied: ISupplyTokenUserEntry[] = pool.supplied[0].token.underlying?.map(
       (underlying) => {
         return {
           tvl: pool.supplied[0].tvl,

@@ -1,9 +1,11 @@
 import { Job } from 'bull';
 
 import { Process, Processor } from '@nestjs/bull';
-import { Inject, LoggerService } from '@nestjs/common';
+import { Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+
+import { Logger } from '@app/common';
 
 import { PriceJobName } from '../../../common/enum/job-name.enum';
 import { QueueName } from '../../../common/enum/queue-name.enum';
@@ -13,11 +15,11 @@ import { AssetsHistoricalPriceRepository } from '../repositories/asset-historica
 /*
  Cleanups not needed historical prices from database.
  Should be executed every few hours.
-* */
+ * */
 @Processor(QueueName.PRICES)
 export class AssetsHistoricalPricesCleanerProcessor {
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     @InjectRepository(AssetsHistoricalPriceRepository)
     private readonly assetsHistoricalPriceRepository: AssetsHistoricalPriceRepository,
   ) {}

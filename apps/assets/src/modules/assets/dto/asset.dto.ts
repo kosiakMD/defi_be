@@ -71,7 +71,6 @@ export class AssetDto {
   @ApiProperty({ type: [AssetUnderlyingDto] })
   underlying: AssetUnderlyingDto[] = [];
 
-  @Expose({ toClassOnly: true })
   @ApiProperty({ type: 'json', nullable: false, default: {} })
   public metadata: AssetMetadata;
 }

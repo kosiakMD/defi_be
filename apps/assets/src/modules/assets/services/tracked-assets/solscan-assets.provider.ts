@@ -2,16 +2,17 @@ import { doWhilst } from 'async';
 import { firstValueFrom } from 'rxjs';
 
 import { HttpService } from '@nestjs/axios';
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { ChainIdEnum } from '@app/common';
+import { ChainIdEnum, Logger } from '@app/common';
 
 import { AssetProcessingRequest } from '../../types/asset-processing.request';
 import { TrackedAssetsProvider } from './tracked-assets.provider';
 
 type SolanaToken = {
   mintAddress: string;
+  priceUst: number;
 };
 
 @Injectable()
@@ -28,8 +29,8 @@ export class SolscanAssetsProvider implements TrackedAssetsProvider {
   }
 
   async getTrackedAssetsCandidates(): Promise<AssetProcessingRequest[]> {
-    const limit = 500;
-    const maxItems = 500;
+    const limit = 100;
+    const maxItems = 1000;
 
     let assetProcessingRequests: AssetProcessingRequest[] = [];
     let offset = 0;
@@ -58,9 +59,11 @@ export class SolscanAssetsProvider implements TrackedAssetsProvider {
       }),
     );
 
-    return assets.map((token) => ({
-      address: token.mintAddress,
-      chainId: ChainIdEnum.sol,
-    }));
+    return assets
+      .filter(({ priceUst }) => !!priceUst)
+      .map((token) => ({
+        address: token.mintAddress,
+        chainId: ChainIdEnum.sol,
+      }));
   }
 }

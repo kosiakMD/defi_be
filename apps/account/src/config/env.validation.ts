@@ -59,6 +59,7 @@ export const validationSchema = Joi.object({
   COVALENT_KEY: Joi.string().required(),
   PRICE_SERVICE_MAIN_COIN_ADDRESS: Joi.string().required(),
   BLOCKS_SUBGRAPH_URL: Joi.string().required(),
+  ASSETS_SERVICE_URL: Joi.string().required(),
 
   OPEN_SEA_URL: Joi.string().required(),
   OPEN_SEA_API_KEY: Joi.string().required(),

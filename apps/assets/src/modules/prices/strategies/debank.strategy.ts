@@ -1,10 +1,11 @@
 import * as debank from 'debank-open-api';
 
-import { Inject, Logger } from '@nestjs/common';
+import { Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+import { Logger } from '@app/common';
 import { delay } from '@app/common/helpers/delay';
 import { chunkRunAsync } from '@app/common/utils';
 

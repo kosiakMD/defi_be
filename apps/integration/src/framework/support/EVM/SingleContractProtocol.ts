@@ -127,6 +127,8 @@ export abstract class SingleContractProtocol<
     return inputlessCalls.reduce((acc, [name], idx) => {
       acc[name] = results[idx];
       return acc;
+      // TODO: this mutates 'this.meta.context' but it should not
+      // At least 1 protocol relies on this mutation (AaveV3)
     }, this.meta.context ?? ({} as { [ley: string]: any }));
   }
 }

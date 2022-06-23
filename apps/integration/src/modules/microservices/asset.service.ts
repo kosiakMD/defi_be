@@ -13,9 +13,8 @@ import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '@app/common';
+import { logExecutionTime } from '@app/common/utils';
 import { join } from '@app/common/utils/urls';
-
-import { logExecutionTime } from './utils';
 
 export class AssetService implements AssetServiceInterface {
   /** Endpoint URLS */

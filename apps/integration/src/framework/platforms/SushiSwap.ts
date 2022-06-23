@@ -61,13 +61,14 @@ export class SushiSwap extends RootPlatform {
       pairsPerQuery: 100,
     });
 
-    await this.registerProtocol<ISushiLendingMeta>(SushiswapLending, {
-      chain: ChainIdEnum.plg,
-      name: 'Kashi lending',
-      feature: FeatureEnum.lending,
-      subgraphUrl: 'https://api.thegraph.com/subgraphs/name/sushiswap/matic-bentobox',
-      pairsPerQuery: 100,
-    });
+    // TODO: matic-bentobox subgraph doesn't work
+    // await this.registerProtocol<ISushiLendingMeta>(SushiswapLending, {
+    //   chain: ChainIdEnum.plg,
+    //   name: 'Kashi lending',
+    //   feature: FeatureEnum.lending,
+    //   subgraphUrl: 'https://api.thegraph.com/subgraphs/name/sushiswap/matic-bentobox',
+    //   pairsPerQuery: 100,
+    // });
 
     await this.registerProtocol<ISushiLendingMeta>(SushiswapLending, {
       chain: ChainIdEnum.gnosis,

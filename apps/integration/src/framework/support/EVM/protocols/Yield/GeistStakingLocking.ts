@@ -148,7 +148,7 @@ export class GeistStakingLocking
       },
       // Locking Geist https://geist.finance/manage, rewards only in Geist
       {
-        id: stakingToken,
+        id: stakingToken + ':locked',
         chain: this.meta.chain,
         feature: this.meta.feature,
         supplied: [
@@ -179,7 +179,7 @@ export class GeistStakingLocking
 
     const lockedBalancePromise = this.multicall
       .call(contract.createCall(this.functions.lockedBalances, address), this.meta.chain)
-      .then((x) => x.locked);
+      .then((x) => x.lockData);
 
     const totalBalancePromise = this.multicall.call(
       contract.createCall(this.functions.totalBalance, address),
@@ -190,29 +190,49 @@ export class GeistStakingLocking
       contract.createCall(this.functions.claimableRewards, address),
       this.meta.chain,
     );
-    const [lockedBalance, totalBalance, claimableRewards] = await Promise.all([
+    const [lockedBalanceData, totalBalance, claimableRewards] = await Promise.all([
       lockedBalancePromise,
       totalBalancePromise,
       claimableRewardsPromise,
     ]);
-    const lockedValue = new BigNumber(lockedBalance).multipliedBy(geistPrice);
+    const lockedBalances: { balance: BigNumber; unlockTime: number }[] = lockedBalanceData.map(
+      (x) => ({ balance: x.amount, unlockTime: x.unlockTime }),
+    );
 
-    const stakedBalance = new BigNumber(totalBalance).minus(lockedBalance);
+    const lockedTotalBalance = lockedBalances.reduce(
+      (acc, { balance }) => acc.plus(balance),
+      new BigNumber(0),
+    );
+
+    const stakedBalance = new BigNumber(totalBalance).minus(lockedTotalBalance);
     const stakedValue = new BigNumber(stakedBalance).multipliedBy(geistPrice);
 
     const tokenToClaimableRewardMap = new Map(claimableRewards);
 
+    const claimable = [];
     const claimableLockedRewards = new BigNumber(
       tokenToClaimableRewardMap.get(pools[1].rewarded[0].token.address) as any,
     );
 
-    return [
-      // Staking Geist
-      {
+    if (claimableLockedRewards.gt(0)) {
+      claimable.push(this.toClaimableItem(pools[1].rewarded[0], tokenToClaimableRewardMap));
+    }
+    claimable.push(
+      ...pools[0].rewarded
+        .filter(
+          (x) =>
+            tokenToClaimableRewardMap.get(x.token.address) &&
+            new BigNumber(tokenToClaimableRewardMap.get(x.token.address) as any).gt(0),
+        )
+        .map((x) => this.toClaimableItem(x, tokenToClaimableRewardMap)),
+    );
+    const result: IStakingFeatureUserEntry[] = [];
+
+    if (stakedValue.gt(0)) {
+      result.push({
         id: pools[0].id,
         chain: this.meta.chain,
         feature: FeatureEnum.staking,
-
         supplied: [
           {
             ...pools[0].supplied[0],
@@ -223,55 +243,57 @@ export class GeistStakingLocking
             value: normalizeDecimals(stakedValue.toString(), pools[0].supplied[0].token.decimals),
           },
         ],
-        rewarded: pools[0].rewarded
-          .filter(
-            (x) =>
-              tokenToClaimableRewardMap.get(x.token.address) &&
-              new BigNumber(tokenToClaimableRewardMap.get(x.token.address) as any).gt(0),
-          )
-          .map((rewarded) => ({
-            ...rewarded,
-            amount: normalizeDecimals(
-              tokenToClaimableRewardMap.get(rewarded.token.address).toString(),
-              rewarded.token.decimals,
-            ),
-            value: normalizeDecimals(
-              new BigNumber(tokenToClaimableRewardMap.get(rewarded.token.address) as any)
-                .multipliedBy(rewarded.token.price)
-                .toString(),
-              rewarded.token.decimals,
-            ),
-          })),
-      },
-      // Locking Geist
-      {
+        rewarded: [],
+      });
+    }
+    if (lockedBalances.length > 0) {
+      result.push(
+        ...lockedBalances.map(({ balance, unlockTime }) => ({
+          id: pools[1].id,
+          chain: this.meta.chain,
+          feature: FeatureEnum.staking,
+          supplied: [
+            {
+              ...pools[1].supplied[0],
+              amount: normalizeDecimals(balance.toString(), pools[1].supplied[0].token.decimals),
+              value: normalizeDecimals(
+                // eslint-disable-next-line newline-per-chained-call
+                new BigNumber(balance).multipliedBy(geistPrice).toString(),
+                pools[1].supplied[0].token.decimals,
+              ),
+              unlockTime,
+            },
+          ],
+          rewarded: [],
+        })),
+      );
+    }
+
+    if (claimable.length) {
+      result.push({
         id: pools[1].id,
         chain: this.meta.chain,
-        feature: FeatureEnum.lockedBalances,
-        supplied: [
-          {
-            ...pools[1].supplied[0],
-            amount: normalizeDecimals(
-              lockedBalance.toString(),
-              pools[1].supplied[0].token.decimals,
-            ),
-            value: normalizeDecimals(lockedValue.toString(), pools[1].supplied[0].token.decimals),
-          },
-        ],
-        rewarded: [
-          {
-            ...pools[1].rewarded[0],
-            amount: normalizeDecimals(
-              claimableLockedRewards.toString(),
-              pools[1].rewarded[0].token.decimals,
-            ),
-            value: normalizeDecimals(
-              claimableLockedRewards.multipliedBy(geistPrice).toString(),
-              pools[1].rewarded[0].token.decimals,
-            ),
-          },
-        ],
-      },
-    ];
+        feature: FeatureEnum.claimable,
+        supplied: [],
+        rewarded: claimable,
+      });
+    }
+    return result;
+  }
+
+  private toClaimableItem(rewarded, tokenToClaimableRewardMap) {
+    return {
+      ...rewarded,
+      amount: normalizeDecimals(
+        tokenToClaimableRewardMap.get(rewarded.token.address).toString(),
+        rewarded.token.decimals,
+      ),
+      value: normalizeDecimals(
+        new BigNumber(tokenToClaimableRewardMap.get(rewarded.token.address) as any)
+          .multipliedBy(rewarded.token.price)
+          .toString(),
+        rewarded.token.decimals,
+      ),
+    };
   }
 }

@@ -2,9 +2,10 @@ import BigNumber from 'bignumber.js';
 import { firstValueFrom, map } from 'rxjs';
 
 import { HttpService } from '@nestjs/axios';
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+import { Logger } from '@app/common';
 import { CARDANO_COIN_ADDRESS } from '@app/common/constant';
 import { handlePromiseAllSettled } from '@app/common/helpers/promises';
 import { gql, normalizeDecimals } from '@app/common/utils';
@@ -15,8 +16,8 @@ import { AssetCategory } from '../../../enums/asset-category.enum';
 import { AssetAnalyser, AssetAnalysisResult } from '../core/asset.analyser';
 import { CardanoBaseAssetAnalyser } from '../core/cardano-base.asset-analyser';
 import {
-  AssetPriceWithUnderlyingReserves,
   AssetPriceProvider,
+  AssetPriceWithUnderlyingReserves,
   ComplexAsset,
 } from '../core/price.provider';
 
@@ -27,6 +28,7 @@ export class MinSwapAssetAnalyser
 {
   private readonly MIN_SWAP_ENDPOINT =
     'https://monorepo-mainnet-prod.minswap.org/graphql?AssetMetadata';
+
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     private readonly httpService: HttpService,

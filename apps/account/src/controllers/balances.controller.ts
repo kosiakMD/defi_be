@@ -3,7 +3,6 @@ import { ApiBody, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { getUniqList, notEmpty } from '@app/common/utils';
 
-import { BalancesV2Service } from '../modules/balances/balances-v2.service';
 import { BalancesResponse } from '../modules/balances/balances.interfaces';
 import { BalancesService } from '../modules/balances/balances.service';
 import { DelegationsService } from '../modules/balances/delegations.service';
@@ -19,7 +18,6 @@ import {
 export class BalancesController {
   constructor(
     private readonly balancesService: BalancesService,
-    private readonly balancesV2Service: BalancesV2Service,
     private readonly delegationsService: DelegationsService,
   ) {}
 

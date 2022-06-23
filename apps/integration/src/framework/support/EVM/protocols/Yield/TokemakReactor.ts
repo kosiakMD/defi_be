@@ -147,6 +147,7 @@ export class TokemakReactor extends SingleContractProtocol<
         });
 
         Object.assign(pool.supplied[0], {
+          amount: balance,
           value: sum,
         });
 

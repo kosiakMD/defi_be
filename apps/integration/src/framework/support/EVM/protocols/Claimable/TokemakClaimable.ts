@@ -48,11 +48,15 @@ export class TokemakClaimable extends SingleContractProtocol<
     getClaimableAmount: () => (item) => item.name === 'getClaimableAmount',
   };
 
-  protected fetchOpportunityData(): Promise<IStakingFeatureMinimal[]> {
-    return Promise.resolve([
+  protected async fetchOpportunityData(): Promise<IStakingFeatureMinimal[]> {
+    const latestClaimable = await this.getLatestClaimable();
+    return [
       {
         id: this.meta.address,
         chain: this.meta.chain,
+        meta: {
+          latestClaimable,
+        },
         feature: FeatureEnum.claimable,
         supplied: [],
         rewarded: [
@@ -63,15 +67,14 @@ export class TokemakClaimable extends SingleContractProtocol<
           },
         ],
       },
-    ]);
+    ];
   }
 
   protected async fetchUserData(
     address: Address,
     pools: IStakingFeatureOpportunity[],
   ): Promise<IStakingFeatureUserEntry[]> {
-    const latestClaimable = await this.getOrSetLatestClaimable();
-
+    const latestClaimable = pools[0].meta.latestClaimable;
     const url = this.getIpfsUrl(latestClaimable, address);
     const {
       data: { payload },
@@ -91,16 +94,6 @@ export class TokemakClaimable extends SingleContractProtocol<
     });
 
     return pools as IStakingFeatureUserEntry[];
-  }
-
-  private async getOrSetLatestClaimable(): Promise<string> {
-    return this.getOrSet(
-      60 * 60 * 3,
-      `${this.meta.chain}-${this.meta.address}-latest-claimable`,
-      async () => {
-        return await this.getLatestClaimable();
-      },
-    );
   }
 
   protected async getLatestClaimable(): Promise<string> {

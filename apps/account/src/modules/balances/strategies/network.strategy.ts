@@ -51,11 +51,7 @@ export class NetworkBalancesStrategy
     }`;
     this.logger.time(message);
 
-    const contractAddress = await this.getBalancesContractAddress(chainId);
-    if (!contractAddress) {
-      throw new Error(`No balances checker contract for ${chainId} chain`);
-    }
-
+    const { contractAddress, batchSize } = await this.getBalancesContractAddress(chainId);
     const contract = new BalancesContract(contractAddress, web3);
 
     let tokens = [...originalTokens];
@@ -65,7 +61,8 @@ export class NetworkBalancesStrategy
       tokens.splice(nativeCoinIndex, 1);
     }
 
-    let promises: Promise<string | string[]>[] = chunkArray(tokens, this.DEFAULT_BATCH_SIZE).map(
+    // TODO: Use safe call to not fail everything if one not working
+    let promises: Promise<string | string[]>[] = chunkArray(tokens, batchSize).map(
       (chunk) =>
         retry(() => contract.getBalances(address, chunk, block), this.WEB3_RETRY_CALL_IN_MS),
     );
@@ -104,11 +101,12 @@ export class NetworkBalancesStrategy
     return results;
   }
 
-  private async getBalancesContractAddress(chain: number): Promise<string> {
-    const chainEntity = await this.chainsService.get({ id: chain });
-    if (chainEntity?.metadata?.balancesCheckerAddress) {
-      return chainEntity.metadata.balancesCheckerAddress;
-    }
-    return this.COMMON_BALANCE_CHECKER_ADDRESS;
+  private async getBalancesContractAddress(chain: number) {
+    // TODO: Cache this one
+    const { metadata } = await this.chainsService.get({ id: chain });
+    return {
+      contractAddress: metadata.balancesCheckerAddress || this.COMMON_BALANCE_CHECKER_ADDRESS,
+      batchSize: metadata.balancesCheckerBatchSize || this.DEFAULT_BATCH_SIZE,
+    };
   }
 }

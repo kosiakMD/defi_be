@@ -1,15 +1,16 @@
 import { Queue } from 'bull';
 
 import { InjectQueue } from '@nestjs/bull';
-import { Inject, Injectable, LoggerService } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+import { Logger } from '@app/common';
 import { ChainId } from '@app/common';
 import { CacheService } from '@app/common/services/cache.service';
 import { CrudService } from '@app/common/services/crud.service';
-import { isSomeAddress } from '@app/common/utils';
+import { formatError, isSomeAddress, logExecutionTime } from '@app/common/utils';
 
 import { AssetJobName } from '../../../common/enum/job-name.enum';
 import { JobPriority } from '../../../common/enum/job-priority.enum';
@@ -30,7 +31,7 @@ import { AssetsCandidateRepository } from '../repositories/assets-candidate.repo
 import { AssetsCachedRepository } from '../repositories/assets.cached-repository';
 import { AssetsRepository } from '../repositories/assets.repository';
 import { HistoricalPriceRequest } from '../types/historical-price-request.type';
-import { mapAssetsToPlain } from '../utils/cache-mapping';
+import { mapAssetsToAPIPlain } from '../utils/cache-mapping';
 import { getAssetProcessJobId } from '../utils/jobs.helper';
 import { AssetAnalyserService } from './asset-analyser.service';
 import { InvalidAssetService } from './invalid-asset.service';
@@ -39,7 +40,7 @@ import { InvalidAssetService } from './invalid-asset.service';
 // TODO: Return underlying assets reserves
 export class AssetsService extends CrudService<AssetsRepository> {
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     @InjectQueue(QueueName.ASSETS) private readonly assetsQueue: Queue,
     private readonly config: ConfigService,
     private readonly cacheService: CacheService,
@@ -60,12 +61,24 @@ export class AssetsService extends CrudService<AssetsRepository> {
   }
 
   public async getBulkAssets(requests: GetAssetRequest[]): Promise<AssetDto[]> {
-    const validRequests = requests.filter(({ address }) => isSomeAddress(address));
-    const assets = mapAssetsToPlain(await this.getAssets(validRequests));
+    try {
+      this.logger.log(`Loading bulk assets for ${requests.length} requests`);
 
-    await this.updateAssetsWithHistoricalPrices(requests, assets);
+      const validRequests = requests.filter(({ address }) => isSomeAddress(address));
+      const assets = mapAssetsToAPIPlain(await this.getAssets(validRequests));
 
-    return this.addPrices(assets);
+      await this.updateAssetsWithHistoricalPrices(requests, assets);
+
+      const responses = await this.addPrices(assets);
+      this.logger.log(`Loaded ${responses.length} bulk assets for ${requests.length} requests`);
+      return responses;
+    } catch (e) {
+      this.logger.error({
+        message: `Error loading bulk assets for ${requests.length} requests`,
+        error: formatError(e),
+      });
+      throw e;
+    }
   }
 
   private async addPrices(dtos: AssetDto[]): Promise<AssetDto[]> {
@@ -110,9 +123,16 @@ export class AssetsService extends CrudService<AssetsRepository> {
 
   private updateDtoWithPrices(dto: AssetDto, prices: AssetAvgPrice[]) {
     const assetPrice = prices.find(
-      ({ asset }) => asset.address === dto.address && asset.chainId === dto.chainId,
+      ({ asset }) =>
+        asset.address.toLowerCase() === dto.address.toLowerCase() && asset.chainId === dto.chainId,
     );
-    dto.price = assetPrice?.price;
+    const { price, reserves } = assetPrice;
+    dto.price = price;
+    if (dto.underlying?.length && reserves?.length) {
+      dto.underlying.forEach((underlying, index) => {
+        underlying.reserve = assetPrice?.reserves[index];
+      });
+    }
     return;
   }
 
@@ -204,17 +224,33 @@ export class AssetsService extends CrudService<AssetsRepository> {
   }
 
   public async getAccountedAssetsByChain(chainId: ChainId): Promise<AssetDto[]> {
-    const assets = await this.cacheService.getOrLoad(
-      `assets_service_balances_assets_${chainId}`,
-      () => this.assetsRepository.findTrackedAssetsByChain(chainId),
-      {
-        ttl: 15 * 60, // 15 minutes
-      },
+    // TODO: Test code, to be deleted
+    const assets = await logExecutionTime(
+      this.logger,
+      `Load accounted addresses for chain ${chainId} (db or cache)`,
+      () =>
+        this.cacheService.getOrLoad(
+          `assets_service_balances_assets_${chainId}`,
+          () =>
+            // TODO: Test code, to be deleted
+            logExecutionTime(
+              this.logger,
+              `Load accounted addresses for chain ${chainId} (db)`,
+              () => this.assetsRepository.getAccountedAssetsByChain(chainId),
+            ),
+          {
+            ttl: 15 * 60, // 15 minutes
+          },
+        ),
     );
     // NOTE: We don't care about underlying and special assets as we won't show them in balances
     const assetsForBalances = assets.filter(({ isNotAccounted }) => !isNotAccounted);
-    const dtos = mapAssetsToPlain(assetsForBalances);
-    const dtosWithPrices = await this.addPrices(dtos);
+    const dtos = mapAssetsToAPIPlain(assetsForBalances);
+    const dtosWithPrices = await logExecutionTime(
+      this.logger,
+      `Load prices for chain ${chainId}`,
+      () => this.addPrices(dtos),
+    );
     // NOTE: Only return assets that have prices as others we don't show on balances
     return dtosWithPrices.filter(({ price }) => !!price);
   }
@@ -235,10 +271,16 @@ export class AssetsService extends CrudService<AssetsRepository> {
   }
 
   public async saveAssetCandidate({ chainId, address }: AssetCandidateRequest) {
-    this.logger.log('Saving assets candidate', { chainId, address });
+    this.logger.log({
+      message: 'Saving assets candidate',
+      asset: { chainId, address },
+    });
     const existing = await this.assetsCandidateRepository.getBy(chainId, address);
     if (existing) {
-      this.logger.log('Assets candidate already exists', { chainId, address });
+      this.logger.log({
+        message: 'Assets candidate already exists',
+        asset: { chainId, address },
+      });
       return;
     }
 
@@ -247,7 +289,10 @@ export class AssetsService extends CrudService<AssetsRepository> {
       chainId,
     });
     await this.assetsCandidateRepository.save(assetsCandidateEntity);
-    this.logger.log('Saved assets candidate', { chainId, address });
+    this.logger.log({
+      message: 'Saved assets candidate',
+      assets: { chainId, address },
+    });
   }
 }
 
@@ -259,7 +304,9 @@ function getHistoricalPricesRequests(
     .filter((request) => request.pricesAt?.length)
     .flatMap((request) => {
       const asset = assets.find(
-        (a) => a.address === request.address && a.chainId === request.chainId,
+        (a) =>
+          a.address.toLowerCase() === request.address.toLowerCase() &&
+          a.chainId === request.chainId,
       );
       return asset
         ? [

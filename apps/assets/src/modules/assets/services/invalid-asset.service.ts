@@ -1,8 +1,8 @@
-import { Inject, LoggerService } from '@nestjs/common';
+import { Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Address, ChainId } from '@app/common';
+import { Address, ChainId, Logger } from '@app/common';
 
 import { AssetInvalidEntity } from '../entities/asset-invalid.entity';
 import { AssetsInvalidRepository } from '../repositories/assets-invalid.repository';
@@ -11,7 +11,7 @@ const MAX_INVALID_ASSET_RETRY = 5;
 
 export class InvalidAssetService {
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     @InjectRepository(AssetsInvalidRepository)
     private readonly repository: AssetsInvalidRepository,
   ) {}

@@ -16,6 +16,7 @@ import { PriceService } from '../../common/providers/microservices/price/price.s
 import { BlocktimeService } from '../../common/services/blocktime.service';
 
 import { BalancesController } from '../../controllers/balances.controller';
+import { BalancesV2Controller } from '../../controllers/balances.controller.v2';
 import { AssetsModule } from '../assets/assets.module';
 import { AssetsEntity } from '../assets/entities/assets.entity';
 import { BlacklistModule } from '../blacklists/blacklist.module';
@@ -51,7 +52,7 @@ import { balanceStrategies } from './strategies/registry';
       inject: [ConfigService],
     }),
   ],
-  controllers: [BalancesController],
+  controllers: [BalancesController, BalancesV2Controller],
   providers: [
     ...balanceStrategies,
     CacheService,

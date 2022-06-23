@@ -120,4 +120,6 @@ const wrongRpcResponsePatterns = [
   'missing trie node',
   'header not found',
   'upgrade to an archive plan add-on for your account',
+  'error',
+  '-32000',
 ];

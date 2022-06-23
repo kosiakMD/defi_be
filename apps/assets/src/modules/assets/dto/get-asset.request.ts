@@ -1,5 +1,5 @@
 import { Transform } from 'class-transformer';
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsArray, IsInt, IsNotEmpty, IsNumber, IsNumberString, IsString } from 'class-validator';
 
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -29,13 +29,13 @@ export class GetAssetRequest {
   address: string;
 
   @ApiProperty({
+    name: 'pricesAt[]',
     type: [Number],
     description: 'Timestamps on which historical prices have to be returned',
     required: false,
   })
-  @Transform(({ value }) =>
-    Array.isArray(value) ? value.forEach((v) => Number(v)) : [Number(value)],
-  )
+  @IsArray()
+  @Transform(({ value }) => value.map((v) => Number(v)))
   pricesAt?: number[];
 
   @ApiProperty({

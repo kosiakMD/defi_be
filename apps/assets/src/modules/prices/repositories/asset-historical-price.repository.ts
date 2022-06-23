@@ -13,6 +13,7 @@ export class AssetsHistoricalPriceRepository extends Repository<AssetHistoricalP
       where: requests.flatMap(({ address, chainId, pricesAt }) =>
         pricesAt.map((priceAt) => {
           const timeRange = getTimeRange(priceAt);
+          console.log(priceAt, timeRange, new Date(priceAt + timeRange));
           return {
             asset: {
               address,

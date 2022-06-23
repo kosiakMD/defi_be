@@ -311,7 +311,8 @@ function getHistoricalPricesRequests(
       return asset
         ? [
             {
-              assetId: asset.id,
+              address: asset.address,
+              chainId: asset.chainId,
               pricesAt: request.pricesAt,
             },
           ]

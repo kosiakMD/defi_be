@@ -39,7 +39,7 @@ export class CreamFinance extends RootPlatform {
       context: {
         cToken: '0x15cc701370cb8ada2a2b6f4226ec5cf6aa93bc67',
         nativeToken: '0x1ffe17b99b439be0afc831239ddecda2a790ff3a',
-      }
+      },
     });
   }
 }

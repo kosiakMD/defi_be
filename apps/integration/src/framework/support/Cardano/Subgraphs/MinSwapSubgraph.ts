@@ -120,9 +120,34 @@ export type IFarmInfoResponse = {
 
 export type ILockedFarmInfoResponse = {
   data: {
-    mintStakingPools: IFarmInfo[];
+    mintStakingPools: {
+      assetA: CardanoAsset;
+      assetB: CardanoAsset;
+      lpAsset: CardanoAsset;
+      mintStakings: ILockedFarmInfo[];
+    }[];
   };
 };
+
+export interface ILockedFarmInfo {
+  totalLiquidityStaking: number;
+  liquidityStaking: number;
+  pendingReward: number;
+  baseAPR: number;
+  boostAPR: number;
+  bonusMultiplier: number;
+  duration: number;
+  lpAmount: string;
+  amountMint: string;
+  startedAt: number;
+  estimatedPendingReward: number;
+
+  extraRewards: {
+    asset: CardanoAsset;
+    baseAPR: number;
+    pendingReward: number;
+  }[];
+}
 
 export type IPoolInfoResponse = {
   data: {
@@ -140,7 +165,6 @@ export interface IPoolInfo {
 }
 
 export interface IFarmInfo {
-
   totalLiquidityStaking: number;
   liquidityStaking: number;
   pendingReward: number;

@@ -82,7 +82,7 @@ export class MinSwapPools extends CardanoCore<
         token = {
           ...token,
           amount: amountBN.toNumber(),
-          value: amountBN.times(token.price).toNumber(),
+          value: amountBN.times(pool.token.price).toNumber(),
         };
       }
 

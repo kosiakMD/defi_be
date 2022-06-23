@@ -94,65 +94,67 @@ export class MinSwapStakingLocking extends CardanoCore<
       const position = poolMap.get(
         this.toTokenId(farm.lpAsset.currencySymbol, farm.lpAsset.tokenName),
       );
-      if (farm.liquidityStaking === 0 || !position) continue;
+      if (!position) continue;
 
-      const minRewarded = position.rewarded.find(
-        (x) => x.token.address === this.meta.context.rewardedToken,
-      );
-      const pendingReward = normalizeDecimals(
-        farm.estimatedPendingReward.toString(),
-        minRewarded.token.decimals,
-      );
+      for (const staking of farm.mintStakings) {
+        const minRewarded = position.rewarded.find(
+          (x) => x.token.address === this.meta.context.rewardedToken,
+        );
+        const pendingReward = normalizeDecimals(
+          staking.estimatedPendingReward.toString(),
+          minRewarded.token.decimals,
+        );
 
-      const extraRewards: IRewardTokenUserEntry[] = position.rewarded
-        .filter((x) => x.token.address !== this.meta.context.rewardedToken)
-        .map((reward) => {
-          const extraToken = farm.extraRewards.find(
-            (x) =>
-              this.toTokenId(x.asset.currencySymbol, x.asset.tokenName) === reward.token.address,
-          );
-          if (!extraToken) return null;
-          const pendingReward = normalizeDecimals(
-            extraToken.pendingReward.toString(),
-            reward.token.decimals,
-          );
+        const extraRewards: IRewardTokenUserEntry[] = position.rewarded
+          .filter((x) => x.token.address !== this.meta.context.rewardedToken)
+          .map((reward) => {
+            const extraToken = staking.extraRewards.find(
+              (x) =>
+                this.toTokenId(x.asset.currencySymbol, x.asset.tokenName) === reward.token.address,
+            );
+            if (!extraToken) return null;
+            const pendingReward = normalizeDecimals(
+              extraToken.pendingReward.toString(),
+              reward.token.decimals,
+            );
 
-          return {
-            ...reward,
-            amount: pendingReward,
-            value: pendingReward * reward.token.price,
-          };
+            return {
+              ...reward,
+              amount: pendingReward,
+              value: pendingReward * reward.token.price,
+            };
+          });
+
+        userEntry.push({
+          ...position,
+          supplied: position.supplied.map((supply) => {
+            let amount = 0;
+            if (supply.token.address === this.meta.context.mintStakingToken) {
+              amount = normalizeDecimals(staking.amountMint, supply.token.decimals);
+            } else {
+              amount = normalizeDecimals(staking.lpAmount, supply.token.decimals);
+            }
+            const unlockTime = new Date(staking.startedAt);
+            unlockTime.setDate(unlockTime.getDate() + staking.duration);
+            return {
+              ...supply,
+              amount: amount,
+              value: supply.token.price * amount,
+              unlockTime: unlockTime.valueOf(),
+              startedAt: staking.startedAt,
+            };
+          }),
+
+          rewarded: [
+            {
+              ...minRewarded,
+              amount: pendingReward,
+              value: pendingReward * minRewarded.token.price,
+            },
+            ...extraRewards,
+          ],
         });
-
-      userEntry.push({
-        ...position,
-        supplied: position.supplied.map((supply) => {
-          let amount = 0;
-          if (supply.token.address === this.meta.context.mintStakingToken) {
-            amount = normalizeDecimals(farm.amountMint, supply.token.decimals);
-          } else {
-            amount = normalizeDecimals(farm.lpAmount, supply.token.decimals);
-          }
-          const unlockTime = new Date(farm.startedAt);
-          unlockTime.setDate(unlockTime.getDate() + farm.duration);
-          return {
-            ...supply,
-            amount: amount,
-            value: supply.token.price * amount,
-            unlockTime: unlockTime.valueOf(),
-            startedAt: farm.startedAt,
-          };
-        }),
-
-        rewarded: [
-          {
-            ...minRewarded,
-            amount: pendingReward,
-            value: pendingReward * minRewarded.token.price,
-          },
-          ...extraRewards,
-        ],
-      });
+      }
     }
 
     return userEntry;

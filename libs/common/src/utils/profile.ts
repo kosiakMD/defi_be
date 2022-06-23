@@ -1,8 +1,8 @@
-import { LoggerService } from '@nestjs/common';
+import { Logger } from '../Logger';
 
 // TODO: This is test code, to be deleted
 export async function logExecutionTime<T = any>(
-  logger: LoggerService,
+  logger: Logger,
   label: string,
   action: () => Promise<T>,
 ) {
@@ -19,16 +19,14 @@ export async function logExecutionTime<T = any>(
     });
 
     return response;
-  } catch (e) {
+  } catch (error) {
     const took = Date.now() - started;
-    logger.error(
-      {
-        message: `Failed action '${label}' took ${took}`,
-        action: label,
-        took,
-      },
-      e,
-    );
-    throw e;
+    logger.error({
+      message: `Failed action '${label}' took ${took}`,
+      action: label,
+      took,
+      error,
+    });
+    throw error;
   }
 }

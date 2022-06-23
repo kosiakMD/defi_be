@@ -39,8 +39,10 @@ export class AssetCacheDto {
   @Expose()
   isNotAccounted: boolean;
 
+  @Expose()
   isTracked: boolean;
 
+  @Expose()
   disabled: boolean;
 
   @Expose()
@@ -52,6 +54,9 @@ export class AssetCacheDto {
   @Expose()
   public metadata: AssetMetadata;
 
+  @Expose()
   updatedAt: Date;
+
+  @Expose()
   createdAt: Date;
 }

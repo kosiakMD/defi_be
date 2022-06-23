@@ -38,6 +38,7 @@
     "assets-build": "nest build assets",
     "assets-prestart-fix": "bash ./apps/assets/require_es_module_fix.sh",
     "assets-start": "yarn assets-prestart-fix && nest start assets",
+    "assets-start:dev-extend": "yarn assets-prestart-fix && nest start assets --watch NODE_OPTIONS=\"--trace-warnings\"",
     "assets-start:dev": "yarn assets-prestart-fix && nest start assets --watch",
     "assets-start:debug": "yarn assets-prestart-fix && nest start assets --debug --watch",
     "assets-start:prod": "yarn assets-prestart-fix && nest start assets",

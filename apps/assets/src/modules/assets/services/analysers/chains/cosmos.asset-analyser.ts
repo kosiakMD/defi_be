@@ -1,10 +1,10 @@
 import { firstValueFrom } from 'rxjs';
 
 import { HttpService } from '@nestjs/axios';
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { ChainIdEnum } from '@app/common';
+import { ChainIdEnum, Logger } from '@app/common';
 import { CacheService } from '@app/common/services/cache.service';
 
 import { AssetReference } from '../../../../../common/types';
@@ -103,7 +103,7 @@ export class CosmosAssetAnalyser implements AssetAnalyser {
    *       bip44: {
    *         coinType: 118,
    *       },
-   *       bech32Config: Bech32Address.defaultBech32Config("osmo"),
+   *       bech32Config: Bech32Address.defaultBech32Config('osmo'),
    *       currencies: [
    *         {
    *           coinDenom: "OSMO",

@@ -1,10 +1,11 @@
 import { firstValueFrom } from 'rxjs';
 
 import { HttpService } from '@nestjs/axios';
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+import { Logger } from '@app/common';
 import { CacheService } from '@app/common/services/cache.service';
 
 @Injectable()

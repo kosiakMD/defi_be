@@ -1,16 +1,8 @@
-import {
-  Body,
-  Controller,
-  Get,
-  HttpStatus,
-  Inject,
-  LoggerService,
-  Post,
-  Query,
-} from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Inject, Post, Query } from '@nestjs/common';
 import { ApiBody, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+import { Logger } from '@app/common';
 import { logExecutionTime } from '@app/common/utils';
 
 import { AssetCandidateRequest } from '../modules/assets/dto/asset-candidate.request';
@@ -25,7 +17,7 @@ import { AssetsService } from '../modules/assets/services/assets.service';
 @Controller('assets')
 export class AssetsController {
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     private readonly assetsService: AssetsService,
   ) {}
 
@@ -59,7 +51,7 @@ export class AssetsController {
     // TODO: Test code, to be deleted
     return logExecutionTime(
       this.logger,
-      `Get accounted addresses for chain ${chainId}`,
+      `Get accounted assets for chain ${chainId} (api)`,
       async () => {
         const response = new GetAssetsResponse();
         response.assets = await this.assetsService.getAccountedAssetsByChain(chainId);

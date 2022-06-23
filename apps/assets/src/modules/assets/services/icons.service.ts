@@ -3,11 +3,11 @@ import sharp from 'sharp';
 import { Stream } from 'stream';
 
 import { HttpService } from '@nestjs/axios';
-import { Inject, Injectable, LoggerService } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { ChainAbbrEnum, ChainIdEnum } from '@app/common';
+import { ChainAbbrEnum, ChainIdEnum, Logger } from '@app/common';
 import { CacheService } from '@app/common/services/cache.service';
 
 import { AssetReference } from '../../../common/types';
@@ -20,7 +20,7 @@ import { AssetIcon } from './analysers/core/asset.analyser';
 @Injectable()
 export class IconsService {
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     private readonly config: ConfigService,
     private readonly cache: CacheService,
     private readonly httpService: HttpService,

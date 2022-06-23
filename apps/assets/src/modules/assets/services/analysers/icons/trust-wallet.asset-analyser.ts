@@ -2,10 +2,10 @@ import axios from 'axios';
 import { firstValueFrom } from 'rxjs';
 
 import { HttpService } from '@nestjs/axios';
-import { HttpStatus, Inject, Injectable, LoggerService } from '@nestjs/common';
+import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { ChainIdEnum, ChainNameEnum } from '@app/common';
+import { ChainIdEnum, ChainNameEnum, Logger } from '@app/common';
 
 import { AssetReference } from '../../../../../common/types';
 
@@ -14,7 +14,7 @@ import { AssetAnalyser, AssetAnalysisResult } from '../core/asset.analyser';
 @Injectable()
 export class TrustWalletAssetAnalyser implements AssetAnalyser {
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     private readonly httpService: HttpService,
   ) {}
 

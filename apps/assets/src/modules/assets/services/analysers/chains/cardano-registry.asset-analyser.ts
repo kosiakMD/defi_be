@@ -1,8 +1,10 @@
 import { firstValueFrom } from 'rxjs';
 
 import { HttpService } from '@nestjs/axios';
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+
+import { Logger } from '@app/common';
 
 import { AssetReference } from '../../../../../common/types';
 

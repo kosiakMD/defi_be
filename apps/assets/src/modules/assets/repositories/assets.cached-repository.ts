@@ -1,15 +1,16 @@
 import { plainToClass } from 'class-transformer';
 
-import { Inject, Injectable, LoggerService } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Address, ChainId } from '@app/common';
+import { Address, ChainId, Logger } from '@app/common';
 import { CacheService } from '@app/common/services/cache.service';
 
 import { SearchParams } from '../../../common/interfaces/search.interfaces';
 
+import { AssetsCategoryService } from '../../assets-category/assets-category.service';
 import { AssetDto } from '../dto/asset.dto';
 import { GetAssetRequest } from '../dto/get-asset.request';
 import { AssetUnderlyingEntity } from '../entities/asset-underlying.entity';
@@ -23,8 +24,9 @@ export class AssetsCachedRepository {
   constructor(
     private readonly config: ConfigService,
     private readonly cache: CacheService,
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     @InjectRepository(AssetsRepository) private readonly assetsRepository: AssetsRepository,
+    private readonly assetsCategoryService: AssetsCategoryService,
   ) {}
 
   findTrackedAssetsByChain(chainId: ChainId) {
@@ -120,7 +122,9 @@ export class AssetsCachedRepository {
       if (cachedAsset.underlying?.length) {
         underlying.push(...this.getUnderlying(cachedAsset, cachedAssetsMap));
       }
-      assetEntities.push(plainToClass(AssetEntity, { ...cachedAsset, underlying }));
+      if (cachedAsset.underlying?.length === underlying.length) {
+        assetEntities.push(plainToClass(AssetEntity, { ...cachedAsset, underlying }));
+      }
     });
     return assetEntities;
   }
@@ -173,14 +177,24 @@ export class AssetsCachedRepository {
 
       for (const underlying of asset.underlying) {
         const existingUnderlying = existingUnderlyings.find(
-          ({ position, underlyingAsset: { address } }) =>
-            position === underlying.position && address === underlying.underlyingAsset.address,
+          ({ position, underlyingAsset: { address, chainId } }) =>
+            position === underlying.position &&
+            address === underlying.underlyingAsset.address &&
+            chainId === underlying.underlyingAsset.chainId,
         );
         if (existingUnderlying) {
           underlying.id = existingUnderlying.id;
         }
       }
     }
+
+    const categories = await this.assetsCategoryService.findAll();
+    asset.categories.forEach((c) => {
+      const existingCategory = categories.find((category) => category.name === c.name);
+      if (existingCategory) {
+        c.id = existingCategory.id;
+      }
+    });
 
     let saved: AssetEntity;
     if (!asset.id) {

@@ -1,21 +1,22 @@
+import { AssetCategory } from 'apps/assets/src/modules/assets/enums/asset-category.enum';
 import BigNumber from 'bignumber.js';
 
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+import { Logger } from '@app/common';
 import { normalizeDecimals } from '@app/common/utils';
 import { ERC20 } from '@app/common/web3provider/contracts/ERC20';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
-import { AssetCategory } from '../../../enums/asset-category.enum';
 import {
   AssetPriceProvider,
   AssetPriceWithUnderlyingReserves,
   ComplexAsset,
-} from './price.provider';
+} from '../../price.provider';
 
 @Injectable()
-export class SingleUnderlyingTokenPriceProvider implements AssetPriceProvider {
+export class SingleUnderlyingGenericPriceProvider implements AssetPriceProvider {
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     private readonly multicall: MulticallAggregator,
@@ -55,7 +56,7 @@ export class SingleUnderlyingTokenPriceProvider implements AssetPriceProvider {
 
     return assets.map((asset, index) => ({
       asset: { chainId, address: asset.address },
-      reserves: [underlyingTokenHeldByBaseContract[index]],
+      reserves: [underlyingTokenHeldByBaseContract[index].toFixed()],
       price: new BigNumber(normalizeDecimals(baseTokenTotalSupply[index], asset.decimals))
         .dividedBy(
           new BigNumber(
@@ -63,8 +64,9 @@ export class SingleUnderlyingTokenPriceProvider implements AssetPriceProvider {
               underlyingTokenHeldByBaseContract[index],
               asset.underlying[0].decimals,
             ),
-          ).multipliedBy(new BigNumber(asset.underlying[0].price)),
+          ),
         )
+        .multipliedBy(new BigNumber(asset.underlying[0].price))
         .toNumber(),
     }));
   }

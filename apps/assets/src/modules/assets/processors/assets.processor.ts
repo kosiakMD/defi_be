@@ -1,11 +1,11 @@
 import { Job } from 'bull';
 
 import { Process, Processor } from '@nestjs/bull';
-import { Inject, LoggerService } from '@nestjs/common';
+import { Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Address } from '@app/common';
+import { Address, Logger } from '@app/common';
 import { formatAddress, formatError, isZeroAddress } from '@app/common/utils';
 
 import { AssetJobName } from '../../../common/enum/job-name.enum';
@@ -26,11 +26,11 @@ import { AssetProcessingRequest } from '../types/asset-processing.request';
 /*
  Main Assets processor that analyses and stores assets.
  Executed on demand.
-* */
+ * */
 @Processor(QueueName.ASSETS)
 export class AssetsProcessor {
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     private readonly assetsRepository: AssetsCachedRepository,
     @InjectRepository(AssetsCategoryRepository)
     private readonly assetsCategoryRepository: AssetsCategoryRepository,
@@ -113,6 +113,7 @@ export class AssetsProcessor {
       processingAsset.rank = this.calculateRank(address, asset.metadata);
       processingAsset.isTracked = asset.isTracked || isTracked || false;
       processingAsset.underlying = [];
+      // TODO should we merge existing metadata with new results from analysis instead of overriding ?
       processingAsset.metadata = asset.metadata || {};
 
       processingAsset.icon = await this.loadAssetIcons({ chainId, address }, asset.icons);
@@ -129,6 +130,9 @@ export class AssetsProcessor {
           chainId,
           forceUpdate: assetRequest.forceUpdate,
         });
+        if (!underlying.underlyingAsset) {
+          throw Error(`could not process underlyingAsset: ${underlyingAddress}`);
+        }
         processingAsset.underlying.push(underlying);
       }
 

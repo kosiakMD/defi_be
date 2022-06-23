@@ -26,9 +26,11 @@ import { RpcService } from './rpc.service';
 import { SolanaAssetService } from './solana.asset.service';
 import { SonarAssetService } from './sonar.asset.service';
 import { SpiritSwapAssetService } from './spiritSwap.asset.service';
+import { StargateAssetService } from './stargate.asset.service';
 import { BeefyAutofarmLpStrategy } from './strategies/beefy-autofarm.v2.asset.strategy';
 import { IronFinanceStrategy } from './strategies/ironFinance.asset.strategy';
 import { SpiritSwapStrategy } from './strategies/spiritSwap.asset.strategy';
+import { StargateAssetStrategy } from './strategies/stargate.asset.strategy';
 import { SynapseStrategy } from './strategies/synapse.asset.strategy';
 import { UniswapV2LpStrategy } from './strategies/uniswap.v2.asset.strategy';
 import { SynapseAssetService } from './synapse.asset.service';
@@ -59,6 +61,7 @@ import { YetiAssetService } from './yeti.asset.service';
     MuesliSwapAssetService,
     EllipsisAssetService,
     SynapseAssetService,
+    StargateAssetService,
     UniswapV2AssetService,
     SolanaAssetService,
     SonarAssetService,
@@ -69,6 +72,7 @@ import { YetiAssetService } from './yeti.asset.service';
     // Strategies
     UniswapV2LpStrategy,
     SynapseStrategy,
+    StargateAssetStrategy,
     IronFinanceStrategy,
     BeefyAutofarmLpStrategy,
     SpiritSwapStrategy,
@@ -101,6 +105,7 @@ import { YetiAssetService } from './yeti.asset.service';
     SonarAssetService,
     YetiAssetService,
     SynapseAssetService,
+    StargateAssetService,
     UniswapV2AssetService,
     PriceService,
     MuesliSwapPriceService,

@@ -108,4 +108,9 @@ export class RpcService {
   }
 }
 
-const wrongRpcResponsePatterns = ['invalid', 'error'];
+const wrongRpcResponsePatterns = [
+  'invalid json rpc response',
+  'missing trie node',
+  'header not found',
+  'upgrade to an archive plan add-on for your account',
+];

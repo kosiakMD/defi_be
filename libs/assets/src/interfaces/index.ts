@@ -20,6 +20,8 @@ export interface AssetUnderlyingInterface {
 export interface AssetRequestObjectInterface {
   chainId: number;
   address: string;
+  // please use with caution, only for local development(!!!)
+  forceUpdate?: boolean;
   pricesAt?: number[];
 }
 

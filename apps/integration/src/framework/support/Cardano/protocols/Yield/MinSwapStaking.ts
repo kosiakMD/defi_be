@@ -85,7 +85,7 @@ export class MinSwapStaking extends CardanoCore<
     const userEntry: IFeatureUserEntry[] = [];
     for (const farm of data.data.farmPoolInfo) {
       const position = poolMap.get(
-        this.toTokenId(farm.lpAsset.currencySymbol, farm.lpAsset.tokenName),
+        this.toTokenId(farm.lpAsset.currencySymbol, farm.lpAsset.tokenName) + this.idPrefix,
       );
       if (farm.liquidityStaking === 0 || !position) continue;
 
@@ -191,7 +191,7 @@ export class MinSwapStaking extends CardanoCore<
     }
 
     return {
-      id: this.toTokenId(pool.lpAsset.currencySymbol, pool.lpAsset.tokenName),
+      id: this.toTokenId(pool.lpAsset.currencySymbol, pool.lpAsset.tokenName) + this.idPrefix,
       chain: this.meta.chain,
       feature: this.meta.feature,
       supply: {
@@ -202,6 +202,10 @@ export class MinSwapStaking extends CardanoCore<
       },
       rewarded: rewarded,
     };
+  }
+
+  private get idPrefix() {
+    return '::staking';
   }
 
   private toTokenId(policyId: string, symbol: string) {

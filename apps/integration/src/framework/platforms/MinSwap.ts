@@ -39,30 +39,30 @@ export class MinSwap extends RootPlatform {
       },
     });
 
-    await this.registerProtocol<IMinSwapStakingMeta>(MinSwapStaking, {
-      chain: ChainIdEnum.cardano,
-      name: 'MinSwapStaking',
-      feature: FeatureEnum.staking,
-      context: {
-        endpoint: 'https://monorepo-mainnet-prod.minswap.org/graphql',
-        rewardedToken: '29d222ce763455e3d7a09a665ce554f00ac89d2e99a1a83d267170c6.4d494e',
-      },
-    });
+    // await this.registerProtocol<IMinSwapStakingMeta>(MinSwapStaking, {
+    //   chain: ChainIdEnum.cardano,
+    //   name: 'MinSwapStaking',
+    //   feature: FeatureEnum.staking,
+    //   context: {
+    //     endpoint: 'https://monorepo-mainnet-prod.minswap.org/graphql',
+    //     rewardedToken: '29d222ce763455e3d7a09a665ce554f00ac89d2e99a1a83d267170c6.4d494e',
+    //   },
+    // });
 
-    await this.registerProtocol<IMinSwapStakingLockingMeta>(MinSwapStakingLocking, {
-      chain: ChainIdEnum.cardano,
-      name: 'MinSwapStaking',
-      feature: FeatureEnum.staking,
-      context: {
-        endpoint: 'https://monorepo-mainnet-prod.minswap.org/graphql',
-        mintStakingToken: '29d222ce763455e3d7a09a665ce554f00ac89d2e99a1a83d267170c6.4d494e74', // mint
-        rewardedToken: '29d222ce763455e3d7a09a665ce554f00ac89d2e99a1a83d267170c6.4d494e', // min
-      },
-    });
+    // await this.registerProtocol<IMinSwapStakingLockingMeta>(MinSwapStakingLocking, {
+    //   chain: ChainIdEnum.cardano,
+    //   name: 'MinSwapStaking',
+    //   feature: FeatureEnum.staking,
+    //   context: {
+    //     endpoint: 'https://monorepo-mainnet-prod.minswap.org/graphql',
+    //     mintStakingToken: '29d222ce763455e3d7a09a665ce554f00ac89d2e99a1a83d267170c6.4d494e74', // mint
+    //     rewardedToken: '29d222ce763455e3d7a09a665ce554f00ac89d2e99a1a83d267170c6.4d494e', // min
+    //   },
+    // });
 
     await this.registerProtocol<IMinSwapPoolsMeta>(MinSwapLiquidity, {
       chain: ChainIdEnum.cardano,
-      name: 'MinSwapPools',
+      name: 'MinSwapLiquidity',
       feature: FeatureEnum.pools,
       context: {
         endpoint: 'https://monorepo-mainnet-prod.minswap.org/graphql',

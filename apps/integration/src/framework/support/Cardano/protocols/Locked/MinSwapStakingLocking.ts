@@ -92,7 +92,7 @@ export class MinSwapStakingLocking extends CardanoCore<
     const userEntry: IFeatureUserEntry[] = [];
     for (const farm of data.data.mintStakingPools) {
       const position = poolMap.get(
-        this.toTokenId(farm.lpAsset.currencySymbol, farm.lpAsset.tokenName),
+        this.toTokenId(farm.lpAsset.currencySymbol, farm.lpAsset.tokenName) + this.idPrefix,
       );
       if (!position) continue;
 
@@ -220,7 +220,7 @@ export class MinSwapStakingLocking extends CardanoCore<
     }
 
     return {
-      id: this.toTokenId(pool.lpAsset.currencySymbol, pool.lpAsset.tokenName),
+      id: this.toTokenId(pool.lpAsset.currencySymbol, pool.lpAsset.tokenName) + this.idPrefix,
       chain: this.meta.chain,
       feature: this.meta.feature,
       supplied: [
@@ -239,6 +239,10 @@ export class MinSwapStakingLocking extends CardanoCore<
       ],
       rewarded: rewarded,
     };
+  }
+
+  private get idPrefix() {
+    return '::locking';
   }
 
   private toTokenId(policyId: string, symbol: string) {

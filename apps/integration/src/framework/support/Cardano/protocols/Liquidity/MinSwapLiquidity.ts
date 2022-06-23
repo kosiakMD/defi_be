@@ -11,6 +11,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { Logger } from '@app/common';
 import { CARDANO_COIN_ADDRESS } from '@app/common/constant';
 import { handlePromiseAllSettled } from '@app/common/helpers/promises';
+import { normalizeDecimals } from '@app/common/utils';
 
 import { FeatureEnum } from '../../../enums';
 import { IProtocolMeta } from '../../../interfaces';
@@ -80,7 +81,7 @@ export class MinSwapLiquidity extends CardanoCore<
       let token = null;
       if (pool.token) {
         token = {
-          ...token,
+          ...pool.token,
           amount: amountBN.toNumber(),
           value: amountBN.times(pool.token.price).toNumber(),
         };
@@ -90,11 +91,13 @@ export class MinSwapLiquidity extends CardanoCore<
         ...pool,
         token: token,
         supplied: pool.supplied.map((supply) => {
-          const amount = poolShare.times(supply.totalSupplied);
+          // const amount = poolShare.times(
+          //   normalizeDecimals(supply.token.reserve.toString(), supply.token.decimals),
+          // );
           return {
             ...supply,
-            amount: amount.toNumber(),
-            value: amount.times(supply.token.price).toNumber(),
+            amount: amountBN.toNumber(),
+            value: amountBN.times(supply.token.price).toNumber(),
           };
         }),
       });

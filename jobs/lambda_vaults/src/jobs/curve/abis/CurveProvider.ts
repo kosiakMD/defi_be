@@ -2,7 +2,7 @@ import { AbiItem } from 'web3-utils';
 
 import { MultiCallAbiProxy } from '@app/common/web3provider/multicall.abi.proxy';
 
-export class CurveProviderAbi extends MultiCallAbiProxy {
+export class CurveProvider extends MultiCallAbiProxy {
   static readonly getIdInfo: AbiItem = {
     name: 'get_id_info',
     outputs: [

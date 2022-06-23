@@ -405,7 +405,7 @@ export class AaveV2Lending
 
       const checkClaimableForAddresses = [];
 
-      pools.forEach(async (pool, ind) => {
+      pools.forEach((pool, ind) => {
         const aTokenBalance = aTokenBalances[ind];
         const sTokenBalance = sTokenBalances[ind];
         const vTokenBalance = vTokenBalances[ind];

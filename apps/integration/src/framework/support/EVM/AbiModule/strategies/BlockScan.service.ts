@@ -31,6 +31,7 @@ export class BlockScan implements AbiSource {
     this.apiKeys[ChainIdEnum.arbi] = config.get('BLOCKSCAN_ARBI_KEY');
     this.apiKeys[ChainIdEnum.avax] = config.get('BLOCKSCAN_AVAX_KEY');
     this.apiKeys[ChainIdEnum.opt] = config.get('BLOCKSCAN_OPT_KEY');
+    this.apiKeys[ChainIdEnum.near] = config.get('BLOCKSCAN_AURORA_KEY');
 
     // Endpoints
     this.endpoints[ChainIdEnum.ftm] = config.get('BLOCKSCAN_FTM_URL');
@@ -42,6 +43,7 @@ export class BlockScan implements AbiSource {
     this.endpoints[ChainIdEnum.avax] = config.get('BLOCKSCAN_AVAX_URL');
     this.endpoints[ChainIdEnum.opt] = config.get('BLOCKSCAN_OPT_URL');
     this.endpoints[ChainIdEnum.boba] = config.get('BLOCKSCAN_BOBA_URL');
+    this.endpoints[ChainIdEnum.near] = config.get('BLOCKSCAN_AURORA_URL');
   }
 
   async fetchAbi(address: Address, chain: ChainId): Promise<AbiItem[] | void> {

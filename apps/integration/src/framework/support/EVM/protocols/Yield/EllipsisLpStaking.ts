@@ -105,7 +105,7 @@ export class EllipsisLpStaking
     const poolIds = Array.from(Array(context.poolLength).keys());
     const registeredTokens: string[] = await this.fetchRegisteredTokens(poolIds);
     const poolInfos: IPoolInfo[] = await this.fetchPoolInfos(registeredTokens);
-    const minters: string[] = await this.assetsManager.fetchMinters(
+    const minters: Map<string, string> = await this.assetsManager.fetchMinters(
       registeredTokens,
       this.meta.chain,
     );
@@ -114,7 +114,7 @@ export class EllipsisLpStaking
       return this.formatStakingOpportunityMinimal(
         poolInfo,
         poolIds[idx],
-        minters[idx],
+        minters.get(registeredTokens[idx]),
         registeredTokens[idx],
         totalStakedPerPool[idx],
         context,

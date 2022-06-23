@@ -50,6 +50,7 @@ export class EllipsisAssetService implements AssetServiceInterface {
 
       reserve: token.reserve,
       categories: [],
+      value: token.value,
       //   historicalPrices?: AssetHistoricalPriceInterface[];
       underlying: token.underlying?.map((asset) => this.mapEllipsisTV3(asset)),
     };

@@ -13,6 +13,14 @@ export class CurveRegistry extends MultiCallAbiProxy {
     gas: 2834,
   };
 
+  static readonly poolCount: AbiItem = {
+    inputs: [],
+    name: 'pool_count',
+    outputs: [{ name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
+  };
+
   static readonly getCoins: AbiItem = {
     stateMutability: 'view',
     type: 'function',
@@ -46,7 +54,14 @@ export class CurveRegistry extends MultiCallAbiProxy {
     name: 'get_underlying_balances',
     inputs: [{ name: '_pool', type: 'address' }],
     outputs: [{ name: '', type: 'uint256[8]' }],
-    gas: 162842,
+  };
+
+  static readonly getPoolName: AbiItem = {
+    stateMutability: 'view',
+    type: 'function',
+    name: 'get_pool_name',
+    inputs: [{ name: '_pool', type: 'address' }],
+    outputs: [{ name: '', type: 'string' }],
   };
 
   static readonly getPoolFromLpToken: AbiItem = {
@@ -55,8 +70,24 @@ export class CurveRegistry extends MultiCallAbiProxy {
     name: 'get_pool_from_lp_token',
     inputs: [{ name: 'arg0', type: 'address' }],
     outputs: [{ name: '', type: 'address' }],
-    gas: 3548,
   };
+
+  static readonly poolList: AbiItem = {
+    inputs: [{ name: '', type: 'uint256' }],
+    name: 'pool_list',
+    outputs: [{ name: '', type: 'address' }],
+    stateMutability: 'view',
+    type: 'function',
+  };
+
+  static readonly getToken: AbiItem = {
+    stateMutability: 'view',
+    type: 'function',
+    name: 'get_token',
+    inputs: [{ name: '_pool', type: 'address' }],
+    outputs: [{ name: '', type: 'address' }],
+  };
+
   static readonly getVirtualPriceFromLpToken: AbiItem = {
     stateMutability: 'view',
     type: 'function',

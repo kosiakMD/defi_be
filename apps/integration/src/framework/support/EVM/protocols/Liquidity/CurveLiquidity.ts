@@ -1,15 +1,13 @@
 import { EllipsisAssetService } from 'apps/integration/src/modules/microservices/ellipsis.asset.service';
 import { BigNumber as BN } from 'bignumber.js';
 import { Cache } from 'cache-manager';
-import { plainToClass } from 'class-transformer';
 
 import { HttpService } from '@nestjs/axios';
 import { CACHE_MANAGER, Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, Logger } from '@app/common';
-import { CallData } from '@app/common/dto/CallData';
-import { concatStrings, dataFrom, equals, normalizeDecimals, startsWith } from '@app/common/utils';
+import { normalizeDecimals } from '@app/common/utils';
 import { ERC20 } from '@app/common/web3provider/contracts/ERC20';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
@@ -34,34 +32,28 @@ import {
 import { AbiService } from '../../AbiModule/AbiService';
 import { SingleContractProtocol } from '../../SingleContractProtocol';
 
-export interface IEllipsisLiquidityMeta extends IProtocolMeta {
+export interface ICurveLiquidityMeta extends IProtocolMeta {
   address: Address;
   feature: FeatureEnum.pools;
-  context: {
-    aprUrl: string;
-  };
-  links: {
-    getOpportunityLink: (opportunity) => string;
-  };
 }
 
-export type EllipsisExtraData = {
+export type CurveExtraData = {
   id: number;
   minter: string;
 };
-export type IPoolFeatureMinimalEllipsis = BaseWithTokens<
+export type ICurvePoolFeatureMinimal = BaseWithTokens<
   ISupplyTokenMinimal[],
   void,
   void,
-  EllipsisExtraData
+  CurveExtraData
 >;
 
-export class EllipsisLiquidity
+export class CurveLiquidity
   extends SingleContractProtocol<
-    IPoolFeatureMinimalEllipsis,
+    ICurvePoolFeatureMinimal,
     IPoolFeatureOpportunity,
     IPoolFeatureUser,
-    IEllipsisLiquidityMeta
+    ICurveLiquidityMeta
   >
   implements IRootProtocol
 {
@@ -78,8 +70,9 @@ export class EllipsisLiquidity
   }
 
   functionPredicates: INamedFunctionPredicates = {
-    poolLength: () => (item) => startsWith(item.name, 'poolLen'),
-    registeredTokens: () => (item) => equals(item.name, 'registeredTokens'),
+    poolLength: () => (item) => item.name === 'pool_count',
+    poolList: () => (item) => item.name === 'pool_list',
+    lpToken: () => (item) => item.name === 'get_lp_token',
   };
 
   protected formatContext(context: { [key: string]: any }) {
@@ -89,33 +82,33 @@ export class EllipsisLiquidity
 
   protected async fetchOpportunityData(context: {
     [key: string]: any;
-  }): Promise<IPoolFeatureMinimalEllipsis[]> {
+  }): Promise<ICurvePoolFeatureMinimal[]> {
     const poolIds = Array.from(Array(context.poolLength).keys());
-    const registeredTokens: Address[] = await this.fetchRegisteredTokens(poolIds);
-    const minters: Map<string, string> = await this.assetsManager.fetchMinters(
-      registeredTokens,
-      this.meta.chain,
-    );
-    return registeredTokens.map((registeredToken, idx) => {
+    const poolsInfos: { pool; lpToken }[] = await this.fetchPoolsData(poolIds);
+    return poolsInfos.map((poolInfo, idx) => {
       return {
-        id: registeredToken,
+        id: poolInfo.pool,
         chain: this.meta.chain,
         feature: this.meta.feature,
         token: {
-          address: registeredToken,
+          address: poolInfo.lpToken,
         },
         // not possible to set supplied tokens here
         supplied: [],
         meta: {
           id: poolIds[idx],
-          minter: minters.get(registeredToken),
+          minter: null,
         },
       };
     });
   }
 
+  protected getUniqueTokensFromRawPools(pools: ICurvePoolFeatureMinimal[]): Address[] {
+    return pools.map((pool) => pool.token.address);
+  }
+
   protected formatOpportunity(
-    opportunity: IPoolFeatureMinimalEllipsis,
+    opportunity: ICurvePoolFeatureMinimal,
     tokens: TokenMap,
   ): void | IPoolFeatureOpportunity {
     const base: any = {
@@ -123,9 +116,13 @@ export class EllipsisLiquidity
       id: opportunity.id,
       chain: opportunity.chain,
       links: this.generateLinks(opportunity),
-      token: this.formatOpportunityReceiptToken(opportunity, tokens.get(opportunity.id), tokens),
+      token: this.formatOpportunityReceiptToken(
+        opportunity,
+        tokens.get(opportunity.token.address),
+        tokens,
+      ),
     };
-    base.supplied = this.formatSuppliedTokens(tokens.get(opportunity.id));
+    base.supplied = this.formatSuppliedTokens(tokens.get(opportunity.token.address));
 
     return base;
   }
@@ -149,32 +146,35 @@ export class EllipsisLiquidity
     });
   }
 
-  protected async fetchRegisteredTokens(poolIds: number[]): Promise<string[]> {
-    const registeredTokensCalls = poolIds.map((poolId) =>
-      this.getMainContract().createCall(this.functions.registeredTokens, poolId),
+  protected async fetchPoolsData(poolIds: number[]): Promise<{ pool; lpToken }[]> {
+    const contract = this.getMainContract();
+    const poolsContracts = await this.multicall.callArray(
+      poolIds.map((poolId) => contract.createCall(this.functions.poolList, poolId)),
+      this.meta.chain,
     );
-    const registeredTokens = await this.multicall.callArray(registeredTokensCalls, this.meta.chain);
-    return registeredTokens.map((tAddress) => tAddress.toLowerCase());
+
+    const poolsLps = await this.multicall.callArray(
+      poolsContracts.map((poolId) => contract.createCall(this.functions.lpToken, poolId)),
+      this.meta.chain,
+    );
+
+    return poolsLps.map((lp, index) => ({
+      pool: poolsContracts[index].toLowerCase(),
+      lpToken: lp.toLowerCase(),
+    }));
   }
 
   protected async fetchUserData(address: Address, pools: IPoolFeatureOpportunity[]): Promise<any> {
-    const calls: Map<string, CallData> = new Map<string, CallData>();
-    pools.forEach((pool) => {
-      calls.set(
-        userBalanceLabel(pool.token.address, address),
-        plainToClass(CallData, {
-          address: pool.token.address,
-          abi: ERC20.balanceOf,
-          input: {
-            data: [address],
-          },
-        }),
-      );
-    });
-    const userBalances = await this.multicall.handleInBatches(calls, this.meta.chain);
+    const userBalances = await this.multicall.callArray(
+      pools.map((pool) => {
+        const contract = new ERC20(pool.token.address);
+        return contract.balanceOf(address);
+      }),
+      this.meta.chain,
+    );
     return pools
-      .map((p) => {
-        return this.formatUserData(address, p, userBalances);
+      .map((p, index) => {
+        return this.formatUserData(address, p, userBalances[index]);
       })
       .filter((u) => u !== undefined);
   }
@@ -182,9 +182,8 @@ export class EllipsisLiquidity
   protected formatUserData(
     address: Address,
     pool: IPoolFeatureOpportunity,
-    data: Map<string, CallData>,
+    userBalance: BN,
   ): IPoolFeatureUser {
-    const userBalance: BN = dataFrom(data, userBalanceLabel(pool.token.address, address));
     if (userBalance.isZero()) {
       return;
     }
@@ -206,7 +205,7 @@ export class EllipsisLiquidity
         },
       };
       tSupplied.token.underlying = tokenSupplied.token.underlying?.map((tu) => {
-        const underlyingLpShare = tSupplied.amount / tokenSupplied['totalSupply'];
+        const underlyingLpShare = tSupplied.amount / tokenSupplied.totalSupply;
         return {
           ...tu,
           amount: underlyingLpShare * tu.reserve,
@@ -222,8 +221,4 @@ export class EllipsisLiquidity
       supplied,
     };
   }
-}
-
-function userBalanceLabel(lpAddress, userAddress): string {
-  return concatStrings(lpAddress, userAddress);
 }

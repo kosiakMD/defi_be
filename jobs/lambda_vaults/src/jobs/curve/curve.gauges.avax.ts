@@ -26,7 +26,7 @@ import { StoreService } from '../../store/store.service';
 import { TrackedVault } from '../../store/tracked.vault.entity';
 import { TrackedVaultsMap } from '../data/tracked.vaults.map';
 import { CurveLpAbi } from './abis/CurveLpAbi';
-import { CurveProviderAbi } from './abis/CurveProviderAbi';
+import { CurveProvider } from './abis/CurveProvider';
 import { CurveRegistryAbi } from './abis/CurveRegistryAbi';
 import { ERC20Abi } from './abis/ERC20Abi';
 import { additionalGaugeContractsMap } from './additional.gauge.contracts.map';
@@ -335,7 +335,7 @@ export class CurveGaugesAvax extends CurveGaugesBase {
   }
 
   async getRegistryAddresses(): Promise<string[]> {
-    const curveProvider = new CurveProviderAbi(CurveAddresses.addressProvider);
+    const curveProvider = new CurveProvider(CurveAddresses.addressProvider);
     const calls = [0, 3, 5].reduce((resp, value) => {
       resp.set(String(value), curveProvider.getIdInfo(value));
       return resp;

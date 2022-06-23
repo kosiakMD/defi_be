@@ -49,6 +49,7 @@ export const AbsoluteChainIds: Record<ChainIdEnum, AbsoluteChainIdEnum> = {
   [ChainIdEnum.secret]: AbsoluteChainIdEnum.secret,
   [ChainIdEnum.iotex]: AbsoluteChainIdEnum.iotex,
   [ChainIdEnum.milkomeda]: AbsoluteChainIdEnum.milkomeda,
+  [ChainIdEnum.moonbeam]: AbsoluteChainIdEnum.moonbeam,
 };
 
 export const getAbsoluteChainId = (chainId: ChainId): AbsoluteChainIdEnum =>
@@ -94,6 +95,7 @@ export const InternalChainIds: Record<AbsoluteChainIdEnum, ChainIdEnum> = {
   [AbsoluteChainIdEnum.secret]: ChainIdEnum.secret,
   [AbsoluteChainIdEnum.iotex]: ChainIdEnum.iotex,
   [AbsoluteChainIdEnum.milkomeda]: ChainIdEnum.milkomeda,
+  [AbsoluteChainIdEnum.moonbeam]: ChainIdEnum.moonbeam,
 };
 
 export const getInternalChainId = (chainId: ChainId): ChainId => InternalChainIds[chainId];
@@ -129,6 +131,7 @@ export const InternalChainIdByAbbr: Record<ChainAbbrEnum, ChainIdEnum> = {
   [ChainAbbrEnum.secret]: ChainIdEnum.secret,
   [ChainAbbrEnum.iotex]: ChainIdEnum.iotex,
   [ChainAbbrEnum.milkomeda]: ChainIdEnum.milkomeda,
+  [ChainAbbrEnum.moonbeam]: ChainIdEnum.moonbeam,
 };
 
 export const CoingeckoChainIds: Record<ChainIdEnum, CoingeckoPlatformEnum> = {
@@ -162,6 +165,7 @@ export const CoingeckoChainIds: Record<ChainIdEnum, CoingeckoPlatformEnum> = {
   [ChainIdEnum.secret]: CoingeckoPlatformEnum.secret,
   [ChainIdEnum.iotex]: CoingeckoPlatformEnum.iotex,
   [ChainIdEnum.milkomeda]: CoingeckoPlatformEnum.milkomeda,
+  [ChainIdEnum.moonbeam]: CoingeckoPlatformEnum.moonbeam,
 };
 
 export const getCoingeckoPlatformId = (chainId: ChainId): CoingeckoPlatformEnum =>
@@ -198,6 +202,7 @@ export const ChainCoinAddresses: Record<ChainIdEnum, string> = {
   [ChainIdEnum.secret]: COSMOS_COIN_ADDRESS,
   [ChainIdEnum.iotex]: ZERO_ADDRESS,
   [ChainIdEnum.milkomeda]: ZERO_ADDRESS,
+  [ChainIdEnum.moonbeam]: ZERO_ADDRESS,
 };
 
 export const getChainByAbbr = (symbol: ChainAbbrEnum | string): ChainDto => {
@@ -247,6 +252,7 @@ export const CoinSymbols: Record<ChainIdEnum, string> = {
   [ChainIdEnum.secret]: 'SCRT',
   [ChainIdEnum.iotex]: 'IOTX',
   [ChainIdEnum.milkomeda]: 'ADA',
+  [ChainIdEnum.moonbeam]: 'GLMR',
 };
 
 export const CoinNames: Record<ChainIdEnum, string> = {
@@ -280,4 +286,5 @@ export const CoinNames: Record<ChainIdEnum, string> = {
   [ChainIdEnum.secret]: 'Secret',
   [ChainIdEnum.iotex]: 'IoTeX',
   [ChainIdEnum.milkomeda]: 'Cardano',
+  [ChainIdEnum.moonbeam]: 'Moonbeam',
 };

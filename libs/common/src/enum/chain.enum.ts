@@ -29,6 +29,7 @@ export enum ChainAbbrEnum {
   secret = 'secret',
   iotex = 'iotex',
   milkomeda = 'milkomeda',
+  moonbeam = 'moonbeam',
 }
 
 export enum ChainNameEnum {
@@ -62,6 +63,7 @@ export enum ChainNameEnum {
   secret = 'secret',
   iotex = 'iotex',
   milkomeda = 'milkomeda',
+  moonbeam = 'moonbeam',
 }
 
 export enum ChainIdEnum {
@@ -95,6 +97,7 @@ export enum ChainIdEnum {
   secret = 28,
   iotex = 29,
   milkomeda = 30,
+  moonbeam = 31,
 }
 
 // INFO: https://api.coingecko.com/api/v3/asset_platforms
@@ -130,6 +133,7 @@ export enum CoingeckoPlatformEnum {
   secret = 'secret',
   iotex = 'iotex',
   milkomeda = 'milkomeda-cardano',
+  moonbeam = 'moonbeam',
 }
 
 export enum AbsoluteChainIdEnum {
@@ -164,6 +168,7 @@ export enum AbsoluteChainIdEnum {
   secret = 2007,
   terra = 'columbus-5',
   ronin = 1002,
+  moonbeam = 1284,
 }
 
 export enum CurrencyEnum {

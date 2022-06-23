@@ -38,7 +38,7 @@ import { TrackedVaultsMap } from '../data/tracked.vaults.map';
 import { FeatureMappingPoolToken, PoolsFeatureMapping } from '../dto/mappings';
 import { JobPoolsBase } from '../job.pools.base';
 import { CurveLpAbi } from './abis/CurveLpAbi';
-import { CurveProviderAbi } from './abis/CurveProviderAbi';
+import { CurveProvider } from './abis/CurveProvider';
 import { CurveRegistryAbi } from './abis/CurveRegistryAbi';
 import { ERC20Abi } from './abis/ERC20Abi';
 
@@ -549,7 +549,7 @@ export class CurvePoolBase extends JobPoolsBase<CurveLiquidityPoolFeature> {
   }
 
   async getRegistryAddresses(): Promise<string[]> {
-    const curveProvider = new CurveProviderAbi(CurveAddresses.addressProvider);
+    const curveProvider = new CurveProvider(CurveAddresses.addressProvider);
     const calls = [0, 5, 3].reduce((resp, value) => {
       resp.set(String(value), curveProvider.getIdInfo(value));
       return resp;

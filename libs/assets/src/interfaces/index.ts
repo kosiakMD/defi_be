@@ -74,6 +74,7 @@ export interface AssembledAssetInterface {
   // position:
   // weight
   reserve?: number;
+  value?: number;
 
   // isTracked?: boolean;
   // disabled?: boolean;

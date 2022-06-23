@@ -42,6 +42,7 @@ export class BlockScout implements AbiSource {
     // Endpoints
     this.endpoints[ChainIdEnum.kcc] = config.get('BLOCKSCOUT_KCC_URL');
     this.endpoints[ChainIdEnum.metis] = config.get('BLOCKSCOUT_METIS_URL');
+    this.endpoints[ChainIdEnum.gnosis] = config.get('BLOCKSCOUT_GNOSIS_URL');
   }
 
   async fetchAbi(address: Address, chain: ChainId): Promise<AbiItem[] | void> {

@@ -41,6 +41,7 @@ const addressValidators: typeof ChainIdEnum = {
   secret: isSecretAddress as any,
   iotex: isETHAddress as any,
   milkomeda: isETHAddress as any,
+  moonbeam: isETHAddress as any,
 };
 
 export function keepAddressesByChainId(addresses: string | string[], chainId: ChainIdEnum) {

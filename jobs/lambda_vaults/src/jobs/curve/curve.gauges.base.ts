@@ -43,7 +43,7 @@ import { StakingFeatureMapping } from '../dto/mappings';
 import { IntegrationDataConverter } from '../integration.data.converter';
 import { JobInterface } from '../job.interface';
 import { CurveLpAbi } from './abis/CurveLpAbi';
-import { CurveProviderAbi } from './abis/CurveProviderAbi';
+import { CurveProvider } from './abis/CurveProvider';
 import { CurveRegistryAbi } from './abis/CurveRegistryAbi';
 import { ERC20Abi } from './abis/ERC20Abi';
 import { GaugeAbi } from './abis/GaugeAbi';
@@ -707,7 +707,7 @@ export class CurveGaugesBase implements JobInterface {
   }
 
   async getRegistryAddresses(): Promise<string[]> {
-    const curveProvider = new CurveProviderAbi(CurveAddresses.addressProvider);
+    const curveProvider = new CurveProvider(CurveAddresses.addressProvider);
     const calls = [0, 5].reduce((resp, value) => {
       resp.set(String(value), curveProvider.getIdInfo(value));
       return resp;

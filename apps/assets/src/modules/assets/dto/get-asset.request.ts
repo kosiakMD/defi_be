@@ -1,5 +1,5 @@
 import { Transform } from 'class-transformer';
-import { IsArray, IsInt, IsNotEmpty, IsNumber, IsNumberString, IsString } from 'class-validator';
+import { IsArray, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
 import { ApiProperty } from '@nestjs/swagger';
 

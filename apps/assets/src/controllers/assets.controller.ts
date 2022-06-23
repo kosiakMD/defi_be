@@ -24,7 +24,6 @@ export class AssetsController {
   @Get('/')
   @ApiResponse({ status: HttpStatus.OK, type: GetAssetsResponse })
   async get(@Query() query: GetAssetRequest): Promise<GetAssetsResponse> {
-    console.log(query);
     const response = new GetAssetsResponse();
     response.assets = await this.assetsService.getAsset(query);
     return response;

@@ -101,6 +101,7 @@ export class CompoundFinanceLending extends EVMCore<
 
     return { data: results, errors };
   }
+
   protected formatUserData(
     address: string,
     pools: ILendingFeatureOpportunity[],

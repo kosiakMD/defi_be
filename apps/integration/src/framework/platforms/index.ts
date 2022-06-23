@@ -63,3 +63,4 @@ export { YelFinance } from './YelFinance';
 export { YetiFinance } from './YetiFinance';
 export { Zenlink } from './Zenlink';
 export { CompoundFinance } from './CompoundFinance';
+export { CreamFinance } from './CreamFinance';

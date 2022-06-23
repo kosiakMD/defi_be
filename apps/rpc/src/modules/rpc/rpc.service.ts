@@ -37,7 +37,7 @@ export class RpcService {
 
     while (retries >= 0) {
       const endpoint = endpoints[index];
-      const success = await this.makeRPCCall(endpoint.endpoint, request, response);
+      const success = await this.makeRPCCall(endpoint.endpoint, request, response, chainId);
       const score = success ? EndpointCallScore.success : EndpointCallScore.fail;
       this.endpointsStatisticService
         .updateEndpointSuccessRate(endpoint, score)
@@ -60,6 +60,7 @@ export class RpcService {
     target: string,
     request: Request,
     response: Response,
+    chainId: number,
   ): Promise<boolean> {
     return new Promise((ok) => {
       const started = Date.now();
@@ -75,7 +76,7 @@ export class RpcService {
           );
           if (isFailedResponse) {
             this.logger.error({
-              message: `Proxying RPC request to '${target}' failed. Took ${took}`,
+              message: `[Chain: ${chainId}] Proxying RPC request to '${target}' failed. Took ${took}`,
               target,
               took,
               data,
@@ -83,7 +84,7 @@ export class RpcService {
             ok(false);
           } else {
             this.logger.log({
-              message: `Proxying RPC request to '${target}' successful. Took ${took}`,
+              message: `[Chain: ${chainId}] Proxying RPC request to '${target}' successful. Took ${took}`,
               target,
               took,
             });
@@ -95,7 +96,7 @@ export class RpcService {
           const took = Date.now() - started;
           this.logger.error(
             {
-              message: `Proxying RPC request to '${target}' failed. Error: ${error.message}. Took ${took}`,
+              message: `[Chain: ${chainId}] Proxying RPC request to '${target}' failed. Error: ${error.message}. Took ${took}`,
               target,
               took,
             },

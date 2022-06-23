@@ -37,7 +37,7 @@ export class CompoundFinance extends RootPlatform {
 
     await this.registerProtocol<ICompoundControllerMeta>(CompoundController, {
       chain: ChainIdEnum.eth,
-      name: 'CompoundLens',
+      name: 'Unitroller',
       feature: FeatureEnum.lending,
       address: '0x3d9819210a31b4961b30ef54be2aed79b9c9cd3b',
       context: {

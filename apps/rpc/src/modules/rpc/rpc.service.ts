@@ -72,9 +72,9 @@ export class RpcService {
 
           const responseString = JSON.stringify(data)?.toLowerCase() || '';
 
-          //temp for checking Gnosis error
-          if (chainId === 7) {
-            this.logger.log(`[Chain: ${chainId}] Gnosis response: ${responseString}`);
+          //temp for checking Plg error
+          if (chainId === 3) {
+            this.logger.log(`[Chain: ${chainId}] Plg response: ${responseString}`);
           }
 
           const isFailedResponse = wrongRpcResponsePatterns.some(

@@ -105,14 +105,16 @@ export class AssetAnalyserService implements OnModuleInit {
     const assets = dtos.map<ComplexAsset>((dto) => ({
       address: dto.address,
       decimals: dto.decimals,
-      underlying: dto.underlying?.map(({ address }) => {
-        const underlyingAsset = allAssets.find((dto) => dto.address === address);
-        return {
-          address: underlyingAsset.address,
-          decimals: underlyingAsset.decimals,
-          price: underlyingAsset.price,
-        };
-      }),
+      underlying: dto.underlying
+        ?.sort((one, two) => one.position - two.position)
+        .map(({ address }) => {
+          const underlyingAsset = allAssets.find((dto) => dto.address === address);
+          return {
+            address: underlyingAsset.address,
+            decimals: underlyingAsset.decimals,
+            price: underlyingAsset.price,
+          };
+        }),
     }));
 
     try {

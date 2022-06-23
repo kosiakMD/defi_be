@@ -4,6 +4,7 @@ export enum AssetCategory {
   NativeCoin = 'native-coin',
   LpToken = 'lp-token',
   UniSwapV2LikeLP = 'lp-uniswapv2-like',
+  CompoundLP = 'compound-lp',
   SaberLP = 'saber-lp',
   WithSingleUnderlyingToken = 'single-underlying',
   UnderlyingBalanceHeldByBaseContract = 'underlying-balance-held-by-base-contract',
@@ -19,6 +20,7 @@ const AssetCategoryNameMap = {
   [AssetCategory.UniSwapV2LikeLP]: 'Uniswap V2 like LP Token',
   [AssetCategory.SaberLP]: 'Saber LP Token',
   [AssetCategory.MinSwapLP]: 'MinSwap LP Token',
+  [AssetCategory.CompoundLP]: 'Compound LP Token',
 };
 
 export function getDefaultCategoryName(code: string) {

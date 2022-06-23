@@ -18,4 +18,6 @@ export const blockscanConfig = {
   BLOCKSCAN_ARBI_KEY: Joi.string().required(),
   BLOCKSCAN_ARBI_URL: Joi.string().default('https://api.arbiscan.io/api'),
   BLOCKSCAN_BOBA_URL: Joi.string().default('https://blockexplorer.boba.network/api'),
+  BLOCKSCAN_AURORA_URL: Joi.string().default('https://api.aurorascan.dev/api'),
+  BLOCKSCAN_AURORA_KEY: Joi.string().required(),
 };

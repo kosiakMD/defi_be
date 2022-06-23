@@ -22,6 +22,7 @@ export const rpcConfig = registerAs('rpc', () => ({
   gnosis: process.env.GNOSIS_URL,
   terra: process.env.TERRA_URL,
   metis: process.env.METIS_URL,
+  moonbeam: process.env.M00NBEAM_URL,
 }));
 
 export const rpcValidation = {
@@ -44,4 +45,5 @@ export const rpcValidation = {
   GNOSIS_URL: Joi.string().required(),
   TERRA_URL: Joi.string().required(),
   METIS_URL: Joi.string().required(),
+  M00NBEAM_URL: Joi.string().required(),
 };

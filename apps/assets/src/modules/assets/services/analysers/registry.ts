@@ -13,6 +13,7 @@ import { OneToOneUnderlyingExchangeRatePriceProvider } from './core/single-under
 import { SingleUnderlyingGenericPriceProvider } from './core/single-underlying/price-providers/single-underlying-generic.price-provider';
 import { SingleUnderlyingAssetAnalyser } from './core/single-underlying/single-underlying.asset-analyzer';
 import { TrustWalletAssetAnalyser } from './icons/trust-wallet.asset-analyser';
+import { CErc20AssetAnalyser } from './protocols/CErc20.asset-analyser';
 import { MinSwapAssetAnalyser } from './protocols/minswap.asset-analyser';
 import { SaberAssetAnalyser } from './protocols/saber.asset-analyser';
 import { UniswapV2AssetAnalyser } from './protocols/uniswapv2.asset-analyser';
@@ -30,6 +31,7 @@ export const assetAnalysers = [
   EVMMetaDataStrategy,
   TerraAssetAnalyser,
 
+  CErc20AssetAnalyser,
   EvmCoinAssetAnalyser,
   NonEvmCoinAssetAnalyser,
 

@@ -245,20 +245,33 @@ export class IntegrationsServiceV3Decorator {
 
         if (v3WalletChain.positions.claimable) {
           v2WalletChain[FeatureEnum.claimable] = { totalValue: 0, items: [] };
-          v2WalletChain[FeatureEnum.claimable].items = v3WalletChain.positions.claimable.map(
-            (claimableV3: IClaimableFeatureUser) => {
-              const claimableV2 = IntegrationsServiceV3Decorator.claimableToV2(claimableV3);
+          v2WalletChain[FeatureEnum.claimable].items = v3WalletChain.positions.claimable.reduce(
+            (acc, claimable) => {
+              const mergedItems = [
+                ...claimable.rewarded,
+                ...(claimable.supplied ? claimable.supplied : []),
+              ];
 
-              v2Response.data.total = safelyAddDecimals(
-                v2Response.data.total,
-                claimableV2.claimableData.value,
-              );
-              v2WalletChain[FeatureEnum.claimable].totalValue = safelyAddDecimals(
-                v2WalletChain[FeatureEnum.claimable].totalValue,
-                claimableV2.claimableData.value,
-              );
-              return claimableV2;
+              const newData = mergedItems.map((x) => {
+                const claimableV3: any = { ...claimable, rewarded: [x] };
+
+                const claimableV2 = IntegrationsServiceV3Decorator.claimableToV2(claimableV3);
+
+                v2Response.data.total = safelyAddDecimals(
+                  v2Response.data.total,
+                  claimableV2.claimableData.value,
+                );
+
+                v2WalletChain[FeatureEnum.claimable].totalValue = safelyAddDecimals(
+                  v2WalletChain[FeatureEnum.claimable].totalValue,
+                  claimableV2.claimableData.value,
+                );
+                return claimableV2;
+              });
+
+              return acc.concat(newData);
             },
+            [],
           );
         }
 

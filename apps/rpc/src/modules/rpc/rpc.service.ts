@@ -71,6 +71,12 @@ export class RpcService {
           const took = Date.now() - started;
 
           const responseString = JSON.stringify(data)?.toLowerCase() || '';
+
+          //temp for checking Gnosis error
+          if (chainId === 7) {
+            this.logger.log('Gnosis response: {responseString}');
+          }
+
           const isFailedResponse = wrongRpcResponsePatterns.some(
             (pattern) => responseString.indexOf(pattern) >= 0,
           );

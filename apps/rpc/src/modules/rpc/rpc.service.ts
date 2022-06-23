@@ -56,6 +56,22 @@ export class RpcService {
       .json({ error: `Sorry, no one of endpoints for chainId ${chainId} replies with success` });
   }
 
+  private isResponseValid(responseString: string): boolean {
+    if (!responseString) {
+      return false;
+    }
+
+    const containsWrongPattern = wrongRpcResponsePatterns.some(
+      (pattern) => responseString.indexOf(pattern) >= 0,
+    );
+
+    const containsRequiredPattern = validRpcResponsePatterns.some(
+      (pattern) => responseString.indexOf(pattern) >= 0,
+    );
+
+    return containsRequiredPattern && !containsWrongPattern;
+  }
+
   private async makeRPCCall(
     target: string,
     request: Request,
@@ -72,15 +88,9 @@ export class RpcService {
 
           const responseString = JSON.stringify(data)?.toLowerCase() || '';
 
-          //temp for checking Plg error
-          if (chainId === 3) {
-            this.logger.log(`[Chain: ${chainId}] Plg response: ${responseString}`);
-          }
+          const isResponseValid = this.isResponseValid(responseString);
 
-          const isFailedResponse = wrongRpcResponsePatterns.some(
-            (pattern) => responseString.indexOf(pattern) >= 0,
-          );
-          if (isFailedResponse) {
+          if (!isResponseValid) {
             this.logger.error({
               message: `[Chain: ${chainId}] Proxying RPC request to '${target}' failed. Took ${took}`,
               target,
@@ -123,3 +133,5 @@ const wrongRpcResponsePatterns = [
   'error',
   '-32000',
 ];
+
+const validRpcResponsePatterns = ['id'];

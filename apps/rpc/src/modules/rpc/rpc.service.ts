@@ -74,7 +74,7 @@ export class RpcService {
 
           //temp for checking Gnosis error
           if (chainId === 7) {
-            this.logger.log('Gnosis response: {responseString}');
+            this.logger.log(`[Chain: ${chainId}] Gnosis response: ${responseString}`);
           }
 
           const isFailedResponse = wrongRpcResponsePatterns.some(

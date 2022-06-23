@@ -115,31 +115,38 @@ export class AssetAnalyserService implements OnModuleInit {
       }),
     }));
 
-    const prices = await provider.getPrices(chainId, assets);
+    try {
+      const prices = await provider.getPrices(chainId, assets);
 
-    for (const dto of dtos) {
-      const price = prices.find(({ asset }) => asset.address === dto.address);
-      dto.price = price?.price;
-      if (dto.underlying?.length) {
-        dto.underlying.forEach((underlying, index) => {
-          if (price?.reserves) {
-            underlying.reserve = price?.reserves[index];
-          }
-        });
+      for (const dto of dtos) {
+        const price = prices.find(({ asset }) => asset.address === dto.address);
+        dto.price = price?.price;
+        if (dto.underlying?.length) {
+          dto.underlying.forEach((underlying, index) => {
+            if (price?.reserves) {
+              underlying.reserve = price?.reserves[index];
+            }
+          });
+        }
       }
+    } catch (e) {
+      this.logger.warn({
+        message: `Error loading specific prices for chain ${chainId}, analyser: ${provider.constructor.name}`,
+        error: formatError(e),
+      });
     }
   }
 
   private async ensureAnalysersSetup() {
-    const instansiatedAnalyzers = await Promise.all(
+    const instanciatedAnalyzers = await Promise.all(
       assetAnalysers.map((analyser) => this.moduleRef.resolve(analyser)),
     );
 
-    this.analysers = instansiatedAnalyzers.filter(
+    this.analysers = instanciatedAnalyzers.filter(
       (analyser) => analyser['canAnalyseAsset'] !== undefined,
     ) as any;
 
-    this.priceProviders = instansiatedAnalyzers.filter(
+    this.priceProviders = instanciatedAnalyzers.filter(
       (analyser) => analyser['getPrices'] !== undefined,
     ) as any;
   }

@@ -131,8 +131,13 @@ export class AssetsProcessor {
           forceUpdate: assetRequest.forceUpdate,
         });
         if (!underlying.underlyingAsset) {
-          throw Error(`could not process underlyingAsset: ${underlyingAddress}`);
+          this.logger.error({
+            message: `Could not get underlyingAsset ${underlyingAddress}`,
+            request: assetRequest,
+          });
+          return;
         }
+
         processingAsset.underlying.push(underlying);
       }
 

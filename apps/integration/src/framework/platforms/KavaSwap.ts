@@ -5,16 +5,14 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { ChainIdEnum, Logger } from '@app/common';
 
-import { KavaClaimable } from '../support/CosmosHub/protocols/Claimable/KavaClaimable';
-import { KavaLending } from '../support/CosmosHub/protocols/Lending/KavaLending';
+import { KavaSwapClaimable } from '../support/CosmosHub/protocols/Claimable/KavaSwapClaimable';
 import { KavaLiquidity } from '../support/CosmosHub/protocols/Liquidity/KavaLiquidity';
 import { IKavaMeta as IKavaMetaClaimable } from '../support/CosmosHub/protocols/interfaces/Kava/KavaClaimable';
-import { IKavaMeta as IKavaMetaLending } from '../support/CosmosHub/protocols/interfaces/Kava/KavaLending';
 import { IKavaMeta as IKavaMetaLiquidity } from '../support/CosmosHub/protocols/interfaces/Kava/KavaLiquidity';
 import { RootPlatform } from '../support/RootPlatform';
 import { FeatureEnum } from '../support/enums';
 
-export class Kava extends RootPlatform {
+export class KavaSwap extends RootPlatform {
   private KAVA_API: string;
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
@@ -45,19 +43,10 @@ export class Kava extends RootPlatform {
       },
     });
 
-    await this.registerProtocol<IKavaMetaClaimable>(KavaClaimable, {
+    await this.registerProtocol<IKavaMetaClaimable>(KavaSwapClaimable, {
       chain: ChainIdEnum.kava,
       name: 'Kava Claimable',
       feature: FeatureEnum.claimable,
-      context: {
-        endpoint: this.KAVA_API,
-      },
-    });
-
-    await this.registerProtocol<IKavaMetaLending>(KavaLending, {
-      chain: ChainIdEnum.kava,
-      name: 'Kava Lending',
-      feature: FeatureEnum.lending,
       context: {
         endpoint: this.KAVA_API,
       },

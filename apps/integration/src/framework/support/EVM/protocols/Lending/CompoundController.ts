@@ -241,6 +241,10 @@ export class CompoundController extends SingleContractProtocol<
     return `${cToken}.exchangeRate`;
   }
 
+  protected get exchangeRateDecimals(): number {
+    return 28;
+  }
+
   private toLendingFeatureEntryMinimal(
     cToken: string,
     data: Map<string, CallData<any>>,

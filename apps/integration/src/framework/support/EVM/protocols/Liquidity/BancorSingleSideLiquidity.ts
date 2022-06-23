@@ -233,12 +233,14 @@ export class BancorSingleSideLiquidity
         chain: pool.chain,
         links: pool.links,
         supplied: pool.supplied.map((st) => {
-          const balance = normalizeDecimals(balances[st.token.address], st.token.decimals);
+          let balance = normalizeDecimals(balances[st.token.address], st.token.decimals);
+          balance = balance ? balance : 0;
+          const value = balance * st.token.price;
           return {
             token: st.token,
             tvl: st.tvl,
             amount: balance,
-            value: balance * st.token.price,
+            value: value,
           };
         }),
       };

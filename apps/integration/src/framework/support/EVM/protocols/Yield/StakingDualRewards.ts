@@ -80,7 +80,7 @@ export class StakingDualRewards extends StakingRewards {
     };
   }
 
-  protected async fetchUserData(
+  protected async fetchUsersData(
     addresses: string[],
     pools: IStakingFeatureOpportunity[],
   ): Promise<any> {

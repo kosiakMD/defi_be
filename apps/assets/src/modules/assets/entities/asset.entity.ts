@@ -1,4 +1,3 @@
-import { Exclude } from 'class-transformer';
 import { Column, Entity, Index, JoinTable, ManyToMany, OneToMany, Unique } from 'typeorm';
 
 import { BaseEntity } from '@app/common/entities/Base.entity';
@@ -42,15 +41,12 @@ export class AssetEntity extends BaseEntity {
   @Column({ type: Boolean, default: false })
   public isNotAccounted: boolean;
 
-  @Exclude({ toPlainOnly: true })
   @Column({ type: Boolean, default: false })
   public isTracked: boolean;
 
-  @Exclude({ toPlainOnly: true })
   @Column({ type: 'json', nullable: false, default: {} })
   public metadata: AssetMetadata;
 
-  @Exclude({ toPlainOnly: true })
   @Column({ type: Boolean, nullable: false, default: false })
   public disabled: boolean;
 
@@ -79,6 +75,6 @@ export class AssetEntity extends BaseEntity {
   public underlying: AssetUnderlyingEntity[];
 
   get isLpToken(): boolean {
-    return this.categories.some(({ code }) => code === AssetCategory.LpToken);
+    return this.categories?.some(({ code }) => code === AssetCategory.LpToken) || false;
   }
 }

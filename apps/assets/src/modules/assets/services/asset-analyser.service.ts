@@ -1,8 +1,8 @@
-import { Inject, Injectable, LoggerService } from '@nestjs/common';
+import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { ChainId } from '@app/common';
+import { ChainId, Logger } from '@app/common';
 import { formatError } from '@app/common/utils';
 
 import { AssetReference } from '../../../common/types';
@@ -13,19 +13,20 @@ import { AssetPriceProvider, ComplexAsset } from './analysers/core/price.provide
 import { assetAnalysers } from './analysers/registry';
 
 @Injectable()
-export class AssetAnalyserService {
+export class AssetAnalyserService implements OnModuleInit {
   private analysers: AssetAnalyser[] = [];
   private priceProviders: AssetPriceProvider[] = [];
 
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     private readonly moduleRef: ModuleRef,
   ) {}
 
-  async analyseAsset(asset: AssetReference): Promise<AssetAnalysisResult> {
-    // TODO: Does not look very good, think on better one
+  async onModuleInit() {
     await this.ensureAnalysersSetup();
+  }
 
+  async analyseAsset(asset: AssetReference): Promise<AssetAnalysisResult> {
     const analysis = await Promise.all(
       this.analysers.map((analyser) => this.analyseAssetByAnalyser(analyser, asset)),
     );
@@ -63,9 +64,6 @@ export class AssetAnalyserService {
 
   // TODO: Update this one, should return prices not work with DTO and refactor this
   async updateSpecificAssetsPrices(assets: AssetDto[]): Promise<AssetDto[]> {
-    // TODO: Does not look very good, think on better one
-    await this.ensureAnalysersSetup();
-
     const assetsWithoutPrices = assets.filter((asset) => !asset.price);
     if (!assetsWithoutPrices) {
       return assets;
@@ -80,11 +78,8 @@ export class AssetAnalyserService {
     for (const chainId of assetsChainMap.keys()) {
       const chainAssets = assetsChainMap.get(chainId);
       for (const priceProvider of this.priceProviders) {
-        // TODO: Refactor this one
         const priceProviderAssets = chainAssets.filter((dto) =>
-          (dto.categories || [])
-            .map(({ code }) => code)
-            .some((code) => priceProvider.canHandleCategory(code)),
+          priceProvider.canHandleCategories(dto.categories.map((x) => x.code)),
         );
 
         if (priceProviderAssets.length) {
@@ -120,25 +115,38 @@ export class AssetAnalyserService {
       }),
     }));
 
-    const prices = await provider.getPrices(chainId, assets);
+    try {
+      const prices = await provider.getPrices(chainId, assets);
 
-    for (const dto of dtos) {
-      const price = prices.find(({ asset }) => asset.address === dto.address);
-      dto.price = price?.price;
-      if (dto.underlying?.length) {
-        dto.underlying.forEach((underlying, index) => {
-          underlying.reserve = price?.reserves[index];
-        });
+      for (const dto of dtos) {
+        const price = prices.find(({ asset }) => asset.address === dto.address);
+        dto.price = price?.price;
+        if (dto.underlying?.length) {
+          dto.underlying.forEach((underlying, index) => {
+            if (price?.reserves) {
+              underlying.reserve = price?.reserves[index];
+            }
+          });
+        }
       }
+    } catch (e) {
+      this.logger.warn({
+        message: `Error loading specific prices for chain ${chainId}, analyser: ${provider.constructor.name}`,
+        error: formatError(e),
+      });
     }
   }
 
   private async ensureAnalysersSetup() {
-    this.analysers = await Promise.all(
+    const instanciatedAnalyzers = await Promise.all(
       assetAnalysers.map((analyser) => this.moduleRef.resolve(analyser)),
     );
-    // TODO: Fix that injection, price provider could be separate
-    this.priceProviders = this.analysers.filter(
+
+    this.analysers = instanciatedAnalyzers.filter(
+      (analyser) => analyser['canAnalyseAsset'] !== undefined,
+    ) as any;
+
+    this.priceProviders = instanciatedAnalyzers.filter(
       (analyser) => analyser['getPrices'] !== undefined,
     ) as any;
   }

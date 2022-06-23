@@ -4,7 +4,7 @@ import { AbiItem } from 'web3-utils';
 import { Address } from '@app/common';
 import { CallData } from '@app/common/dto/CallData';
 import { concatStrings, normalizeDecimals } from '@app/common/utils';
-import { DynamicContract } from '@app/common/web3provider/contracts/DynamicContract';
+import { SpiritSwapGauge } from '@app/common/web3provider/contracts/protocols/spiritSwap/spiritSwapGauge';
 
 import { INamedFunctionPredicates } from '../../../interfaces';
 import {
@@ -21,7 +21,7 @@ export class SpiritStaking extends MasterChef {
     length: () => (item) => item.name === 'length',
     gauges: () => (item) => item.name === 'gauges',
   };
-
+  interactiveFunctionPredicates: INamedFunctionPredicates = {};
   protected incentivesFunctionsPredicates: INamedFunctionPredicates = {
     balanceOf: () => (item) => item.name === 'balanceOf',
     earned: () => (item) => item.name === 'earned',
@@ -40,13 +40,10 @@ export class SpiritStaking extends MasterChef {
     });
     const registeredTokens = await this.multicall.callArray(calls, this.meta.chain);
 
-    this.abiQauges = await this.abiService.fetchAbi(registeredTokens[0], this.meta.chain);
-    const abiTotalSupply = this.abiQauges.find((item) => item.name === 'totalSupply');
-
     const callsQ = new Map(
       registeredTokens.flatMap((r) => {
-        const contract = new DynamicContract(r);
-        return [[this.totalSupplyLabel(r), contract.createCall(abiTotalSupply)]];
+        const contract = new SpiritSwapGauge(r);
+        return [[this.totalSupplyLabel(r), contract.totalSupply()]];
       }),
     );
 
@@ -80,15 +77,12 @@ export class SpiritStaking extends MasterChef {
     address: Address,
     pools: IStakingFeatureOpportunity[],
   ): Promise<any> {
-    const abiBalanceOf = this.abiQauges.find((item) => item.name === 'balanceOf');
-    const abiEarned = this.abiQauges.find((item) => item.name === 'earned');
-
     const calls = new Map(
       pools.flatMap((p) => {
-        const contract = new DynamicContract(p.id);
+        const contract = new SpiritSwapGauge(p.id);
         return [
-          [this.earnedInfoLabel(p.id, address), contract.createCall(abiEarned, address)],
-          [this.balanceInfoLabel(p.id, address), contract.createCall(abiBalanceOf, address)],
+          [this.earnedInfoLabel(p.id, address), contract.earned(address)],
+          [this.balanceInfoLabel(p.id, address), contract.balanceOf(address)],
         ];
       }),
     );

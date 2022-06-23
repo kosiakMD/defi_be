@@ -4,10 +4,8 @@ export enum ProjectEnum {
   alpaca = 'alpaca',
   anchor = 'anchor',
   terraswap = 'terraswap',
-  autofarm = 'autofarm',
   badger = 'badger',
   balancer = 'balancer',
-  beefy = 'beefy',
   compound = 'compound',
   convex = 'convex',
   curve = 'curve',
@@ -59,10 +57,6 @@ export enum AbracadabraProtocolEnum {
   abracadabra = 'Abracadabra',
 }
 
-export enum BeefyProtocolEnum {
-  Beefy = 'Beefy',
-}
-
 export enum ConvexProtocolEnum {
   Convex = 'Convex',
 }
@@ -82,10 +76,6 @@ export enum SushiSwapProtocolEnum {
 export enum PancakeProtocolEnum {
   pancakeV1 = 'PancakeV1',
   pancakeV2 = 'PancakeV2',
-}
-
-export enum AutofarmProtocolEnum {
-  autofarm = 'Autofarm',
 }
 
 export enum PangolinProtocolEnum {
@@ -219,6 +209,7 @@ export enum WingRidersProtocolEnum {
 export const ProtocolV3NameEnum = {
   AaveV2: 'AaveV2',
   AaveV3: 'AaveV3',
+  Arrakis: 'Arrakis',
   AlchemixV2: 'AlchemixV2',
   ApeSwap: 'ApeSwap',
   BabySwap: 'BabySwap',
@@ -264,6 +255,8 @@ export const ProtocolV3NameEnum = {
   Synapse: 'Synapse',
   YelFinance: 'YelFinance',
   YetiFinance: 'YetiFinance',
+  AutoFarm: 'AutoFarm',
+  BeefyFinance: 'BeefyFinance',
 };
 
 export const ProtocolNameEnum = {
@@ -271,9 +264,7 @@ export const ProtocolNameEnum = {
   ...AlpacaProtocolEnum,
   ...AnchorProtocolEnum,
   ...AstroportProtocolEnum,
-  ...AutofarmProtocolEnum,
   ...BadgerProtocolEnum,
-  ...BeefyProtocolEnum,
   ...CompoundProtocolEnum,
   ...ConvexProtocolEnum,
   ...CurveProtocolEnum,

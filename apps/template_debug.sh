@@ -1,7 +1,7 @@
 #!/bin/bash
-app="categorization"
+app="rpc"
 version="ver_debug"
-environment="env_debug"
+environment="dev"
 outdir="./${app}/out"
 chartdir="../.chart"
 release="defiyield-service"

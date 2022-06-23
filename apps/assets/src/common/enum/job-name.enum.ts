@@ -10,4 +10,5 @@ export enum AssetJobName {
   ASSET_METADATA = 'asset-metadata',
   REPROCESS_ASSETS_WITHOUT_ICONS = 'reprocess-assets-without-icons',
   UPDATE_UNIV2_LIKE_ASSETS_LP = 'update-univ2-like-assets-lp',
+  VERIFY_STABLECOINS = 'verify-stablecoins',
 }

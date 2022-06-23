@@ -12,6 +12,7 @@ import { QueueName } from '../../common/enum/queue-name.enum';
 import { AwsModule } from '../../aws/aws.module';
 import { AssetsController } from '../../controllers/assets.controller';
 import { AssetsCategoryModule } from '../assets-category/assets-category.module';
+import { AssetsCategoryService } from '../assets-category/assets-category.service';
 import { AssetCategoryEntity } from '../assets-category/entities/asset-category.entity';
 import { AssetsCategoryRepository } from '../assets-category/repositories/assets-category.repository';
 import { AssetHistoricalPriceEntity } from '../prices/entities/asset-historical-price.entity';
@@ -19,21 +20,25 @@ import { PricesModule } from '../prices/prices.module';
 import { AssetsHistoricalPriceRepository } from '../prices/repositories/asset-historical-price.repository';
 import { PriceSourceRepository } from '../prices/repositories/price-source.repository';
 import { AssetCandidateEntity } from './entities/asset-candidate.entity';
-import { AssetInvalidAddressEntity } from './entities/asset-invalid-address.entity';
+import { AssetInvalidEntity } from './entities/asset-invalid.entity';
 import { AssetUnderlyingEntity } from './entities/asset-underlying.entity';
 import { AssetEntity } from './entities/asset.entity';
 import { AssetsProcessor } from './processors/assets.processor';
 import { ReprocessNoIconAssetsProcessor } from './processors/reprocess-no-icon-assets.processor';
+import { StablecoinsCheckerProcessor } from './processors/stablecoins-checker.processor';
 import { Univ2LikeAssetsLPProcessor } from './processors/univ2-like-assets-lp.processor';
 import { UpdateTrackedAssetsProcessor } from './processors/update-tracked-assets.processor';
 import { AssetsCandidateRepository } from './repositories/assets-candidate.repository';
+import { AssetsInvalidRepository } from './repositories/assets-invalid.repository';
 import { AssetsCachedRepository } from './repositories/assets.cached-repository';
 import { AssetsRepository } from './repositories/assets.repository';
 import { assetAnalysers } from './services/analysers/registry';
 import { AssetAnalyserService } from './services/asset-analyser.service';
 import { AssetsService } from './services/assets.service';
+import { CosmosHelper } from './services/helpers/cosmos.helper';
+import { GithubService } from './services/helpers/github.helper';
 import { IconsService } from './services/icons.service';
-import { GithubService } from './services/tracked-assets/helpers/github.helper';
+import { InvalidAssetService } from './services/invalid-asset.service';
 import { trackedAssetsProviders } from './services/tracked-assets/registry';
 
 const processors = [
@@ -41,6 +46,7 @@ const processors = [
   UpdateTrackedAssetsProcessor,
   ReprocessNoIconAssetsProcessor,
   Univ2LikeAssetsLPProcessor,
+  StablecoinsCheckerProcessor,
 ];
 
 @Module({
@@ -77,7 +83,8 @@ const processors = [
       AssetsRepository,
       AssetHistoricalPriceEntity,
       AssetsHistoricalPriceRepository,
-      AssetInvalidAddressEntity,
+      AssetInvalidEntity,
+      AssetsInvalidRepository,
       AssetUnderlyingEntity,
     ]),
     PricesModule,
@@ -92,7 +99,10 @@ const processors = [
     IconsService,
     AssetsService,
     AssetAnalyserService,
+    InvalidAssetService,
     GithubService,
+    CosmosHelper,
+    AssetsCategoryService,
   ],
   exports: [],
 })

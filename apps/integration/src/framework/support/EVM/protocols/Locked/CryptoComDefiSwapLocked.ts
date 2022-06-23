@@ -9,31 +9,15 @@ import { Logger } from '@app/common';
 import { normalizeDecimals } from '@app/common/utils';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
-import { INamedFunctionPredicates, IRootProtocol } from '../../../interfaces';
+// import { INamedFunctionPredicates } from '../../../interfaces';
 import {
   IStakingFeatureOpportunity,
   IStakingFeatureUserEntry,
 } from '../../../interfaces/feature.staking.interface';
-import { BaseWithTokens } from '../../../interfaces/new.interfaces';
-import { IRewardTokenMinimal } from '../../../interfaces/tokens.rewarded.interface';
-import { ISupplyTokenMinimal } from '../../../interfaces/tokens.supplied.interface';
 import { AbiService } from '../../AbiModule/AbiService';
-import { SingleContractProtocol } from '../../SingleContractProtocol';
+import { RootLocked } from './RootLocked';
 
-export type IStakingFeatureMinimalDefi = BaseWithTokens<
-  ISupplyTokenMinimal[],
-  IRewardTokenMinimal[],
-  void
->;
-
-export class CryptoComDefiSwapLocked
-  extends SingleContractProtocol<
-    IStakingFeatureMinimalDefi,
-    IStakingFeatureOpportunity,
-    IStakingFeatureUserEntry
-  >
-  implements IRootProtocol
-{
+export class CryptoComDefiSwapLocked extends RootLocked {
   constructor(
     protected abiService: AbiService,
     protected multicall: MulticallAggregator,
@@ -41,14 +25,14 @@ export class CryptoComDefiSwapLocked
     @Inject(CACHE_MANAGER) protected cache: Cache,
     protected assetService: UniswapV2AssetService,
   ) {
-    super();
+    super(abiService, multicall, logger, cache, assetService);
   }
 
-  protected functionPredicates: INamedFunctionPredicates = {
-    token: () => (item) => item.name === 'token',
-    totalStaked: () => (item) => item.name === 'totalStaked',
-    getPersonalStakes: () => (item) => item.name === 'getPersonalStakes',
-  };
+  // protected functionPredicates: INamedFunctionPredicates = {
+  //   tokenLocked: () => (item) => item.name === 'token',
+  //   totalSupply: () => (item) => item.name === 'totalStaked',
+  //   getPersonalStakes: () => (item) => item.name === 'getPersonalStakes',
+  // };
 
   protected async fetchUserData(
     address: string,
@@ -75,10 +59,7 @@ export class CryptoComDefiSwapLocked
   async getUsersBalance(address: string, tokenAddress: string) {
     const contract = this.getMainContract();
     const calls = new Map([
-      [
-        `${address} ${tokenAddress}`,
-        contract.createCall(this.functions.getPersonalStakes, address),
-      ],
+      [`${address} ${tokenAddress}`, contract.createCall(this.functions.lockedInfo, address)],
     ]);
     const multiCallsUserBalances = await this.multicall.handleInBatches(calls, this.meta.chain);
     return multiCallsUserBalances.get(`${address} ${tokenAddress}`).output.data;
@@ -99,32 +80,5 @@ export class CryptoComDefiSwapLocked
     });
 
     return usersPool as IStakingFeatureUserEntry;
-  }
-
-  protected async fetchOpportunityData(context: {
-    [key: string]: any;
-  }): Promise<IStakingFeatureMinimalDefi[]> {
-    return [
-      {
-        id: this.meta.address,
-        chain: this.meta.chain,
-        feature: this.meta.feature,
-        supplied: [
-          {
-            token: {
-              address: context.token.toLowerCase(),
-            },
-            totalSupplied: context.totalStaked.toString(),
-          },
-        ],
-        rewarded: [
-          {
-            token: {
-              address: context.token.toLowerCase(),
-            },
-          },
-        ],
-      },
-    ];
   }
 }

@@ -136,7 +136,7 @@ export class IronBankLending
         return 'fantom';
       }
       case ChainIdEnum.eth: {
-        return 'eth';
+        return '  ';
       }
       default: {
         this.logger.log('Unsupported chain' + this.meta.chain);

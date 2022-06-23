@@ -337,7 +337,7 @@ export class SoLending
             totalValueBorrowed += valueBorrowed
 
             borrowed.push({
-              apy: { year: +borrowReserveDetailsFromApi?.rates?.borrowInterest },
+              apy: { year: +borrowReserveDetailsFromApi?.rates?.borrowInterest / 100 },
               tvl: borrowedOpportunity.tvl,
               token: borrowedOpportunity.token,
               amount: normalizedBorrowedAmount,
@@ -380,7 +380,7 @@ export class SoLending
             }
 
             supplied.push({
-              apy: { year: +depositReserveDetailsFromApi?.rates?.supplyInterest },
+              apy: { year: +depositReserveDetailsFromApi?.rates?.supplyInterest / 100 },
               token: depositOpportunity.token,
               amount: normalizedDepositAmount,
               value: depositValue,

@@ -98,7 +98,7 @@ export class DfynNetworkVault extends MultiContractProtocol<
   }
 
   // different from masterchef
-  protected async fetchUserData(
+  protected async fetchUsersData(
     addresses: string[],
     pools: IStakingFeatureOpportunity[],
   ): Promise<any> {

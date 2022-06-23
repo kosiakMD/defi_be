@@ -12,4 +12,17 @@ export class Comptroller extends MultiCallAbiProxy {
     stateMutability: 'view',
     type: 'function',
   };
+
+  static readonly checkMembership: AbiItem = {
+    constant: true,
+    inputs: [
+      { internalType: 'address', name: 'account', type: 'address' },
+      { internalType: 'contract CToken', name: 'cToken', type: 'address' },
+    ],
+    name: 'checkMembership',
+    outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
+    payable: false,
+    stateMutability: 'view',
+    type: 'function',
+  };
 }

@@ -5,29 +5,26 @@ import {
   AssetRequestObjectInterface,
   AssetServiceInterface,
 } from '@sdk/assets/interfaces';
-import { Cache } from 'cache-manager';
-import { firstValueFrom } from 'rxjs/internal/firstValueFrom';
+import { firstValueFrom } from 'rxjs';
 
 import { HttpService } from '@nestjs/axios';
-import { CACHE_MANAGER, Inject } from '@nestjs/common';
+import { Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '@app/common';
+import { logExecutionTime } from '@app/common/utils';
 import { join } from '@app/common/utils/urls';
-
-import { logExecutionTime } from './utils';
 
 export class AssetService implements AssetServiceInterface {
   /** Endpoint URLS */
-  private getAssetURL: string;
-  private getAssetsBulkURL: string;
+  private readonly getAssetURL: string;
+  private readonly getAssetsBulkURL: string;
 
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
     protected httpService: HttpService,
     protected configService: ConfigService,
-    @Inject(CACHE_MANAGER) protected readonly cache: Cache,
   ) {
     const make = (url: string) => join(configService.get<string>('ASSETS_SERVICE_URL'), url);
 
@@ -54,7 +51,6 @@ export class AssetService implements AssetServiceInterface {
           }),
         ),
     );
-
     const assets = assemble({ assets: requests }, data);
     return assets.map((a) => [a.address, a]);
   }

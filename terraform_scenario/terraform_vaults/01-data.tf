@@ -6,46 +6,6 @@ data "aws_ssm_parameter" "ACCOUNT_SERVICE_URL" {
   name = upper("/${var.environment}/ACCOUNT_SERVICE_URL")
 }
 
-data "aws_ssm_parameter" "AUTOFARM_API_CELO_URL" {
-  name = upper("/${var.environment}/AUTOFARM_API_CELO_URL")
-}
-
-data "aws_ssm_parameter" "AUTOFARM_API_HECO_URL" {
-  name = upper("/${var.environment}/AUTOFARM_API_HECO_URL")
-}
-
-data "aws_ssm_parameter" "AUTOFARM_API_CRO_URL" {
-  name = upper("/${var.environment}/AUTOFARM_API_CRO_URL")
-}
-
-data "aws_ssm_parameter" "AUTOFARM_API_FTM_URL" {
-  name = upper("/${var.environment}/AUTOFARM_API_FTM_URL")
-}
-
-data "aws_ssm_parameter" "AUTOFARM_API_AVAX_URL" {
-  name = upper("/${var.environment}/AUTOFARM_API_AVAX_URL")
-}
-
-data "aws_ssm_parameter" "AUTOFARM_API_XDAI_URL" {
-  name = upper("/${var.environment}/AUTOFARM_API_XDAI_URL")
-}
-
-data "aws_ssm_parameter" "AUTOFARM_API_HARM_URL" {
-  name = upper("/${var.environment}/AUTOFARM_API_HARM_URL")
-}
-
-data "aws_ssm_parameter" "AUTOFARM_API_URL" {
-  name = upper("/${var.environment}/AUTOFARM_API_URL")
-}
-
-data "aws_ssm_parameter" "AUTOFARM_API_OKEX_URL" {
-  name = upper("/${var.environment}/AUTOFARM_API_OKEX_URL")
-}
-
-data "aws_ssm_parameter" "AUTOFARM_API_MRIVER_URL" {
-  name = upper("/${var.environment}/AUTOFARM_API_MRIVER_URL")
-}
-
 data "aws_ssm_parameter" "SUNDAESWAP_URL" {
   name = upper("/${var.environment}/SUNDAESWAP_URL")
 }

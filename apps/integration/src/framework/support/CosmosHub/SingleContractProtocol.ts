@@ -15,7 +15,7 @@ export abstract class SingleContractProtocol<
   TUserEntryType extends IWalletUserEntry,
   TProtocolMeta extends IProtocolMeta = IProtocolMeta,
 > extends CosmosHubCore<TMinimalType, TOpportunityType, TUserEntryType, TProtocolMeta> {
-  protected abstract fetchUserData(addresses: Address[]): Promise<Map<Address, any[]>>;
+  protected abstract fetchUsersData(addresses: Address[]): Promise<Map<Address, any[]>>;
 
   protected abstract formatUserData(
     address: string,
@@ -29,7 +29,7 @@ export abstract class SingleContractProtocol<
       addresses.map((address) => [address, [] as TUserEntryType[]]),
     );
     try {
-      const multicallResults = await this.fetchUserData(addresses);
+      const multicallResults = await this.fetchUsersData(addresses);
       for (const address of addresses) {
         const data = this.formatUserData(address, pools, multicallResults);
         results.get(address).push(...data);

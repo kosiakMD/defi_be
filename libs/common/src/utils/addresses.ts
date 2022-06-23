@@ -108,6 +108,8 @@ export function isSolAddress(address: string): boolean {
 
 export function isBech32LikeAddress(address: string, length?: number): boolean {
   try {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    //@ts-ignore
     const { prefix } = bech32.decode(address, length);
     return ['addr', 'kava', 'secret', 'osmo', 'terra', 'cosmos'].includes(prefix);
   } catch {
@@ -115,8 +117,10 @@ export function isBech32LikeAddress(address: string, length?: number): boolean {
   }
 }
 
-export function isCardanoAddress(address: string): boolean {
-  return isBech32LikeAddress(address, 103);
+export function isCardanoAddress(): boolean {
+  // TODO: Method bellow does not count asset addresses so should be changed, temp fix
+  return true;
+  // return isBech32LikeAddress(address, 103) || address === CARDANO_COIN_ADDRESS;
 }
 
 export function isRoninAddress(address: string): boolean {

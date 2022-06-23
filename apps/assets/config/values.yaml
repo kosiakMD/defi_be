@@ -1,53 +1,13 @@
-ingress:
-  enabled: true
-  host: devassets.defiyield.app
-
-configMaps:
-  rpc:
-    ETH_URL: https://eth-trace.gateway.pokt.network/v1/lb/619fad2eb2d0dd003950f26b
-    SOL_URL: http://api.mainnet-beta.solana.com
-    TERRA_URL: https://lcd.terra.dev
-    AVAX_URL: https://rpc.ankr.com/avalanche
-    ARBITRUM_URL: https://arb1.arbitrum.io/rpc
-    BSC_URL: https://bsc-dataseed.binance.org
-    CELO_URL: https://forno.celo.org
-    ETH_URL: https://mainnet.infura.io/v3/d38bddd842b94305a23f91596991a9eb
-    FTM_URL: https://rpc.ftm.tools/
-    HARM_URL: https://a.api.s0.t.hmny.io
-    HECO_URL: https://http-mainnet-node.huobichain.com
-    MRIVER_URL: https://rpc.moonriver.moonbeam.network
-    POLYGON_URL: https://speedy-nodes-nyc.moralis.io/173c906bbd79b4c01dc6034b/polygon/mainnet/archive
-    GNOSIS_URL: https://rpc.xdaichain.com
-    SOL_URL: http://api.mainnet-beta.solana.com
-    OKEX_URL: https://exchainrpc.okex.org
-    CRONOS_URL: https://evm-cronos.crypto.org
-    BOBA_URL: https://mainnet.boba.network/
-    KCC_URL: https://rpc-mainnet.kcc.network
-    OPT_URL: https://mainnet.optimism.io/
-    NEAR_URL: https://mainnet.aurora.dev
-    KLAYTN_URL: https://public-node-api.klaytnapi.com/v1/cypress
-    FUSE_URL: https://rpc.fuse.io
-    METIS_URL: https://andromeda-rpc.metis.io/
-    TERRA_URL: https://lcd.terra.dev
-    RONIN_URL: https://api.roninchain.com/rpc
-    METIS_URL: https://andromeda-rpc.metis.io/
-
-  services:
-    ACCOUNT_SERVICE_CHAINS_LIST_URL: http://account/v1/chains
-  logs:
-    LOG_AWS_ENABLED: true
-    LOG_LEVEL: debug
-    NODE_ENV: development
-    LOG_IN_JSON: true
-    AWS_XRAY_DAEMON_ADDRESS: xray-service.default:2000
+configMapsAWS:
+  - assets
 
 resources:
   requests:
     cpu: 100m
     memory: 200Mi
   limits:
-    cpu: 200m
-    memory: 400Mi
+    cpu: 300m
+    memory: 500Mi
 
 secrets:
   - database-assets
@@ -64,3 +24,42 @@ initContainer:
   image: ""
   spec:
     command: [ "node", "./node_modules/typeorm/cli.js", "migration:run", "-f", "dist/apps/assets/src/ormconfig.js" ]
+
+#configMaps:
+#  rpc:
+#    ETH_URL: https://eth-trace.gateway.pokt.network/v1/lb/619fad2eb2d0dd003950f26b
+#    SOL_URL: http://api.mainnet-beta.solana.com
+#    TERRA_URL: https://lcd.terra.dev
+#    AVAX_URL: https://rpc.ankr.com/avalanche
+#    ARBITRUM_URL: https://arb1.arbitrum.io/rpc
+#    BSC_URL: https://bsc-dataseed.binance.org
+#    CELO_URL: https://forno.celo.org
+#    ETH_URL: https://mainnet.infura.io/v3/d38bddd842b94305a23f91596991a9eb
+#    FTM_URL: https://rpc.ftm.tools/
+#    HARM_URL: https://a.api.s0.t.hmny.io
+#    HECO_URL: https://http-mainnet-node.huobichain.com
+#    MRIVER_URL: https://rpc.moonriver.moonbeam.network
+#    POLYGON_URL: https://speedy-nodes-nyc.moralis.io/173c906bbd79b4c01dc6034b/polygon/mainnet/archive
+#    GNOSIS_URL: https://rpc.xdaichain.com
+#    SOL_URL: http://api.mainnet-beta.solana.com
+#    OKEX_URL: https://exchainrpc.okex.org
+#    CRONOS_URL: https://evm-cronos.crypto.org
+#    BOBA_URL: https://mainnet.boba.network/
+#    KCC_URL: https://rpc-mainnet.kcc.network
+#    OPT_URL: https://mainnet.optimism.io/
+#    NEAR_URL: https://mainnet.aurora.dev
+#    KLAYTN_URL: https://public-node-api.klaytnapi.com/v1/cypress
+#    FUSE_URL: https://rpc.fuse.io
+#    METIS_URL: https://andromeda-rpc.metis.io/
+#    TERRA_URL: https://lcd.terra.dev
+#    RONIN_URL: https://api.roninchain.com/rpc
+#    METIS_URL: https://andromeda-rpc.metis.io/
+#  services:
+#    ACCOUNT_SERVICE_CHAINS_LIST_URL: http://account/v1/chains
+#  logs:
+#    LOG_AWS_ENABLED: true
+#    LOG_LEVEL: debug
+#    NODE_ENV: development
+#    LOG_IN_JSON: true
+#    AWS_XRAY_DAEMON_ADDRESS: xray-service.default:2000
+#

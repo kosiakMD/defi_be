@@ -1,17 +1,15 @@
 /* eslint-disable camelcase */
 import { CoinGeckoClient } from 'coingecko-api-v3';
 
-import { Inject, Logger } from '@nestjs/common';
+import { Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+import { Logger } from '@app/common';
 import { delay } from '@app/common/helpers/delay';
+import { CacheService } from '@app/common/services/cache.service';
 import { chunkRunAsync } from '@app/common/utils';
 
-import { ChainService } from '../../../common/services/chain.service';
-import { Chain } from '../../../common/types';
-
-import { AssetEntity } from '../../assets/entities/asset.entity';
 import { AssetsRepository } from '../../assets/repositories/assets.repository';
 import { AssetPrice } from '../types/asset-price.type';
 import { PriceSource } from '../types/price-source.type';
@@ -30,67 +28,73 @@ export class CoingeckoStrategy extends BaseStrategy<Config> {
 
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
-    private readonly chainService: ChainService,
+    private readonly cacheService: CacheService,
     @InjectRepository(AssetsRepository) private readonly assetsRepository: AssetsRepository,
   ) {
     super();
   }
 
-  public async fetchPrices(priceSource: PriceSource<Config>): Promise<AssetPrice[]> {
-    const chains = await this.chainService.getChains();
-    const assets = await this.assetsRepository.findAllTrackedAssets();
+  public async fetchPrices({ sourceId, config }: PriceSource<Config>): Promise<AssetPrice[]> {
+    const assets = await this.getCoingekoAssetsList();
+    const uniqueCoinIds = assets.reduce(
+      (list, { coingeckoId }) => (list.includes(coingeckoId) ? list : list.concat([coingeckoId])),
+      new Array<string>(),
+    );
 
-    let prices: AssetPrice[] = [];
+    const maxChunkSize = 500;
+    const chunkSize = config?.chunkSize ? Math.min(config?.chunkSize, maxChunkSize) : maxChunkSize;
+    this.logger.log(
+      `${uniqueCoinIds.length} unique coingecko coins loaded. Chunk size: ${chunkSize}`,
+    );
 
-    for (const chain of chains) {
+    const coinPrices = await chunkRunAsync(uniqueCoinIds, chunkSize, async (chunkIds, index) => {
       try {
-        const chainPrices = await this.fetchChainPrices(chain, assets, priceSource);
-        prices = prices.concat(chainPrices);
+        await delay(config?.requestDelay || 0);
+        this.logger.log(`Loading coingecko prices for chunk: ${index}`);
+        return this.fetchCoinsPrices(chunkIds);
       } catch (e) {
-        this.logger.error(`Failed to load coingeko prices for chain ${chain.id}`, e);
+        this.logger.error(`Failed to load coingeko prices for chunk: ${index}`, e);
+        return [];
       }
-    }
+    });
 
-    return prices;
+    const priceMapping = new Map<string, number>(
+      coinPrices.map(({ coinId, price }) => [coinId, price]),
+    );
+
+    return assets.map(({ chainId, address, coingeckoId }) => ({
+      sourceId,
+      chainId,
+      address,
+      price: priceMapping.get(coingeckoId),
+    }));
   }
 
-  private async fetchChainPrices(
-    chain: Chain,
-    assets: AssetEntity[],
-    { sourceId, config }: PriceSource<Config>,
-  ) {
-    const coingekoId = chain.metadata?.coingeckoPlatformId;
-    if (!coingekoId) {
-      this.logger.warn(`No Coingecko mapping for chain id: ${chain.id}`);
-      return [];
-    }
-
-    const chainAssets = assets.filter(({ chainId }) => chain.id === chainId);
-
-    const chunkSize = config?.chunkSize || 100;
-    return chunkRunAsync(chainAssets, chunkSize, (chunkAssets) =>
-      this.fetchChainChunkPrices(sourceId, coingekoId, chunkAssets, config),
+  private getCoingekoAssetsList() {
+    return this.cacheService.getOrLoad(
+      'coingecko_assets_list',
+      async () => {
+        const assets = await this.assetsRepository.findCoingeckoAssets();
+        return assets.map(({ chainId, address, metadata: { coingeckoId } }) => ({
+          chainId,
+          address,
+          coingeckoId,
+        }));
+      },
+      {
+        ttl: 60 * 60,
+      },
     );
   }
 
-  private async fetchChainChunkPrices(
-    sourceId: number,
-    coingekoId: string,
-    chunkAssets: AssetEntity[],
-    config: Config,
-  ) {
-    const addresses = chunkAssets.map(({ address }) => address);
-    await delay(config?.requestDelay || 0);
-    const coins = await this.coinGeckoClient.simpleTokenPrice({
-      id: coingekoId as any,
-      contract_addresses: addresses.join(','),
+  private async fetchCoinsPrices(coinIds: string[]) {
+    const coins = await this.coinGeckoClient.simplePrice({
+      ids: coinIds.join(','),
       vs_currencies: 'usd',
     });
-    return chunkAssets.map<AssetPrice>(({ chainId, address }) => ({
-      chainId,
-      address,
-      sourceId,
-      price: coins[address]?.usd,
+    return coinIds.map((id) => ({
+      coinId: id,
+      price: coins[id]?.usd,
     }));
   }
 }

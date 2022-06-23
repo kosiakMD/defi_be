@@ -17,6 +17,7 @@ import { ChainIdEnum } from '@app/common/enum';
 import { LiquidityPoolFeature, PoolTokenDto } from '@app/common/jobs/pools';
 import {
   IntegrationClaimableTokenDto,
+  IntegrationERC20TokenDto,
   IntegrationLockedBalanceTokenDto,
   IntegrationStakingPositionDto,
 } from '@app/common/jobs/staking';
@@ -63,12 +64,13 @@ export class IntegrationsServiceV3Decorator {
     );
     v3Protocols.forEach((v3Protocol) => {
       if (
-        !v2ProtocolsSet.has(v3Protocol.name) &&
-        !this.protocolsV3Exceptions.has(v3Protocol.name)
+        !v2ProtocolsSet.has(v3Protocol.slug) &&
+        !this.protocolsV3Exceptions.has(v3Protocol.slug)
       ) {
         v2Protocols.data.push({
-          project: v3Protocol.name,
-          name: v3Protocol.name,
+          project: v3Protocol.slug,
+          name: v3Protocol.slug,
+          version: 'v3',
           features: v3Protocol.features,
           links: v3Protocol.links,
         } as unknown as ProtocolDataDto);
@@ -98,7 +100,8 @@ export class IntegrationsServiceV3Decorator {
     }
 
     const v3AllProtocols = await this.platformService.getProtocolList();
-    const v3Protocol = v3AllProtocols.find((p) => p.name === protocolName);
+
+    const v3Protocol = v3AllProtocols.find((p) => p.slug === protocolName);
     if (v3Protocol) {
       const v3Response = await this.platformService.getUserPositionsForPlatform(
         protocolName,
@@ -110,7 +113,7 @@ export class IntegrationsServiceV3Decorator {
 
     return plainToClass(IntegrationsResponseV2Dto, {
       data: {},
-      errors: [],
+      errors: ['Protocol Not Found'],
     });
   }
 
@@ -259,6 +262,29 @@ export class IntegrationsServiceV3Decorator {
           );
         }
 
+        if (v3WalletChain.positions.delegation) {
+          v2WalletChain[FeatureEnum.delegation] = { totalValue: 0, items: [] };
+          v2WalletChain[FeatureEnum.delegation].items = v3WalletChain.positions.delegation.map(
+            (claimableV3: any) => {
+              const delegationV2 = IntegrationsServiceV3Decorator.delegationToV2(claimableV3);
+
+              // Update V2 Totals
+              v2Response.data.total = safelyAddDecimals(
+                v2Response.data.total,
+                delegationV2.stakingToken.value,
+              );
+              v2WalletChain[FeatureEnum.delegation].totalValue = safelyAddDecimals(
+                v2WalletChain[FeatureEnum.delegation].totalValue,
+                delegationV2.stakingToken.value,
+              );
+
+              // v2WalletChain[FeatureEnum.delegation].totalValue += claimableV2.claimableData.value;
+
+              return delegationV2;
+            },
+          );
+        }
+
         if (v3WalletChain.positions.lending) {
           v2WalletChain.features.push(
             ...[FeatureEnum.claimable, FeatureEnum.borrowing, FeatureEnum.health],
@@ -337,6 +363,38 @@ export class IntegrationsServiceV3Decorator {
     return v2Response;
   }
 
+  static delegationToV2(item) {
+    const [supply] = item.supplied;
+    const [reward] = item.rewarded;
+    return {
+      validator: item.meta.validator,
+      stakingToken: plainToClass(IntegrationERC20TokenDto, {
+        address: supply.token.address,
+        name: supply.token.name,
+        symbol: supply.token.symbol,
+        decimals: supply.token.decimals,
+        price: supply.token.price,
+        value: supply.value,
+        balance: supply.amount,
+        staked: supply.amount.toString(),
+      }),
+      rewards: [
+        plainToClass(IntegrationClaimableTokenDto, {
+          address: reward.token.address,
+          name: reward.token.name,
+          symbol: reward.token.symbol,
+          decimals: reward.token.decimals,
+          price: reward.token.price,
+          claimableData: {
+            balance: reward.amount,
+            value: reward.value,
+          },
+          apr: reward.apr?.year * 100,
+        }),
+      ],
+    };
+  }
+
   static lendingToV2(v3Items): LendingPositionDto[] {
     return v3Items.map((item) => {
       const apy = item.apy?.year
@@ -346,13 +404,20 @@ export class IntegrationsServiceV3Decorator {
           item.apy?.stableApy ??
           item.apy?.variableApy;
 
-      return plainToClass(LendingPositionDto, {
+      const resultItem = plainToClass(LendingPositionDto, {
         address: item.token.address,
         balance: item.amount,
         value: item.value,
         apy,
         token: item.token,
+        isCollateral: Boolean(item.isCollateral),
       });
+
+      if (item.healthFactor) {
+        // case for the sushiSwap borrowing position
+        resultItem['healthFactor'] = item.healthFactor;
+      }
+      return resultItem;
     });
   }
 
@@ -368,9 +433,12 @@ export class IntegrationsServiceV3Decorator {
     v2Item.address = poolAddress.toLowerCase();
     v2Item.poolId = Number(poolId);
     v2Item.poolName = null;
+    const poolApy = Array.isArray(v3Item.rewarded)
+      ? v3Item.rewarded.reduce((total, reward) => (reward.apr?.year || 0) + total, 0) * 100
+      : 0;
     v2Item.stats = {
       tvl: lpToken.tvl,
-      poolApy: v3Item.rewarded.reduce((total, reward) => reward.apr?.year + total, 0) * 100,
+      poolApy: poolApy,
     };
 
     v2Item.stakingToken.address = lpToken.token.address;
@@ -383,7 +451,7 @@ export class IntegrationsServiceV3Decorator {
     v2Item.stakingToken.balance = lpToken.amount;
     v2Item.staked = lpToken.amount.toString();
 
-    v2Item.rewards = v3Item.rewarded.map((v3RewardToken) => {
+    const rewards = v3Item.rewarded?.map((v3RewardToken) => {
       const v2RewardToken = plainToClass(IntegrationClaimableTokenDto, {});
       v2RewardToken.address = v3RewardToken.token.address;
       v2RewardToken.name = v3RewardToken.token.name;
@@ -395,6 +463,7 @@ export class IntegrationsServiceV3Decorator {
       v2RewardToken.apr = v3RewardToken.apr?.year * 100;
       return v2RewardToken;
     });
+    v2Item.rewards = Array.isArray(rewards) ? rewards : [];
 
     /* handle underlying assets */
     if (lpToken.token.underlying && lpToken.token.underlying.length !== 0) {
@@ -406,7 +475,7 @@ export class IntegrationsServiceV3Decorator {
           decimals: u.decimals,
           reserve: u.reserve,
           value: u.value,
-          balance: u.balance,
+          balance: u.balance ? u.balance : u['amount'],
           price: u.price,
           positionInPool: u.position,
         };
@@ -416,7 +485,11 @@ export class IntegrationsServiceV3Decorator {
   }
 
   static claimableToV2(claimableV3: IClaimableFeatureUser): IntegrationClaimableTokenDto {
-    const supplied = claimableV3.supplied[0];
+    // in fact it is not correct when reward/claimable token saved as 'supplied'
+    let supplied = claimableV3.supplied[0];
+    if (!supplied) {
+      supplied = claimableV3.rewarded[0];
+    }
     const claimableV2 = plainToClass(IntegrationClaimableTokenDto, supplied.token);
 
     claimableV2.claimableData = {
@@ -466,7 +539,8 @@ export class IntegrationsServiceV3Decorator {
     if (liquidityV3.token) {
       liquidityV2.stats.share = liquidityV3.token.amount / liquidityV3.token.totalSupply;
     } else {
-      liquidityV2.stats.share = null;
+      const userSupplied = liquidityV2.tokens.reduce((total, token) => token.value, 0);
+      liquidityV2.stats.share = userSupplied / liquidityV2.stats.tvl;
     }
 
     liquidityV2.rewards = liquidityV3.rewarded?.map((v3RewardToken) => {
@@ -486,6 +560,8 @@ export class IntegrationsServiceV3Decorator {
   }
 }
 
-// competing es-lint rules
-// eslint-disable-next-line newline-per-chained-call
-const safelyAddDecimals = (dec1, dec2) => new BigNumber(dec1).plus(new BigNumber(dec2)).toNumber();
+const safelyAddDecimals = (dec1, dec2) => {
+  return new BigNumber(dec1) //
+    .plus(new BigNumber(dec2))
+    .toNumber();
+};

@@ -1,4 +1,4 @@
-import { FakeAssetService } from 'apps/integration/src/modules/microservices/fake.asset.service';
+import { AssetService } from 'apps/integration/src/modules/microservices/asset.service';
 import BigNumber from 'bignumber.js';
 import { Cache } from 'cache-manager';
 
@@ -82,7 +82,7 @@ export class AaveV2Lending
     protected multicall: MulticallAggregator,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected logger: Logger,
     @Inject(CACHE_MANAGER) protected cache: Cache,
-    protected assetService: FakeAssetService,
+    protected assetService: AssetService,
   ) {
     super();
   }

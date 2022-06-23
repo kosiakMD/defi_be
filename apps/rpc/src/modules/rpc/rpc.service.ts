@@ -32,21 +32,24 @@ export class RpcService {
       return response.status(409).json({ error: `No endpoints for chainId ${chainId}` });
     }
 
-    for await (const endpoint of endpoints) {
-      let retries = this.maxRetries || 3;
-      while (retries) {
-        const success = await this.makeRPCCall(endpoint.endpoint, request, response);
-        const score = success ? EndpointCallScore.success : EndpointCallScore.fail;
-        this.endpointsStatisticService
-          .updateEndpointSuccessRate(endpoint, score)
-          .catch((error) => this.logger.error('Update endpoint statistic failed', error));
+    let index = 0;
+    let retries = this.maxRetries || 3;
 
-        if (success) {
-          return;
-        }
+    while (retries >= 0) {
+      const endpoint = endpoints[index];
+      const success = await this.makeRPCCall(endpoint.endpoint, request, response);
+      const score = success ? EndpointCallScore.success : EndpointCallScore.fail;
+      this.endpointsStatisticService
+        .updateEndpointSuccessRate(endpoint, score)
+        .catch((error) => this.logger.error('Update endpoint statistic failed', error));
 
-        retries -= 1;
+      if (success) {
+        return;
       }
+
+      // Loop thought all endpoints in round-robin
+      index = (index + 1) % endpoints.length;
+      retries--;
     }
     response
       .status(418)
@@ -65,13 +68,28 @@ export class RpcService {
       firstValueFrom(this.httpService.post(target, request.body)).then(
         ({ data, status }) => {
           const took = Date.now() - started;
-          this.logger.log({
-            message: `Proxying RPC request to '${target}' successful. Took ${took}`,
-            target,
-            took,
-          });
-          response.status(status).json(data);
-          ok(true);
+
+          const responseString = JSON.stringify(data)?.toLowerCase() || '';
+          const isFailedResponse = wrongRpcResponsePatterns.some(
+            (pattern) => responseString.indexOf(pattern) >= 0,
+          );
+          if (isFailedResponse) {
+            this.logger.error({
+              message: `Proxying RPC request to '${target}' failed. Took ${took}`,
+              target,
+              took,
+              data,
+            });
+            ok(false);
+          } else {
+            this.logger.log({
+              message: `Proxying RPC request to '${target}' successful. Took ${took}`,
+              target,
+              took,
+            });
+            response.status(status).json(data);
+            ok(true);
+          }
         },
         (error) => {
           const took = Date.now() - started;
@@ -89,3 +107,10 @@ export class RpcService {
     });
   }
 }
+
+const wrongRpcResponsePatterns = [
+  'invalid json rpc response',
+  'missing trie node',
+  'header not found',
+  'upgrade to an archive plan add-on for your account',
+];

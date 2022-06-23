@@ -7,7 +7,10 @@ import { AssetEntity } from './asset.entity';
 @Unique(['asset', 'underlyingAsset'])
 @Entity({ name: 'assets_underlying' })
 export class AssetUnderlyingEntity extends BaseEntity {
-  @ManyToOne(() => AssetEntity, (asset) => asset.underlying, { nullable: false })
+  @ManyToOne(() => AssetEntity, (asset) => asset.underlying, {
+    nullable: false,
+    orphanedRowAction: 'delete',
+  })
   @JoinColumn({
     name: 'asset_id',
     referencedColumnName: 'id',

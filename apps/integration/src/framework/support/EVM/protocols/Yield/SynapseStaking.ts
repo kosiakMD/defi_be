@@ -1,5 +1,13 @@
 import BigNumber from 'bignumber.js';
+import { Cache } from 'cache-manager';
 
+import { CACHE_MANAGER, Inject } from '@nestjs/common';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+
+import { Logger } from '@app/common';
+import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
+
+import { SynapseAssetService } from '../../../../../modules/microservices/synapse.asset.service';
 import { INamedFunctionPredicates } from '../../../interfaces';
 import { IStakingFeatureMinimal } from '../../../interfaces/feature.staking.interface';
 import { ERC20Token } from '../../../interfaces/tokens.common.interface';
@@ -7,9 +15,19 @@ import {
   ISupplyTokenMinimal,
   ISupplyTokenOpportunity,
 } from '../../../interfaces/tokens.supplied.interface';
+import { AbiService } from '../../AbiModule/AbiService';
 import { IMasterChefPoolInfo, MasterChef } from './MasterChef';
 
 export class SynapseStaking extends MasterChef {
+  constructor(
+    protected abiService: AbiService,
+    protected multicall: MulticallAggregator,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) protected logger: Logger,
+    @Inject(CACHE_MANAGER) protected cache: Cache,
+    protected assetService: SynapseAssetService,
+  ) {
+    super(abiService, multicall, logger, cache);
+  }
   functionPredicates: INamedFunctionPredicates = {
     lpToken: () => (item) => item.name === 'lpToken',
     poolInfo: () => (item) => item.name === 'poolInfo',

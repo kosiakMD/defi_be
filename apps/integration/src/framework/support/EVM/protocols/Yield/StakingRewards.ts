@@ -1,4 +1,5 @@
 import { FakeAssetService } from 'apps/integration/src/modules/microservices/fake.asset.service';
+import { BigNumber as BN } from 'bignumber.js';
 import { Cache } from 'cache-manager';
 
 import { HttpService } from '@nestjs/axios';
@@ -6,6 +7,7 @@ import { CACHE_MANAGER, Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, Logger } from '@app/common';
+import { averageBlockTimeByChain } from '@app/common/constant/blocktime';
 import { CallData } from '@app/common/dto/CallData';
 import { endsWith, normalizeDecimals, startsWith } from '@app/common/utils';
 import { DynamicContract } from '@app/common/web3provider/contracts/DynamicContract';
@@ -36,7 +38,8 @@ export class StakingRewards extends MultiContractProtocol<
     earned: () => (item) => ['pendingReward', 'earned'].includes(item.name),
     stakingToken: () => (item) => startsWith(item.name, 'stak') && endsWith(item.name, 'token'),
     rewardToken: () => (item) => ['rewardToken', 'rewardsToken'].includes(item.name),
-    rewardPerSecond: () => (item) => ['rewardRate', 'rewardPerBlock'].includes(item.name), // TODO: unclear if per block, or per second here (QuickSwap)
+    rewardPerSecond: () => (item) => ['rewardRate', 'rewardPerBlock'].includes(item.name), // TODO: for pancake we have reward per block
+    rewardBlockLast: () => (item) => ['bonusEndBlock'].includes(item.name),
   };
 
   constructor(
@@ -64,6 +67,10 @@ export class StakingRewards extends MultiContractProtocol<
 
   protected async fetchOpportunityData(): Promise<IStakingFeatureMinimal[]> {
     const poolAddresses = await this.fetchPoolList();
+    // const poolAddresses = [
+    //   '0xa5D57C5dca083a7051797920c78fb2b19564176B', // -> has apr
+    //   '0xED53944b1c0cEecDe1a413fDb4D0496e1a08ab58', // no apr
+    // ];
 
     // Dynamically load inputless functions here instead of hardcoding each
     // call so when its extended, we have a better chance of minimal changes
@@ -98,8 +105,10 @@ export class StakingRewards extends MultiContractProtocol<
       results.set(key, value);
     });
 
+    const blockNumber = await this.multicall.web3(this.meta.chain).eth.getBlockNumber();
+
     return poolAddresses.map((poolAddress) =>
-      this.formatStakingOpportunityMinimal(poolAddress, results),
+      this.formatStakingOpportunityMinimal(poolAddress, results, blockNumber),
     );
   }
 
@@ -173,8 +182,21 @@ export class StakingRewards extends MultiContractProtocol<
   protected formatStakingOpportunityMinimal(
     address: Address,
     data: Map<string, CallData>,
+    blockNumber: number,
   ): IStakingFeatureMinimal {
-    const opportunity = {
+    const avgBlockTime = averageBlockTimeByChain[this.meta.chain] || 1;
+    const rewardPerBlock: BN = data.get(
+      this.callLabel(address, this.functions.rewardPerSecond.name),
+    ).output.data;
+    let rewardPerSecond = rewardPerBlock.div(avgBlockTime);
+
+    const rewardBlockLast: BN = data.get(
+      this.callLabel(address, this.functions.rewardBlockLast.name),
+    ).output.data;
+    if (rewardBlockLast.lt(new BN(blockNumber))) {
+      rewardPerSecond = new BN(0);
+    }
+    return {
       id: address,
       chain: this.meta.chain,
       feature: this.meta.feature,
@@ -195,13 +217,9 @@ export class StakingRewards extends MultiContractProtocol<
               .get(this.callLabel(address, this.functions.rewardToken.name))
               .output.data.toLowerCase(),
           },
-          rewardPerSecond: data
-            .get(this.callLabel(address, this.functions.rewardPerSecond.name))
-            .output.data.toString(),
+          rewardPerSecond: rewardPerSecond.toString(),
         },
       ],
     };
-
-    return opportunity;
   }
 }

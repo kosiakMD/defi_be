@@ -1,20 +1,19 @@
 import { MultiCall } from '@indexed-finance/multicall';
 import Web3 from 'web3';
-import { AbiItem } from 'web3-utils';
 
-import { Logger } from '@app/common/Logger/Logger.service';
+import { Logger } from '@app/common';
 import { CURVE_MAIN_COIN_ADDRESS, ZERO_ADDRESS } from '@app/common/constant';
 import { MulticallMethodsEnum } from '@app/common/jobs/multicall.methods.enum';
 
 import { CURVE_LP_ABI } from '../abis/curver-lp.abi';
 
-export class CURVE_LP {
+export class CurveLpContract {
   protected contract;
   protected multicall;
 
-  constructor(protected address: string, protected logger: Logger, web3Provider: Web3) {
-    this.contract = new web3Provider.eth.Contract(CURVE_LP_ABI as AbiItem[], address);
-    this.multicall = new MultiCall(web3Provider);
+  constructor(protected address: string, protected logger: Logger, web3: Web3) {
+    this.contract = new web3.eth.Contract(CURVE_LP_ABI, address);
+    this.multicall = new MultiCall(web3);
   }
 
   async getCoinsForLpToken(): Promise<string[]> {

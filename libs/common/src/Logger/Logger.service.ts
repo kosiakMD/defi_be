@@ -15,69 +15,96 @@ export enum LogLevelEnum {
 
 export type LogMessage = Partial<{ message: string; level?: LogLevelEnum | number }>;
 
-// @Injectable({ scope: Scope.REQUEST })
 @Injectable()
 export class Logger extends WinstonLogger implements NestLoggerService {
   static logger: WinstonLogger;
   // TODO: temporary need static for SingleTone
-  private static times = new Map();
-  private readonly times = new Map();
+  private static times: Map<string, number> = new Map();
+  private readonly times: Map<string, number> = new Map();
 
   constructor(logger: WinstonLoggerInterface) {
     super(logger);
   }
 
-  static time(message: string): number {
-    const start = new Date().getTime();
-    Logger.times.set(message, start);
+  static getTimeInfo(idMessage: string | LogMessage, message?: string | LogMessage): string[] {
+    const id: string = (idMessage as LogMessage)?.message || (idMessage as string);
+    const msg: string =
+      (message as LogMessage)?.message ||
+      (message as string) ||
+      (idMessage as LogMessage)?.message ||
+      (idMessage as string);
+    return [id, msg];
+  }
+
+  static time(idMessage: string | LogMessage): number {
+    const start = Date.now();
+    const [id] = Logger.getTimeInfo(idMessage);
+    Logger.times.set(id, start);
     return start;
   }
 
   static timeEnd(
-    message: string | LogMessage,
+    idMessage: string | LogMessage,
+    message?: string | LogMessage,
     context?: string | Record<string, string | number>,
   ): number {
-    const msg = (message as LogMessage)?.message || message;
-    const start = Logger.times.get(msg);
+    const [id, msg] = Logger.getTimeInfo(idMessage, message);
+    const start = Logger.times.get(id);
     if (!start) {
-      return Logger.logger.warn(`Timer ${msg} does not exist`);
+      return Logger.logger.warn(`!Timer ${id} does not exist`);
     }
-    const finish = new Date().getTime();
-    Logger.times.delete(msg);
+    const finish = Date.now();
+    Logger.times.delete(id);
     const diff = finish - start;
     Logger.logger.debug(
       {
         ...(context as object),
-        message: `${msg}: ${diff} ms (${diff / 1000} s)`,
+        message: `${msg} ${diff} ms (${diff / 1000} s)`,
       },
       'Time',
     );
     return diff;
   }
 
-  public error(message: any, trace?: string, context?: string): any {
+  public error(message: any, traceOrMeta?: string | object, context?: string): any {
+    let trace: string,
+      meta: object = null;
+    if (typeof traceOrMeta === 'object') {
+      meta = traceOrMeta as object;
+    } else if (typeof traceOrMeta === 'string') {
+      trace = traceOrMeta as string;
+    }
     // TODO: for all exception in the future
-    return Logger.logger.error(message, trace, context);
+    return Logger.logger.error(meta ? { ...meta, message } : message, trace, context);
   }
 
-  public time(message: string): number {
-    const start = new Date().getTime();
-    this.times.set(message, start);
+  public time(idMessage: string | LogMessage): number {
+    const start = Date.now();
+    const [id] = Logger.getTimeInfo(idMessage);
+    this.times.set(id, start);
     return start;
   }
 
   public timeEnd(
-    message: string | Partial<{ message: string }>,
+    idMessage: string | LogMessage,
+    message?: string | LogMessage,
     context?: string | Record<string, string | number>,
   ): number {
-    const start = this.times.get(message);
+    const [id, msg] = Logger.getTimeInfo(idMessage, message);
+    const start = this.times.get(id);
     if (!start) {
-      return this.warn(`Timer ${message} does not exist`);
+      return this.warn(`!!Timer ${id} does not exist`);
     }
-    const finish = new Date().getTime();
-    this.times.delete(message);
+    const finish = Date.now();
+    this.times.delete(id);
     const diff = finish - start;
-    super.debug('' + diff / 100 + context ? ` ${context}` : '', `Time: ${message}`);
+    this.debug(
+      {
+        ...(context as object),
+        message: `${msg} ${diff} ms (${diff / 1000} s)`,
+      },
+      'Time',
+    );
     return diff;
   }
 }

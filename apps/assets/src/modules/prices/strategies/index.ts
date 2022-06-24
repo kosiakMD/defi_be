@@ -3,6 +3,7 @@ import { CoingeckoStrategy } from './coingecko.strategy';
 import { DebankStrategy } from './debank.strategy';
 import { SolanaScanStrategy } from './solana-scan.strategy';
 import { SundaeSwapStrategy } from './sundae-swap.strategy';
+import { Univ2NetworkStrategy } from './univ2-network.strategy';
 import { Univ2SubgraphStrategy } from './univ2-subgraph.strategy';
 
 type PriceStrategies =
@@ -10,7 +11,8 @@ type PriceStrategies =
   | typeof DebankStrategy
   | typeof SolanaScanStrategy
   | typeof SundaeSwapStrategy
-  | typeof Univ2SubgraphStrategy;
+  | typeof Univ2SubgraphStrategy
+  | typeof Univ2NetworkStrategy;
 
 const strategies = new Map<PriceSourceStrategy, PriceStrategies>([
   [PriceSourceStrategy.COINGECKO, CoingeckoStrategy],
@@ -18,6 +20,7 @@ const strategies = new Map<PriceSourceStrategy, PriceStrategies>([
   [PriceSourceStrategy.SOLANA_SCAN, SolanaScanStrategy],
   [PriceSourceStrategy.SUNDAESWAP, SundaeSwapStrategy],
   [PriceSourceStrategy.UNIV2_SUBGRAPH, Univ2SubgraphStrategy],
+  [PriceSourceStrategy.UNIV2_NETWORK, Univ2NetworkStrategy],
 ]);
 
 export const getPriceStrategyType = (strategy: PriceSourceStrategy) => {

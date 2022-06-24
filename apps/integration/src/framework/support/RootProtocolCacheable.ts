@@ -1,15 +1,15 @@
+import { AssetServiceInterface } from '@sdk/assets/interfaces';
 import { Cache } from 'cache-manager';
 
 import { Address, Logger } from '@app/common';
 import { aprToApy, normalizeDecimals } from '@app/common/utils';
 
-import { AccountServiceInterface } from '../../modules/microservices/account.service.interface';
-import { PriceServiceInterface } from '../../modules/microservices/price.service.interface';
 import { RootProtocol } from './RootProtocol';
 import { MissingOpportunityException, MissingTokenException } from './exceptions';
 import {
   IPoolDataProtocolResponse,
   IProtocolMeta,
+  IUserDataProtocolResponse,
   IWalletMinimal,
   IWalletOpportunity,
   IWalletUserEntry,
@@ -32,7 +32,14 @@ import {
 
 /**
  * Common Protocol Base. This is to be used cross-chain
- * so don't implement EVM specific solutions here, better to do higher up
+ * so don't implement EVM specific solutions here, better to do higher up.
+ *
+ * For a high level overview see:
+ * https://defiyield.atlassian.net/wiki/spaces/PD/pages/618594305/Integrations+Service+Diagram
+ *
+ * 1. Get longer term cacheable data => this can be viewed and tested using the /{protocolName}/sync endpoint
+ * 2. (if needed) update any of the getPoolData logic => this can be viewed and tested using the /{protocolName}/opportunities endpoint
+ * 3. get user balances => this can be viewed and tested using the /{protocolName}/ endpoint
  */
 export abstract class RootProtocolCacheable<
   TMinimal extends IWalletMinimal,
@@ -43,34 +50,12 @@ export abstract class RootProtocolCacheable<
   meta: TProtocolMeta;
   protected abstract logger: Logger;
   protected abstract cache: Cache;
-  // TODO: use new asset service :)
-  protected abstract accountService: AccountServiceInterface;
-  protected abstract priceService: PriceServiceInterface;
-
-  // 1. get cacheable data
-  // 2. cache above data
-  /** for pools */
-  // 3. retrieve cached data and fill in 'real-time' data (prices, reserves) * most of this will come directly from asset service
-  // 4. return formatted data
-  /** For users */
-  // 5. retrieve above pool data
-  // 6. get user balances for each pool
-  // 7. return format data
-
-  /****************************************************
-   * Cacheable data
-   *
-   * This is long term cacheable data that will not
-   * change often. Pool list, token addresses
-   *
-   ****************************************************/
-
+  protected abstract assetService: AssetServiceInterface;
   /**
-   * Returns the list of all available pools
+   * Returns the list of all available pools.
    * This is long term cacheable data, so for example,
    * the token address, but not the token price
    */
-  // TODO: Rename OpportunityList
   abstract getCacheableOpportunityData(): Promise<TMinimal[]>; // get all raw data that can be cached (pools with token address, but not token details/price)
 
   private get poolListCacheKey() {
@@ -145,7 +130,6 @@ export abstract class RootProtocolCacheable<
    * @param tokens
    * @returns
    */
-  // TODO: rename fetchOpportunityData
   protected updateRealTimeData?(
     opportunities: TMinimal[],
     tokens?: Map<Address, any>,
@@ -196,38 +180,61 @@ export abstract class RootProtocolCacheable<
    */
 
   async getPoolData(): Promise<IPoolDataProtocolResponse<TOpportunity>> {
-    return this.getOrSet(60, `${this.protocolId}_hydrated_pool_list`, async () => {
-      // get pool list from longer term cache
-      const list = await this.cache.get<string[]>(this.poolListCacheKey);
+    const cacheKey = `${this.protocolId}_hydrated_pool_list`;
+    const cacheTime = 60;
 
-      if (!list?.length) {
-        // If protocol pool list is not available, then
-        // refetch all the pools and cache for the next user
-        // (Only would likely be used for new deploys, or failed background job)
-        this.logger.warn(
-          `Failed to get pools list from cache. Fetching On Demand`,
-          this.protocolId,
-        );
-        return this.hydrateOpportunityData(await this.cachePoolData());
-      }
+    const cachedData = await this.getCache<IPoolDataProtocolResponse<TOpportunity>>(cacheKey);
+    if (cachedData) {
+      return cachedData;
+    }
 
-      // fetch all cached pools from redis
-      const pools = (
-        await this.cache.store.mget(...list.map(this.singlePoolCacheKey.bind(this)), {})
-      ).filter((pool) => pool);
+    // get pool list from longer term cache
+    const list = await this.cache.get<string[]>(this.poolListCacheKey);
 
-      if (list.length !== pools.length) {
-        // Should only occur if pools list is cached, however the pools themselves are not cached
-        // this could be an error due to ttl configuration between the pools. Falls back
-        // to just refetching all the pools for next time
-        this.logger.warn('Pool list mismatch. Fetching On Demand', this.protocolId);
+    if (!list?.length) {
+      // If protocol pool list is not available, then
+      // refetch all the pools and cache for the next user
+      // (Only would likely be used for new deploys, or failed background job)
+      this.logger.warn(`Failed to get pools list from cache. Fetching On Demand`, this.protocolId);
+      const { data, errors } = await this.hydrateOpportunityData(await this.cachePoolData());
+      return this.cacheIfErrorFree(cacheTime, cacheKey, { data, errors });
+    }
 
-        return this.hydrateOpportunityData(await this.cachePoolData());
-      }
+    // fetch all cached pools from redis
+    const pools = (
+      await this.cache.store.mget(...list.map(this.singlePoolCacheKey.bind(this)), {})
+    ).filter((pool) => pool);
 
-      // Hydrate Cached Data
-      return this.hydrateOpportunityData(pools);
-    });
+    // Should only occur if pools list is cached, however the pools themselves are not cached
+    // this could be an error due to ttl configuration between the pools. Falls back
+    // to just refetching all the pools for next time
+    if (list.length !== pools.length) {
+      this.logger.warn('Pool list mismatch. Fetching On Demand', this.protocolId);
+
+      const { data, errors } = await this.hydrateOpportunityData(await this.cachePoolData());
+      return this.cacheIfErrorFree(cacheTime, cacheKey, { data, errors });
+    }
+
+    // Hydrate Cached Data
+    const { data, errors } = await this.hydrateOpportunityData(pools);
+    return this.cacheIfErrorFree(cacheTime, cacheKey, { data, errors });
+  }
+
+  /**
+   * Cache values if no errors have occurred.
+   * return the full response regardless
+   *
+   * @param cacheTime ttl
+   * @param cacheKey redis key
+   * @param protocolResponse
+   * @returns protocolResponse
+   */
+  private async cacheIfErrorFree(
+    cacheTime: number,
+    cacheKey: string,
+    { data, errors }: IPoolDataProtocolResponse<TOpportunity>,
+  ): Promise<IPoolDataProtocolResponse<TOpportunity>> {
+    return errors.length ? { data, errors } : this.setCache(cacheTime, cacheKey, { data, errors });
   }
 
   /**
@@ -349,6 +356,12 @@ export abstract class RootProtocolCacheable<
       single.forEach((featureName) => {
         if (pool?.[featureName]) {
           tokens.add(pool[featureName].token.address);
+
+          // TODO: This is only required if asset-service doesn't provide
+          // proper underlying token support (i.e. balancer, solana, etc)
+          if (pool[featureName].token?.underlying) {
+            pool[featureName].token?.underlying.map((token) => tokens.add(token.address));
+          }
         }
       });
     });
@@ -362,31 +375,9 @@ export abstract class RootProtocolCacheable<
    * @param addresses token addresses
    */
   protected async getTokens(addresses: Address[]): Promise<[Address, any][]> {
-    const { data: tokens } = await this.accountService.getAssets(addresses, [this.meta.chain]);
-
-    const { prices } = await this.priceService.getTokenPricesFetch(addresses, this.meta.chain);
-
-    return tokens.map((token: any) => [
-      token.address,
-      {
-        address: token.address,
-        name: token.name,
-        symbol: token.symbol,
-        chainId: token.chain,
-        decimals: token.decimals,
-        price: Number(prices[token.address]),
-        underlying: token.underlyingAssets?.map((u) => {
-          return {
-            address: u.address,
-            name: u.name,
-            symbol: u.symbol,
-            chainId: u.chainId,
-            decimals: u.decimals,
-            price: Number(prices[u.address]),
-          };
-        }),
-      },
-    ]);
+    return this.assetService.getAssets(
+      addresses.map((address) => ({ address, chainId: this.meta.chain })),
+    ); // TODO: Format and match token interfaces
   }
 
   /**
@@ -396,17 +387,14 @@ export abstract class RootProtocolCacheable<
    * @param tokens map of all tokens (and token details) keyed by token address
    */
   protected formatOpportunity(opportunity: TMinimal, tokens: TokenMap): void | TOpportunity {
-    // const base: Partial<TOpportunity> = { // TODO: 'token' isn't yet on TOpportunity
-    const base: any = {
+    const base: Partial<IWalletOpportunity> = {
       feature: opportunity.feature,
       id: opportunity.id,
       chain: opportunity.chain,
       links: this.generateLinks(opportunity),
       meta: opportunity.meta,
+      interactive: opportunity.interactive,
     };
-    if (opportunity.interactive) {
-      base.interactive = opportunity.interactive;
-    }
 
     const receipt = this.formatOpportunityReceiptToken(
       opportunity,
@@ -436,10 +424,8 @@ export abstract class RootProtocolCacheable<
       base.supply = this.formatOpportunitySuppliedToken(opportunity.supply, token);
     }
 
-    // it is more safe to have it here
-    const tvl = this.getOpportunityTVL(opportunity, tokens);
-
     // fill & format reward tokens
+    const tvl = this.getOpportunityTVL(opportunity, tokens);
     if ('rewarded' in opportunity) {
       base.rewarded = opportunity.rewarded.map((poolToken) => {
         const token = tokens.get(poolToken.token.address);
@@ -477,7 +463,7 @@ export abstract class RootProtocolCacheable<
       base.borrow = this.formatOpportunityBorrowedToken(opportunity.borrow, token);
     }
 
-    return base;
+    return base as TOpportunity;
   }
 
   protected getOpportunityTVL(opportunity: TMinimal, tokens: TokenMap): number {
@@ -503,7 +489,7 @@ export abstract class RootProtocolCacheable<
       return 0;
     }
 
-    return token.price * normalizeDecimals(total, token.decimals);
+    return token?.price * normalizeDecimals(total, token.decimals);
   }
 
   /**
@@ -599,9 +585,37 @@ export abstract class RootProtocolCacheable<
    *
    * @param addresses User Addresses
    */
-  abstract getUsersData(
-    addresses: Address[],
-  ): Promise<{ data: Map<Address, TUserEntry[]>; errors: Error[] }>; // fetch user balances for each pool, and filter to only owned pools
+  protected fetchUserData?(address: Address, pools: TOpportunity[]): Promise<TUserEntry[]>; // fetch user balances for each pool, and filter to only owned pools
+
+  async getUsersData(addresses: Address[]): Promise<IUserDataProtocolResponse<TUserEntry>> {
+    const { data: pools, errors } = await this.getPoolData();
+
+    const results = new Map<Address, TUserEntry[]>(
+      addresses.map((address) => [address, [] as TUserEntry[]]),
+    );
+
+    await Promise.allSettled(
+      addresses.map(async (address) => {
+        try {
+          if (!this.fetchUserData) {
+            const err = new Error(`fetchUserData has no implementation ${this.constructor.name}`);
+            this.logger.error(err.message, err.stack, `${this.constructor.name}/${this.meta.name}`);
+            return;
+          }
+          const userPools = await this.fetchUserData?.(address, pools);
+          // An array of undefined values can be obtained
+          const filteredPools = userPools.filter((data) => data);
+          if (filteredPools.length) {
+            results.get(address).push(...filteredPools);
+          }
+        } catch (err) {
+          errors.push(err);
+        }
+      }),
+    );
+
+    return { data: results, errors };
+  }
 
   /****************************************************
    *
@@ -619,11 +633,20 @@ export abstract class RootProtocolCacheable<
    * @returns data
    */
   protected async getOrSet<T>(ttl: number, key: string, callback: () => Promise<T>): Promise<T> {
-    const cached = await this.cache.get<T>(key);
+    const cached = await this.getCache<T>(key);
     if (cached) return cached;
 
     // in the event of an error, nothing will be cached
     const data = await callback();
+    await this.setCache(ttl, key, data);
+    return data;
+  }
+
+  protected getCache<T>(key: string): Promise<T> {
+    return this.cache.get<T>(key);
+  }
+  protected async setCache<T>(ttl: number, key: string, data: T): Promise<T> {
+    // null is not a cacheable value
     if (data) {
       await this.cache.set(key, data, { ttl });
     }
@@ -661,7 +684,10 @@ export abstract class RootProtocolCacheable<
     return {
       apr,
       apy: {
-        // TODO: this does not take into account fees on each harvest
+        /**
+         * @notice this does not take into account fees on each harvest
+         * and uses continual compounding to estimate apy
+         */
         day: aprToApy(apr.day, 1) || 0,
         week: aprToApy(apr.week, 7) || 0,
         month: aprToApy(apr.month, 365 / 12) || 0,

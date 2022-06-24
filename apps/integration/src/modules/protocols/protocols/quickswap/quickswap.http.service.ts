@@ -1,7 +1,8 @@
 import { firstValueFrom, from, map } from 'rxjs';
 import { filter, toArray } from 'rxjs/operators';
 
-import { HttpService, Injectable } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import { Injectable } from '@nestjs/common';
 
 import { Address } from '@app/common';
 
@@ -19,14 +20,14 @@ interface IMinimalQuickswapHttpResult {
 export class QuickswapHttpService {
   constructor(protected readonly http: HttpService) {}
 
-  private formatRawData(result: IMinimalQuickswapHttpResult): IContractInfo {
+  private static formatRawData(result: IMinimalQuickswapHttpResult): IContractInfo {
     return {
       stakingContractAddress: result.stakingRewardAddress.toLowerCase(),
       pairAddress: result.pair.toLowerCase(),
     };
   }
 
-  private filterStakingInfo(item: IContractInfo): boolean {
+  private static filterStakingInfo(item: IContractInfo): boolean {
     return Boolean(item.stakingContractAddress && item.pairAddress);
   }
 
@@ -38,15 +39,15 @@ export class QuickswapHttpService {
     const [stakingContracts, dualStakingContracts] = await Promise.all([
       firstValueFrom(
         from(allStakingContracts).pipe(
-          map(this.formatRawData), //
-          filter(this.filterStakingInfo),
+          map(QuickswapHttpService.formatRawData), //
+          filter(QuickswapHttpService.filterStakingInfo),
           toArray(),
         ),
       ),
       firstValueFrom(
         from(dualrewards).pipe(
-          map(this.formatRawData), //
-          filter(this.filterStakingInfo),
+          map(QuickswapHttpService.formatRawData), //
+          filter(QuickswapHttpService.filterStakingInfo),
           toArray(),
         ),
       ),

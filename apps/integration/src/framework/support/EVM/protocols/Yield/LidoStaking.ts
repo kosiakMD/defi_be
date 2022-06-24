@@ -1,15 +1,15 @@
+import { FakeAssetService } from 'apps/integration/src/modules/microservices/fake.asset.service';
 import { Cache } from 'cache-manager';
 import { firstValueFrom } from 'rxjs';
 
-import { CACHE_MANAGER, HttpService, Inject } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import { CACHE_MANAGER, Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, Logger } from '@app/common';
 import { normalizeDecimals } from '@app/common/utils';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
-import { AccountService } from '../../../../../modules/microservices/account.service';
-import { PriceService } from '../../../../../modules/microservices/price.service';
 import { FeatureEnum } from '../../../enums';
 import {
   INamedFunctionPredicates,
@@ -79,8 +79,7 @@ export class LidoStaking
     protected multicall: MulticallAggregator,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected logger: Logger,
     @Inject(CACHE_MANAGER) protected cache: Cache,
-    protected accountService: AccountService,
-    protected priceService: PriceService,
+    protected assetService: FakeAssetService,
     protected httpService: HttpService,
   ) {
     super();
@@ -94,8 +93,6 @@ export class LidoStaking
   async fetchOpportunityData(context: {
     [key: string]: any;
   }): Promise<IStakingFeatureMinimalSingle[]> {
-    // TODO: does this refresh enough?
-
     const { data } = await firstValueFrom(this.httpService.get(this.meta.context.statsApi));
     const apr = this.meta.context.statsProcessor(data);
 
@@ -201,7 +198,7 @@ export class LidoStaking
     const {
       output: { data: balanceRaw },
     } = data.get(this.balanceOfLabel(pool.id, address));
-    // TODO: Object.values(userInfo) and find index instead of assuming .amount ?
+
     const balance = normalizeDecimals(balanceRaw.toString(), pool.supply.token.decimals);
 
     if (!balance) return;

@@ -1,6 +1,7 @@
 import { map } from 'rxjs/operators';
 
-import { HttpException, HttpService, Inject } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import { HttpException, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 

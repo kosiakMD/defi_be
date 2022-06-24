@@ -1,7 +1,8 @@
 import { plainToClass } from 'class-transformer';
 import { firstValueFrom } from 'rxjs';
 
-import { HttpService, Inject, Injectable } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import {
@@ -46,6 +47,7 @@ import {
 } from './compound/compound.interfaces';
 import { CToken } from './compound/contracts/CToken';
 import { CompoundLens } from './compound/contracts/CompoundLens';
+import { Comptroller } from './compound/contracts/Comptroller';
 
 @Injectable()
 export class CompoundProtocol extends BasicProtocol {
@@ -91,6 +93,10 @@ export class CompoundProtocol extends BasicProtocol {
     baseData.push(...userBaseData);
 
     return [baseData, errors];
+  }
+
+  private isCollateralLabel(account: ICompoundHttpAccount, tokenAddress: string): string {
+    return `collateral_${account.address}_${tokenAddress}`;
   }
 
   private suppliedLabel(account: ICompoundHttpAccount, token: ICompoundHttpToken): string {
@@ -174,10 +180,15 @@ export class CompoundProtocol extends BasicProtocol {
   }
 
   getMulticallData(account: ICompoundHttpAccount, chain: ChainDto): Promise<Map<string, CallData>> {
+    const comptroller = new Comptroller(COMPTROLLER[chain.id]);
     const balanceCalls = new Map(
       account.tokens.flatMap((token) => {
         const contract = new CToken(token.address);
         return [
+          [
+            this.isCollateralLabel(account, token.address),
+            comptroller.checkMembership(account.address, token.address),
+          ],
           [this.suppliedLabel(account, token), contract.balanceOf(account.address)],
           [this.borrowedLabel(account, token), contract.borrowBalanceStored(account.address)],
         ];
@@ -248,11 +259,14 @@ export class CompoundProtocol extends BasicProtocol {
     const items = account.tokens.reduce((acc, accountToken) => {
       const cToken = cTokens.get(accountToken.address);
       const underlying = underlyingTokens.get(cToken.underlying_address ?? ZERO_ADDRESS);
-
       const balance = normalizeDecimals(
         multicallResults.get(this.suppliedLabel(account, accountToken)).output.data.toString(),
         CTOKEN_DECIMALS,
       );
+
+      const isCollateral = multicallResults.get(
+        this.isCollateralLabel(account, cToken.token_address),
+      ).output.data;
 
       if (balance) {
         acc.push(
@@ -260,6 +274,7 @@ export class CompoundProtocol extends BasicProtocol {
             cToken,
             underlying,
             balance * Number(cToken.exchange_rate.value),
+            isCollateral,
           ),
         );
       }
@@ -353,6 +368,7 @@ export class CompoundProtocol extends BasicProtocol {
     ctoken: ICompoundHttpCToken,
     token: Asset,
     balance: number,
+    isCollateral: boolean,
   ): LendingPositionDto {
     return plainToClass(LendingPositionDto, {
       address: ctoken.token_address,
@@ -366,6 +382,7 @@ export class CompoundProtocol extends BasicProtocol {
         symbol: token.symbol,
         price: Number(ctoken.underlying_price.value),
       }),
+      isCollateral,
     });
   }
 

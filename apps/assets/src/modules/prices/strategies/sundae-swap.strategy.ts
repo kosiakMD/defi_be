@@ -2,12 +2,14 @@ import BigNumber from 'bignumber.js';
 import { firstValueFrom } from 'rxjs';
 
 import { HttpService } from '@nestjs/axios';
-import { Inject, Logger } from '@nestjs/common';
+import { Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { ChainIdEnum } from '@app/common';
-import { gql } from '@app/common/utils';
+import { ChainIdEnum, Logger } from '@app/common';
+import { CARDANO_COIN_ADDRESS } from '@app/common/constant';
+import { gql, normalizeDecimals } from '@app/common/utils';
 
+import { PriceService } from '../price.service';
 import { AssetPrice } from '../types/asset-price.type';
 import { PriceSource } from '../types/price-source.type';
 import { BaseStrategy } from './base.strategy';
@@ -21,13 +23,11 @@ type SundaeSwapResponse = {
 type SundaeSwapPool = {
   assetB: {
     assetId: string;
-    policyId: string;
-    assetName: string;
     decimals: number;
-    ticker: string;
   };
+  quantityA: string;
+  quantityB: string;
   assetID: string;
-  priceUSD: string;
 };
 
 type Config = {
@@ -38,12 +38,16 @@ export class SundaeSwapStrategy extends BaseStrategy {
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
     private readonly httpService: HttpService,
+    private readonly priceService: PriceService,
   ) {
     super();
   }
 
   public async fetchPrices({ sourceId, config }: PriceSource<Config>): Promise<AssetPrice[]> {
-    const { maxItems = 500 } = config;
+    const { maxItems = 1000 } = config;
+    const [ADAprice] = await this.priceService.getPrices([
+      { address: CARDANO_COIN_ADDRESS, chainId: ChainIdEnum.cardano },
+    ]);
 
     const {
       data: {
@@ -59,23 +63,18 @@ export class SundaeSwapStrategy extends BaseStrategy {
           }
           fragment ExtendPoolFragment on Pool {
             ...PoolFragment
-            ...PoolInfoFragment
           }
           fragment PoolFragment on Pool {
             assetB {
               ...AssetFragment
             }
             assetID
+            quantityA
+            quantityB
           }
           fragment AssetFragment on Asset {
             assetId
-            policyId
-            assetName
             decimals
-            ticker
-          }
-          fragment PoolInfoFragment on Pool {
-            priceUSD
           }
         `,
         variables: { pageSize: maxItems },
@@ -83,14 +82,15 @@ export class SundaeSwapStrategy extends BaseStrategy {
     );
 
     return poolsPopular //
-      .map((token) => this.parseToken(sourceId, token))
+      .map((token) => this.parseToken(sourceId, token, ADAprice.price))
       .filter((price) => !!price);
   }
 
-  private parseToken(sourceId: number, token: SundaeSwapPool): AssetPrice | null {
+  private parseToken(sourceId: number, token: SundaeSwapPool, ADAprice: number): AssetPrice | null {
     const {
       assetB: { assetId: address, decimals },
-      priceUSD,
+      quantityA,
+      quantityB,
     } = token;
 
     if (decimals === null || decimals === undefined) {
@@ -100,7 +100,10 @@ export class SundaeSwapStrategy extends BaseStrategy {
     return {
       address,
       chainId: ChainIdEnum.cardano,
-      price: new BigNumber(priceUSD).toNumber(),
+      price: new BigNumber(normalizeDecimals(quantityA, 6)) //
+        .div(normalizeDecimals(quantityB, decimals))
+        .times(ADAprice)
+        .toNumber(),
       sourceId,
     };
   }

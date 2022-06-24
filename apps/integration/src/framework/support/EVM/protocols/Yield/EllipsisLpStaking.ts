@@ -1,9 +1,11 @@
+import { EllipsisAssetService } from 'apps/integration/src/modules/microservices/ellipsis.asset.service';
 import { BigNumber as BN } from 'bignumber.js';
 import { Cache } from 'cache-manager';
 import { cloneDeep } from 'lodash';
 import { map } from 'rxjs/operators';
 
-import { CACHE_MANAGER, HttpService, Inject } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import { CACHE_MANAGER, Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, Logger } from '@app/common';
@@ -12,8 +14,6 @@ import { absoluteValue, dataFrom, equals, normalizeDecimals, startsWith } from '
 import { ERC20 } from '@app/common/web3provider/contracts/ERC20';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
-import { AccountService } from '../../../../../modules/microservices/account.service';
-import { PriceService } from '../../../../../modules/microservices/price.service';
 import { CurveAssetsManager } from '../../../assets/curve.assets.manager';
 import { FeatureEnum } from '../../../enums';
 import { MissingTokenException } from '../../../exceptions';
@@ -28,9 +28,9 @@ import {
   IStakingFeatureUserEntry,
 } from '../../../interfaces/feature.staking.interface';
 import { BaseWithTokens } from '../../../interfaces/new.interfaces';
+import { IRewardRates } from '../../../interfaces/rewards.interface';
 import { ERC20Token } from '../../../interfaces/tokens.common.interface';
 import {
-  IRewardRates,
   IRewardTokenMinimal,
   IRewardTokenOpportunity,
 } from '../../../interfaces/tokens.rewarded.interface';
@@ -76,8 +76,7 @@ export class EllipsisLpStaking
     protected multicall: MulticallAggregator,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected logger: Logger,
     @Inject(CACHE_MANAGER) protected cache: Cache,
-    protected accountService: AccountService,
-    protected priceService: PriceService,
+    protected assetService: EllipsisAssetService,
     protected assetsManager: CurveAssetsManager,
     protected httpService: HttpService,
   ) {
@@ -175,15 +174,14 @@ export class EllipsisLpStaking
           poolData = poolsAPIData[key];
         }
       });
-      // console.log(op);
-      // console.log(poolData);
+
       if (!poolData) {
         return op;
       }
+
       const apr = Number(+poolData.rewardsApr + +poolData.baseApr + +poolData.aprWithoutBoost);
       const aprMax = Number(+poolData.rewardsApr + +poolData.baseApr + +poolData.aprWithBoost);
-      // console.log('apr:' + apr)
-      // console.log('aprMax:' + aprMax)
+
       return {
         ...op,
         meta: {
@@ -307,10 +305,6 @@ export class EllipsisLpStaking
     });
 
     return this.multicall.callArray(totalStakedCalls, this.meta.chain);
-  }
-
-  protected async getTokens(addresses: Address[]): Promise<[Address, ERC20Token][]> {
-    return await this.assetsManager.getTokens(addresses, this.meta.chain);
   }
 
   protected async fetchUserData(

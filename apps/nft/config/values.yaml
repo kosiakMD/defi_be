@@ -1,8 +1,5 @@
-configMaps:
-  logs:
-    LOG_AWS_ENABLED: true
-    LOG_LEVEL: debug
-    NODE_ENV: development
+configMapsAWS:
+  - nft
 
 resources:
   requests:
@@ -14,3 +11,9 @@ resources:
 
 secrets:
   - redis
+
+#configMaps:
+#  logs:
+#      LOG_AWS_ENABLED: true
+#      LOG_LEVEL: debug
+#      NODE_ENV: development

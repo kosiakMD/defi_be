@@ -1,38 +1,34 @@
-ingress:
-  enabled: true
-  host: price.staging.defyield.xyz
-  annotations: { }
-  certificate_arn: arn:aws:acm:us-west-2:625623467395:certificate/a19eacc1-004c-4ce4-ab7f-fcb0f3d911b8
-  wafv2_acl_arn: arn:aws:wafv2:us-west-2:625623467395:regional/webacl/defiyield-backend-staging/fc7890fc-a9e4-45e7-a0b3-a926eb624d3d
-
-configMaps:
-  db:
-    DB_SCHEMA: prices
-  thegraph:
-    THEGRAPH_UNISWAP_ENDPOINT: https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v2
-    THEGRAPH_SUSHISWAP_ENDPOINT: https://api.thegraph.com/subgraphs/name/tretiakpk/sushiswap-fork-of-uniswap-v2
-    THEGRAPH_CURVE_ENDPOINT: https://api.thegraph.com/subgraphs/name/tretiakpk/curve
-    THEGRAPH_BALANCER_ENDPOINT: https://api.thegraph.com/subgraphs/name/dashvm7/balancer
-    THEGRAPH_PANCAKE_ENDPOINT: https://api.thegraph.com/subgraphs/name/tretiakpk/cake
-  links:
-    SWAP_0X_ENDPOINT: https://api.0x.org/swap/v1/
-    ETH_URL: https://mainnet.infura.io/v3/d38bddd842b94305a23f91596991a9eb
-    BSC_URL: https://bsc-dataseed.binance.org
-  logs:
-    LOG_AWS_ENABLED: true
-    LOG_LEVEL: debug
-    NODE_ENV: staging
-  config:
-    CACHE_HISTORIC_PRICES_TTL_IN_SECONDS: 172800
-    BODY_LIMIT: 50mb
-    URL_LIMIT: 50mb
-    AWS_XRAY_DAEMON_ADDRESS: xray-service.default:2000
+configMapsAWS:
+  - price
 
 secrets:
-  - database_dev
+  - database
   - redis
   - bscscan
   - etherscan
   - logs
   - sentry
   - currencylayer
+
+#configMaps:
+#  db:
+#    DB_SCHEMA: prices
+#  thegraph:
+#    THEGRAPH_UNISWAP_ENDPOINT: https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v2
+#    THEGRAPH_SUSHISWAP_ENDPOINT: https://api.thegraph.com/subgraphs/name/tretiakpk/sushiswap-fork-of-uniswap-v2
+#    THEGRAPH_CURVE_ENDPOINT: https://api.thegraph.com/subgraphs/name/tretiakpk/curve
+#    THEGRAPH_BALANCER_ENDPOINT: https://api.thegraph.com/subgraphs/name/dashvm7/balancer
+#    THEGRAPH_PANCAKE_ENDPOINT: https://api.thegraph.com/subgraphs/name/tretiakpk/cake
+#  links:
+#    SWAP_0X_ENDPOINT: https://api.0x.org/swap/v1/
+#    ETH_URL: https://mainnet.infura.io/v3/d38bddd842b94305a23f91596991a9eb
+#    BSC_URL: https://bsc-dataseed.binance.org
+#  logs:
+#    LOG_AWS_ENABLED: true
+#    LOG_LEVEL: debug
+#    NODE_ENV: development
+#  config:
+#    CACHE_HISTORIC_PRICES_TTL_IN_SECONDS: 172800
+#    BODY_LIMIT: 50mb
+#    URL_LIMIT: 50mb
+#    AWS_XRAY_DAEMON_ADDRESS: xray-service.default:2000

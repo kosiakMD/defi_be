@@ -1,3 +1,4 @@
+import { FakeAssetService } from 'apps/integration/src/modules/microservices/fake.asset.service';
 import { Cache } from 'cache-manager';
 
 import { CACHE_MANAGER, Inject } from '@nestjs/common';
@@ -8,8 +9,6 @@ import { normalizeDecimals } from '@app/common/utils';
 import { DynamicContract } from '@app/common/web3provider/contracts/DynamicContract';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
-import { AccountService } from '../../../../../modules/microservices/account.service';
-import { PriceService } from '../../../../../modules/microservices/price.service';
 import { FeatureEnum } from '../../../enums';
 import { INamedFunctionPredicates, IProtocolMeta, IRootProtocol } from '../../../interfaces';
 import { BaseWithTokens } from '../../../interfaces/new.interfaces';
@@ -71,8 +70,7 @@ export class veYETIStaking
     protected multicall: MulticallAggregator,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected logger: Logger,
     @Inject(CACHE_MANAGER) protected cache: Cache,
-    protected accountService: AccountService,
-    protected priceService: PriceService,
+    protected assetService: FakeAssetService,
   ) {
     super();
     if (this.updateFunctionPredicates) {
@@ -172,7 +170,7 @@ export class veYETIStaking
     const {
       output: { data: pendingRewards },
     } = data.get(this.pendingRewardsLabel(pool.id, address));
-    // TODO: Object.values(userInfo) and find index instead of assuming .amount ?
+
     const balance = normalizeDecimals(balanceRaw.toString(), pool.supply.token.decimals);
 
     if (!balance) return;
@@ -191,6 +189,8 @@ export class veYETIStaking
 
     // TODO: what is the best way to extend the opportunity type to become a userEntry type
     // without forcing a cast like this (only a few fields are added amount, value)
+    // ***
+    // maybe this? https://www.typescriptlang.org/play?ssl=42&ssc=29&pln=1&pc=1#code/JYOwLgpgTgZghgYwgAgJIEFkG8BQz-JgAWoA5gFzIBGA9jQDYRwgA0eBMdluBv1cUSgGcwUMu3wBfHNJyhIsRClQAhbBMIkQFanUbM2vAO5E4YSrQZMQAbg2ca3DbyoDho8XwKuAXu7HadrzSsjAAriAIYMA0IMgIsQBu0GDoYDQqABRwlBgAlLlqPAQA9CWawELIRjRQANZCGmXIUBBgYVBxxfjNvMRklHAAdP3ahqXlxqbmhFBhEOM9kxxc6ry9XvyCyMMOQ65Qi8gbXr6UAOQgTGDnTctSd8iy6+VC9MCkRGD0AJ7ITEJgNBkGFAdpkOchlDbrxWu1OmtNlChnAjlMzJRRPM0StHIjNgRkbs6DjTnA-BCrmYYZtpMEZDhGQkQCIdrlMABebAVbSYuYLZAObhbC5ECA-c6SJ5M2KsqiFZBc5nJKCpdJZOB5IA
     return pool as IStakingFeatureUserEntrySingle;
   }
 }

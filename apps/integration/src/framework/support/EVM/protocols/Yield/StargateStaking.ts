@@ -1,20 +1,17 @@
+import { StargateAssetService } from 'apps/integration/src/modules/microservices/stargate.asset.service';
 import { Cache } from 'cache-manager';
 
 import { CACHE_MANAGER, Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { CurrentPricesPayload, Logger } from '@app/common';
+import { Logger } from '@app/common';
 import { ERC20 } from '@app/common/web3provider/contracts/ERC20';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
-import { AccountService } from '../../../../../modules/microservices/account.service';
-import { PriceService } from '../../../../../modules/microservices/price.service';
 import { INamedFunctionPredicates } from '../../../interfaces';
 import { IStakingFeatureMinimal } from '../../../interfaces/feature.staking.interface';
-import { ERC20Token } from '../../../interfaces/tokens.common.interface';
 import { ISupplyTokenOpportunity } from '../../../interfaces/tokens.supplied.interface';
 import { AbiService } from '../../AbiModule/AbiService';
-import { updateStargateLpTokens } from '../Liquidity/StargateLiquidity';
 import { MasterChef } from './MasterChef';
 
 export class StargateStaking extends MasterChef {
@@ -23,10 +20,9 @@ export class StargateStaking extends MasterChef {
     protected multicall: MulticallAggregator,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected logger: Logger,
     @Inject(CACHE_MANAGER) protected cache: Cache,
-    protected accountService: AccountService,
-    protected priceService: PriceService,
+    protected assetService: StargateAssetService,
   ) {
-    super(abiService, multicall, logger, cache, accountService, priceService);
+    super(abiService, multicall, logger, cache);
   }
 
   functionPredicates: INamedFunctionPredicates = {
@@ -70,23 +66,5 @@ export class StargateStaking extends MasterChef {
       amount,
       value,
     });
-  }
-
-  protected async updateTokenData(
-    tokens: any[],
-    prices: CurrentPricesPayload,
-  ): Promise<ERC20Token[]> {
-    try {
-      return updateStargateLpTokens(
-        tokens,
-        prices,
-        this.multicall,
-        this.abiService,
-        this.meta.chain,
-      );
-    } catch (err) {
-      this.logger.error(err.message, err.stack, 'StargateStaking');
-      return tokens;
-    }
   }
 }

@@ -1,8 +1,9 @@
 import * as redisStore from 'cache-manager-redis-store';
 
-import { HttpModule } from '@nestjs/axios';
 import { CacheModule, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+
+import { HttpModule } from '@app/common';
 
 import { BscScanService } from './modules/bscscan/bsc-scan.service';
 import { EtherScanService } from './modules/etherscan/ether-scan.service';

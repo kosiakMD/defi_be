@@ -1,40 +1,63 @@
 import { plainToClass } from 'class-transformer';
 
-import { Inject, Injectable, LoggerService } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+import { Address, ChainId, Logger } from '@app/common';
 import { CacheService } from '@app/common/services/cache.service';
 
 import { SearchParams } from '../../../common/interfaces/search.interfaces';
 
+import { AssetsCategoryService } from '../../assets-category/assets-category.service';
 import { AssetDto } from '../dto/asset.dto';
 import { GetAssetRequest } from '../dto/get-asset.request';
 import { AssetUnderlyingEntity } from '../entities/asset-underlying.entity';
 import { AssetEntity } from '../entities/asset.entity';
-import { mapAssetsToPlain } from '../utils/cache-mapping';
+import { mapAssetsToCachePlain } from '../utils/cache-mapping';
 import { AssetsRepository } from './assets.repository';
 
+// TODO: This one is not working, reprocessed metadata missing
 @Injectable()
 export class AssetsCachedRepository {
   constructor(
     private readonly config: ConfigService,
     private readonly cache: CacheService,
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     @InjectRepository(AssetsRepository) private readonly assetsRepository: AssetsRepository,
+    private readonly assetsCategoryService: AssetsCategoryService,
   ) {}
+
+  findTrackedAssetsByChain(chainId: ChainId) {
+    return this.assetsRepository.findTrackedAssetsByChain(chainId);
+  }
+
+  getAccountedAssetsByChain(chainId: ChainId) {
+    return this.assetsRepository.getAccountedAssetsByChain(chainId);
+  }
 
   findAssetsByParams(searchParams: SearchParams): Promise<AssetEntity[]> {
     return this.assetsRepository.findAssetsByParams(searchParams);
   }
 
-  findOneByAddressAndChain(address: string, chainId: number): Promise<AssetEntity> {
+  async findOneByAddressAndChain(address: string, chainId: number): Promise<AssetEntity> {
     return this.cache.getOrLoad(getAssetCacheKey({ chainId, address }), () =>
       this.assetsRepository.findOneByAddressAndChain(address, chainId),
     );
   }
 
+  findTrackedAssetsWithoutIcon(): Promise<AssetEntity[]> {
+    return this.assetsRepository.findTrackedAssetsWithoutIcon();
+  }
+
+  // TODO: Optimize this
+  async findManyByChainIdAndAddresses(chainId: ChainId, addresses: Address[]) {
+    const requests = addresses.map((address) => ({ chainId, address }));
+    return this.findManyByAddressesAndChainIds(requests);
+  }
+
+  // TODO: We should not use DTO here
   async findManyByAddressesAndChainIds(requests: GetAssetRequest[]): Promise<AssetEntity[]> {
     const cachedAssets = await this.getCachedAssetsByAddressesAndChainIds(requests);
 
@@ -44,7 +67,9 @@ export class AssetsCachedRepository {
       assetsToCache.push(
         ...(await this.assetsRepository.findManyByAddressesAndChainIds(notCachedAssetsRequests)),
       );
-      this.saveAssetsToCache(assetsToCache);
+      this.saveAssetsToCache(assetsToCache).catch((error) =>
+        this.logger.error('Failed to save assets to cache', error),
+      );
     }
 
     return cachedAssets.concat(assetsToCache);
@@ -54,25 +79,34 @@ export class AssetsCachedRepository {
     requests: GetAssetRequest[],
   ): Promise<AssetEntity[]> {
     const cacheKeys = requests.map(getAssetCacheKey);
-    const cachedAssets = await this.getAssetFromCacheWithUnderlying(cacheKeys);
+    const cachedAssets = await this.getAssetsFromCacheWithUnderlying(cacheKeys);
     return excludeAssetsByRequests(requests, this.mapCachedAssetsToEntities(cachedAssets));
   }
 
-  private async getAssetFromCacheWithUnderlying(cacheKeys: string[]): Promise<AssetDto[]> {
-    const cachedAssets = [];
-    for (const cachedAsset of (await this.cache.mget<AssetDto>(cacheKeys)).filter(Boolean)) {
-      cachedAssets.push(cachedAsset);
+  private async getAssetsFromCacheWithUnderlying(
+    cacheKeys: string[],
+    allCacheKeys = [],
+  ): Promise<AssetDto[]> {
+    // TODO: This is crashing from time to time
+    // TODO: We cannot do many awaits here, we should get all missing underlying and load with single call
+    const cachedAssets = (await this.cache.mget<AssetDto>(cacheKeys)).filter(Boolean);
+    const assetCacheKeys = [];
+    for (const cachedAsset of cachedAssets) {
       if (cachedAsset.underlying?.length) {
-        cachedAssets.push(
-          ...(await this.getAssetFromCacheWithUnderlying(
-            cachedAsset.underlying.map(({ address }) =>
-              getAssetCacheKey({ address, chainId: cachedAsset.chainId }),
-            ),
-          )),
-        );
+        cachedAsset.underlying.forEach(({ address }) => {
+          const key = getAssetCacheKey({ address, chainId: cachedAsset.chainId });
+          if (!allCacheKeys.includes(key)) {
+            assetCacheKeys.push(key);
+            allCacheKeys.push(key);
+          }
+        });
       }
     }
-    return cachedAssets;
+    return cachedAssets.concat(
+      assetCacheKeys.length
+        ? await this.getAssetsFromCacheWithUnderlying(assetCacheKeys, allCacheKeys)
+        : [],
+    );
   }
 
   private mapCachedAssetsToEntities(cachedAssets: AssetDto[]): AssetEntity[] {
@@ -88,7 +122,9 @@ export class AssetsCachedRepository {
       if (cachedAsset.underlying?.length) {
         underlying.push(...this.getUnderlying(cachedAsset, cachedAssetsMap));
       }
-      assetEntities.push(plainToClass(AssetEntity, { ...cachedAsset, underlying }));
+      if (cachedAsset.underlying?.length === underlying.length) {
+        assetEntities.push(plainToClass(AssetEntity, { ...cachedAsset, underlying }));
+      }
     });
     return assetEntities;
   }
@@ -105,7 +141,7 @@ export class AssetsCachedRepository {
         getAssetCacheKey({ address, chainId: cachedAsset.chainId }),
       );
       const underlying = [];
-      if (underlyingAssetDto.underlying) {
+      if (underlyingAssetDto?.underlying) {
         underlying.push(...this.getUnderlying(underlyingAssetDto, cachedAssetsMap));
       }
       assetUnderlyingEntity.underlyingAsset = plainToClass(AssetEntity, {
@@ -119,7 +155,7 @@ export class AssetsCachedRepository {
 
   private async saveAssetsToCache(assetsToCache: AssetEntity[]) {
     const ttl = this.config.get('cache.assetsTtl');
-    const cacheItems = mapAssetsToPlain(assetsToCache).map((asset) => ({
+    const cacheItems = mapAssetsToCachePlain(assetsToCache).map((asset) => ({
       key: getAssetCacheKey(asset),
       value: asset,
     }));
@@ -127,11 +163,65 @@ export class AssetsCachedRepository {
   }
 
   async save(asset: AssetEntity): Promise<AssetEntity> {
-    const saved = await this.assetsRepository.save(asset);
+    // TODO: update asset cache mapping to avoid this additional call
+    if (asset.id && asset.underlying?.length) {
+      const existingUnderlyings = await this.assetsRepository.manager
+        .getRepository(AssetUnderlyingEntity)
+        .find({
+          where: asset.underlying?.map((underlying) => ({
+            asset,
+            underlyingAsset: underlying.underlyingAsset,
+          })),
+          relations: ['underlyingAsset'],
+        });
+
+      for (const underlying of asset.underlying) {
+        const existingUnderlying = existingUnderlyings.find(
+          ({ position, underlyingAsset: { address, chainId } }) =>
+            position === underlying.position &&
+            address === underlying.underlyingAsset.address &&
+            chainId === underlying.underlyingAsset.chainId,
+        );
+        if (existingUnderlying) {
+          underlying.id = existingUnderlying.id;
+        }
+      }
+    }
+
+    const categories = await this.assetsCategoryService.findAll();
+    asset.categories.forEach((c) => {
+      const existingCategory = categories.find((category) => category.name === c.name);
+      if (existingCategory) {
+        c.id = existingCategory.id;
+      }
+    });
+
+    let saved: AssetEntity;
+    if (!asset.id) {
+      const a = await this.assetsRepository.findOne({
+        where: { address: asset.address, chainId: asset.chainId },
+      });
+      saved = await this.assetsRepository.save({ ...asset, ...(a ? { id: a.id } : {}) });
+    } else {
+      saved = await this.assetsRepository.save(asset);
+    }
     this.saveAssetsToCache([saved]).catch((error) =>
       this.logger.error(`Saving asset ${asset.address} to cache failed`, error),
     );
+
     return saved;
+  }
+
+  findUniV2LikePairsForTrackedAssets(chainId: ChainId, factory: Address) {
+    return this.assetsRepository.findUniV2LikePairsForTrackedAssets(chainId, factory);
+  }
+
+  async findByCategoryCodeWithoutCategories(categoryCode: string): Promise<AssetEntity[]> {
+    return this.assetsRepository.findByCategoryCodeWithoutCategories(categoryCode);
+  }
+
+  async findById(id: number): Promise<AssetEntity> {
+    return this.assetsRepository.findOne({ id });
   }
 }
 

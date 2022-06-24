@@ -1,11 +1,8 @@
 import {
   ChainIdEnum,
-  AaveProtocolEnum,
   AbracadabraProtocolEnum,
   AlpacaProtocolEnum,
-  AutofarmProtocolEnum,
   BadgerProtocolEnum,
-  BeefyProtocolEnum,
   CompoundProtocolEnum,
   ConvexProtocolEnum,
   CurveProtocolEnum,
@@ -41,7 +38,6 @@ import {
   OsmosisProtocolEnum,
   AaveV3ProtocolEnum,
   WingRidersProtocolEnum,
-  MuesliSwapProtocolEnum,
 } from '@app/common/enum';
 import { AccountBalance } from '@app/common/interfaces';
 
@@ -51,12 +47,9 @@ export * from './protocol.types';
 export type ChainId = ChainIdEnum;
 
 export type ProtocolName =
-  | AaveProtocolEnum
   | AbracadabraProtocolEnum
   | AlpacaProtocolEnum
-  | AutofarmProtocolEnum
   | BadgerProtocolEnum
-  | BeefyProtocolEnum
   | CompoundProtocolEnum
   | ConvexProtocolEnum
   | CurveProtocolEnum
@@ -91,8 +84,7 @@ export type ProtocolName =
   | StaderProtocolEnum
   | OsmosisProtocolEnum
   | AaveV3ProtocolEnum
-  | WingRidersProtocolEnum
-  | MuesliSwapProtocolEnum;
+  | WingRidersProtocolEnum;
 
 export enum ColumnType {
   json = 'json',

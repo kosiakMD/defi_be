@@ -1,14 +1,14 @@
 import { Job } from 'bull';
 
 import { Process, Processor } from '@nestjs/bull';
-import { Inject, LoggerService } from '@nestjs/common';
+import { Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Address } from '@app/common';
+import { Address, Logger } from '@app/common';
 import { formatAddress, formatError, isZeroAddress } from '@app/common/utils';
 
-import { JobName } from '../../../common/enum/job-name.enum';
+import { AssetJobName } from '../../../common/enum/job-name.enum';
 import { QueueName } from '../../../common/enum/queue-name.enum';
 import { AssetReference } from '../../../common/types';
 
@@ -19,23 +19,28 @@ import { AssetsCachedRepository } from '../repositories/assets.cached-repository
 import { AssetIcon } from '../services/analysers/core/asset.analyser';
 import { AssetAnalyserService } from '../services/asset-analyser.service';
 import { IconsService } from '../services/icons.service';
+import { InvalidAssetService } from '../services/invalid-asset.service';
 import { AssetMetadata } from '../types/asset-metadata.type';
 import { AssetProcessingRequest } from '../types/asset-processing.request';
 
+/*
+ Main Assets processor that analyses and stores assets.
+ Executed on demand.
+ * */
 @Processor(QueueName.ASSETS)
 export class AssetsProcessor {
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     private readonly assetsRepository: AssetsCachedRepository,
     @InjectRepository(AssetsCategoryRepository)
     private readonly assetsCategoryRepository: AssetsCategoryRepository,
+    private readonly invalidAssetService: InvalidAssetService,
     private readonly iconsService: IconsService,
     private readonly assetAnalyserService: AssetAnalyserService,
   ) {}
 
   @Process({
-    name: JobName.ASSET_METADATA,
-    // TODO: Move to config (testing this value)
+    name: AssetJobName.ASSET_METADATA,
     concurrency: 2,
   })
   public async handleMetadataJob(job: Job<AssetProcessingRequest>) {
@@ -48,39 +53,53 @@ export class AssetsProcessor {
       this.logger.debug(
         `Received job ${job.id}. Start getting metadata address: ${address}, chainId: ${chainId}`,
       );
-      const asset = await this.processAsset(job.data);
+      const asset = await this.processAsset(data);
       this.logger.debug(
         `Asset chainId: ${chainId} address: ${address} is processed, id: ${asset?.id || ''}`,
       );
     } catch (e) {
-      this.logger.error(`Error to progress job [${job.id}]: ${e.message}, ${e.stack}`);
+      this.logger.error(`Error to progress job [${job.id}]: ${e.message}, ${e.stack}`, { job });
       throw e;
     }
   }
 
   private async processAsset(assetRequest: AssetProcessingRequest): Promise<AssetEntity> {
+    const { address, chainId, isTracked } = assetRequest;
+
     try {
       this.logger.debug(`Process asset data ${JSON.stringify(assetRequest)}`);
 
-      const { address, chainId, isTracked } = assetRequest;
-      const savedAsset = await this.assetsRepository.findOneByAddressAndChain(address, chainId);
-      if (savedAsset) {
-        this.logger.debug(
-          `Asset id: ${savedAsset.id} chainId: ${chainId} address: ${address} found, updating`,
-        );
+      const existingAsset = await this.assetsRepository.findOneByAddressAndChain(address, chainId);
+      if (existingAsset) {
+        // TODO: Outdated asset is not handled
         if (!assetRequest.forceUpdate) {
-          //if forceUpdate flag is provided we don't need to update the asset
-          //because we are going to re-process it
-          await this.updateAsset(savedAsset, assetRequest);
-          return savedAsset;
+          this.logger.debug(
+            `Asset id: ${existingAsset.id} chainId: ${chainId} address: ${address} found, updating`,
+          );
+          // if forceUpdate flag is provided we don't need to update the asset
+          // because we are going to re-process it
+          await this.updateAsset(existingAsset, assetRequest);
+          return existingAsset;
         }
+        this.logger.debug(
+          `Asset id: ${existingAsset.id} chainId: ${chainId} address: ${address} found, but force reload requested`,
+        );
       }
 
-      const processingAsset = savedAsset || new AssetEntity();
+      if (
+        !assetRequest.forceUpdate &&
+        (await this.invalidAssetService.isAssetInvalid(chainId, address))
+      ) {
+        this.logger.debug(`Skip processing invalid asset ${JSON.stringify(assetRequest)}`);
+        return;
+      }
+
+      const processingAsset = existingAsset || new AssetEntity();
 
       const asset = await this.assetAnalyserService.analyseAsset({ chainId, address });
       if (!asset) {
         this.logger.warn(`Asset chainId: ${chainId} address: ${address} cannot be analysed`);
+        await this.invalidAssetService.increaseInvalidRetries(chainId, address);
         return;
       }
 
@@ -94,6 +113,7 @@ export class AssetsProcessor {
       processingAsset.rank = this.calculateRank(address, asset.metadata);
       processingAsset.isTracked = asset.isTracked || isTracked || false;
       processingAsset.underlying = [];
+      // TODO should we merge existing metadata with new results from analysis instead of overriding ?
       processingAsset.metadata = asset.metadata || {};
 
       processingAsset.icon = await this.loadAssetIcons({ chainId, address }, asset.icons);
@@ -108,20 +128,37 @@ export class AssetsProcessor {
         underlying.underlyingAsset = await this.processAsset({
           address: underlyingAddress,
           chainId,
+          forceUpdate: assetRequest.forceUpdate,
         });
+        if (!underlying.underlyingAsset) {
+          this.logger.error({
+            message: `Could not get underlyingAsset ${underlyingAddress}`,
+            request: assetRequest,
+          });
+          return;
+        }
+
         processingAsset.underlying.push(underlying);
       }
 
       // It's only possible to calculate display name after underlying loaded
       processingAsset.displayName = this.buildDisplayName(processingAsset);
 
-      return await this.assetsRepository.save(processingAsset);
+      const savedAsset = await this.assetsRepository.save(processingAsset);
+
+      // Asset was stored so we removed it from invalid list
+      await this.invalidAssetService.cleanInvalidAsset(chainId, address);
+
+      return savedAsset;
     } catch (error) {
       // TODO: We should handle invalid addresses here after few retries they should go to invalid addresses table
       this.logger.error('Error to process asset data', {
         request: assetRequest,
         error: formatError(error),
       });
+
+      await this.invalidAssetService.increaseInvalidRetries(chainId, address);
+
       throw error;
     }
   }
@@ -138,6 +175,7 @@ export class AssetsProcessor {
   }
 
   private calculateRank(address: Address, metadata: AssetMetadata = {}) {
+    // TODO: Check if is native coin
     if (isZeroAddress(address)) {
       // Coins should be at the top
       return 1;
@@ -166,6 +204,8 @@ export class AssetsProcessor {
   private buildDisplayName(asset: AssetEntity): string {
     if (asset.underlying?.length) {
       let displayName = asset.underlying
+        // TODO: This one is failing sometimes, why we may get it undefined
+        // .filter(({ underlyingAsset }) => !!underlyingAsset)
         .map(({ underlyingAsset }) => this.buildDisplayName(underlyingAsset))
         .join('/');
 

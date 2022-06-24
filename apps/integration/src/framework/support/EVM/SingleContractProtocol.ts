@@ -6,7 +6,6 @@ import {
   INamedFunctionPredicates,
   INamedFunctions,
   IProtocolMeta,
-  IUserDataProtocolResponse,
   IWalletMinimal,
   IWalletOpportunity,
   IWalletUserEntry,
@@ -57,11 +56,6 @@ export abstract class SingleContractProtocol<
    * and parses it for the requested functions
    */
   async initialize() {
-    this.logger.log(
-      `Initializing: ${this.meta.name} ${this.meta.chain}/${this.meta.address}`,
-      `SingleContractProtocol/${this.constructor.name}`,
-    );
-
     this.functions = await this.abiService.parseFunctionsFromAddress(
       this.meta.address,
       this.meta.chain,
@@ -69,29 +63,13 @@ export abstract class SingleContractProtocol<
     );
 
     if (this.interactiveFunctionPredicates) {
-      try {
-        this.interactiveFunctions = await this.abiService.parseFunctionsFromAddress(
-          this.meta.address,
-          this.meta.chain,
-          this.interactiveFunctionPredicates,
-          ['nonpayable'],
-        );
-      } catch (err) {
-        this.logger.error(
-          `${this.meta.chain}/${this.meta.address} found ${
-            Object.keys(this.interactiveFunctions).length
-          }/${Object.keys(this.interactiveFunctionPredicates).length} interactive functions`,
-          `SingleContractProtocol/${this.constructor.name}`,
-        );
-      }
+      this.interactiveFunctions = await this.abiService.parseFunctionsFromAddress(
+        this.meta.address,
+        this.meta.chain,
+        this.interactiveFunctionPredicates,
+        ['nonpayable'],
+      );
     }
-
-    this.logger.log(
-      `${this.meta.chain}/${this.meta.address} found ${Object.keys(this.functions).length}/${
-        Object.keys(this.functionPredicates).length
-      } functions`,
-      `SingleContractProtocol/${this.constructor.name}`,
-    );
   }
 
   /***********************
@@ -106,42 +84,6 @@ export abstract class SingleContractProtocol<
   async getCacheableOpportunityData(): Promise<TMinimalType[]> {
     const context = await this.callInputlessFunctions();
     return this.fetchOpportunityData(this.formatContext(context));
-  }
-
-  /**************
-   * User Data
-   */
-
-  /**
-   * Fetches all user positions in this protocol
-   *
-   * @param address user address
-   * @param pools all available pools
-   * @returns pools with balances filled in
-   */
-  async getUsersData(addresses: Address[]): Promise<IUserDataProtocolResponse<TUserEntryType>> {
-    const { data: pools, errors } = await this.getPoolData();
-
-    const results = new Map<Address, TUserEntryType[]>(
-      addresses.map((address) => [address, [] as TUserEntryType[]]),
-    );
-
-    try {
-      await Promise.allSettled(
-        addresses.map(async (address) => {
-          const userPools = await this.fetchUserData(address, pools);
-          // An array of undefined values can be obtained
-          const filteredPools = userPools.filter((data) => data);
-          if (filteredPools.length) {
-            results.get(address).push(...filteredPools);
-          }
-        }),
-      );
-    } catch (err) {
-      errors.push(err);
-    }
-
-    return { data: results, errors };
   }
 
   /**************
@@ -185,6 +127,8 @@ export abstract class SingleContractProtocol<
     return inputlessCalls.reduce((acc, [name], idx) => {
       acc[name] = results[idx];
       return acc;
+      // TODO: this mutates 'this.meta.context' but it should not
+      // At least 1 protocol relies on this mutation (AaveV3)
     }, this.meta.context ?? ({} as { [ley: string]: any }));
   }
 }

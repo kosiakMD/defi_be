@@ -1,18 +1,11 @@
 import { BigNumber as BN } from 'bignumber.js';
-import { Cache } from 'cache-manager';
 import { plainToClass } from 'class-transformer';
 
-import { CACHE_MANAGER, HttpService, Inject } from '@nestjs/common';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-
-import { Address, Logger } from '@app/common';
+import { Address } from '@app/common';
 import { CallData } from '@app/common/dto/CallData';
 import { concatStrings, normalizeDecimals } from '@app/common/utils';
 import { ERC20 } from '@app/common/web3provider/contracts/ERC20';
-import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
-import { AccountService } from '../../../../../modules/microservices/account.service';
-import { PriceService } from '../../../../../modules/microservices/price.service';
 import { INamedFunctionPredicates } from '../../../interfaces';
 import {
   IPoolFeatureMinimal,
@@ -20,26 +13,13 @@ import {
   IPoolFeatureUser,
 } from '../../../interfaces/feature.pool.interface';
 import { ISupplyTokenUserEntry } from '../../../interfaces/tokens.supplied.interface';
-import { AbiService } from '../../AbiModule/AbiService';
 import { SingleContractProtocol } from '../../SingleContractProtocol';
 
-export class LpFactoryLiquidity extends SingleContractProtocol<
+export abstract class LpFactoryLiquidity extends SingleContractProtocol<
   IPoolFeatureMinimal,
   IPoolFeatureOpportunity,
   IPoolFeatureUser
 > {
-  constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) protected logger: Logger,
-    @Inject(CACHE_MANAGER) protected cache: Cache,
-    protected abiService: AbiService,
-    protected multicall: MulticallAggregator,
-    protected accountService: AccountService,
-    protected priceService: PriceService,
-    protected httpService: HttpService,
-  ) {
-    super();
-  }
-
   functionPredicates: INamedFunctionPredicates = {
     allPools: () => (item) => item.name === 'allPools',
     allPoolsLength: () => (item) => item.name === 'allPoolsLength',
@@ -48,8 +28,7 @@ export class LpFactoryLiquidity extends SingleContractProtocol<
   protected async fetchOpportunityData(context: {
     [key: string]: any;
   }): Promise<IPoolFeatureMinimal[]> {
-    const poolIds = Array.from(Array(context.allPoolsLength.toNumber()).keys());
-    const poolsList = await this.fetchRegisteredPools(poolIds);
+    const poolsList = await this.getPoolsList(context);
 
     const totalStakedPerPool = await this.multicall.callArray(
       poolsList.map((p) => {
@@ -72,6 +51,11 @@ export class LpFactoryLiquidity extends SingleContractProtocol<
         },
       ],
     }));
+  }
+
+  async getPoolsList(context?: { [key: string]: any }) {
+    const poolIds = Array.from(Array(context.allPoolsLength.toNumber()).keys());
+    return await this.fetchRegisteredPools(poolIds);
   }
 
   protected async fetchUserData(
@@ -124,7 +108,7 @@ export class LpFactoryLiquidity extends SingleContractProtocol<
     };
     const poolShare = new BN(balanceNormalized).div(pool.supplied[0].token.totalSupply);
 
-    const supplied: ISupplyTokenUserEntry[] = pool.supplied[0].token.underlying.map(
+    const supplied: ISupplyTokenUserEntry[] = pool.supplied[0].token.underlying?.map(
       (underlying) => {
         return {
           tvl: pool.supplied[0].tvl,

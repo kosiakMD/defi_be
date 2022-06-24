@@ -39,6 +39,8 @@ export class GetAssetRequest {
     type: Boolean,
     description: 'Flag to forcefully re-process (re-fetch) asset data',
     required: false,
+    default: false,
   })
-  forceUpdate?: boolean = false;
+  @Transform(({ value }) => value?.toLowerCase() === 'true')
+  forceUpdate?: boolean;
 }

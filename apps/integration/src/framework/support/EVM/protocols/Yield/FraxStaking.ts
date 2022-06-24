@@ -1,10 +1,12 @@
+import { UniswapV2AssetService } from 'apps/integration/src/modules/microservices/uniswap.asset.service';
 import BigNumber from 'bignumber.js';
 import { Cache } from 'cache-manager';
 import { plainToClass } from 'class-transformer';
 import { isArray } from 'class-validator';
 import { AbiItem } from 'web3-utils';
 
-import { CACHE_MANAGER, HttpService, Inject } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import { CACHE_MANAGER, Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, ChainAbbrEnum, ChainDto, ChainIdEnum, ChainNameEnum, Logger } from '@app/common';
@@ -18,8 +20,6 @@ import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregat
 import { CurrentPricesPayload } from '../../../../../common/dto';
 import { toDecimals } from '../../../../../common/utils/util';
 
-import { AccountService } from '../../../../../modules/microservices/account.service';
-import { PriceService } from '../../../../../modules/microservices/price.service';
 import { Puppeteer } from '../../../../../modules/microservices/puppeteer';
 import UniswapProtocolV3 from '../../../../../modules/protocols/protocols/uniswapProtocolV3';
 import { FeatureEnum } from '../../../enums';
@@ -64,8 +64,7 @@ export class FraxStaking extends EVMCore<
     protected multicall: MulticallAggregator,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected logger: Logger,
     @Inject(CACHE_MANAGER) protected cache: Cache,
-    protected accountService: AccountService,
-    protected priceService: PriceService,
+    protected assetService: UniswapV2AssetService,
     @Inject(Puppeteer) protected readonly browser: Puppeteer,
     protected uniswapV3: UniswapProtocolV3,
   ) {
@@ -740,7 +739,7 @@ export class FraxStaking extends EVMCore<
 }
 
 // TODO: these abis for the case when we can't obtain contract's abi via abiService(for proxy contracts)
-export const earnedAbi: AbiItem = {
+const earnedAbi: AbiItem = {
   inputs: [{ internalType: 'address', name: 'account', type: 'address' }],
   name: 'earned',
   outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
@@ -748,7 +747,7 @@ export const earnedAbi: AbiItem = {
   type: 'function',
 };
 
-export const yieldRate: AbiItem = {
+const yieldRate: AbiItem = {
   inputs: [],
   name: 'yieldRate',
   outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
@@ -756,7 +755,7 @@ export const yieldRate: AbiItem = {
   type: 'function',
 };
 
-export const pricePerShare: AbiItem = {
+const pricePerShare: AbiItem = {
   inputs: [],
   name: 'pricePerShare',
   outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],

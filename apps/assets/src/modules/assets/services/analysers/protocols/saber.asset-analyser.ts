@@ -2,8 +2,10 @@ import { StableSwap } from '@saberhq/stableswap-sdk';
 import { Token, TokenAccountLayout, u64 } from '@saberhq/token-utils';
 import * as web3 from '@solana/web3.js';
 
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+import { Logger } from '@app/common';
 import { decimalsDivider, toBN } from '@app/common/utils';
 import { Web3SolanaProviderService } from '@app/common/web3provider';
 
@@ -11,21 +13,37 @@ import { AssetReference } from '../../../../../common/types';
 
 import { AssetCategory } from '../../../enums/asset-category.enum';
 import { AssetAnalyser, AssetAnalysisResult } from '../core/asset.analyser';
-import { AssetPrice, AssetPriceProvider, ComplexAsset } from '../core/price.provider';
+import {
+  AssetPriceProvider,
+  AssetPriceWithUnderlyingReserves,
+  ComplexAsset,
+} from '../core/price.provider';
 import { SolanaBaseAssetAnalyser } from '../core/solana-base.asset-analyser';
 
+// TODO: Use multicall
 @Injectable()
 export class SaberAssetAnalyser
   extends SolanaBaseAssetAnalyser
   implements AssetAnalyser, AssetPriceProvider
 {
-  constructor(private readonly web3Provider: Web3SolanaProviderService) {
+  constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+    private readonly web3Provider: Web3SolanaProviderService,
+  ) {
     super();
   }
 
   async analyseAsset(asset: AssetReference): Promise<AssetAnalysisResult> {
     const connection = this.web3Provider.getInstanceByChainId(asset.chainId);
-    const token = await StableSwap.load(connection, new web3.PublicKey(asset.address));
+    let token;
+    try {
+      token = await StableSwap.load(connection, new web3.PublicKey(asset.address));
+    } catch (e) {
+      if (e.message.indexOf('Invalid owner') >= 0) {
+        this.logger.warn(`SaberAssetAnalyser: error: ${e.message}`);
+        return;
+      }
+    }
     if (!token) {
       return;
     }
@@ -42,16 +60,22 @@ export class SaberAssetAnalyser
     };
   }
 
-  canHandleCategory(code: string): boolean {
-    return code === AssetCategory.SaberLP;
+  canHandleCategories(codes: string[]): boolean {
+    return codes.includes(AssetCategory.SaberLP);
   }
 
-  getPrices(chainId: number, assets: ComplexAsset[]): Promise<AssetPrice[]> {
+  async getPrices(
+    chainId: number,
+    assets: ComplexAsset[],
+  ): Promise<AssetPriceWithUnderlyingReserves[]> {
     const promises = assets.map((asset) => this.calculatePrice(chainId, asset));
-    return Promise.all(promises);
+    return await Promise.all(promises);
   }
 
-  private async calculatePrice(chainId: number, asset: ComplexAsset): Promise<AssetPrice> {
+  private async calculatePrice(
+    chainId: number,
+    asset: ComplexAsset,
+  ): Promise<AssetPriceWithUnderlyingReserves> {
     const connection = this.web3Provider.getInstanceByChainId(chainId);
     const token = await StableSwap.load(connection, new web3.PublicKey(asset.address));
 
@@ -66,6 +90,14 @@ export class SaberAssetAnalyser
     const reserveBAmount = u64.fromBuffer(TokenAccountLayout.decode(reserveB.data).amount);
 
     const [underlyingAssetA, underlyingAssetB] = asset.underlying;
+
+    if (!underlyingAssetA?.price || !underlyingAssetB?.price) {
+      return {
+        asset: { chainId, address: asset.address },
+        price: null,
+        reserves: [reserveAAmount.toString(), reserveBAmount.toString()],
+      };
+    }
 
     const assetAValue = toBN(reserveAAmount.toString())
       .dividedBy(decimalsDivider(underlyingAssetA.decimals))
@@ -83,6 +115,7 @@ export class SaberAssetAnalyser
     return {
       asset: { chainId, address: asset.address },
       price: price.toNumber(),
+      reserves: [reserveAAmount.toString(), reserveBAmount.toString()],
     };
   }
 }

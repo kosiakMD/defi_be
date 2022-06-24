@@ -1,19 +1,22 @@
 import * as redisStore from 'cache-manager-redis-store';
 
-import { CacheModule, HttpModule, Module } from '@nestjs/common';
+import { CacheModule, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
+import { HttpModule } from '@app/common';
 import { Web3ProviderService, Web3SolanaProviderService } from '@app/common/web3provider';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
 import { IntegrationsController } from '../../controllers/integrations.controller';
 import { IntegrationsControllerV2 } from '../../controllers/integrations.controller.v2';
 import { IntegrationsControllerV3 } from '../../controllers/integrations.controller.v3';
+import { IntegrationsDebugController } from '../../controllers/integrations.debug.controller';
 import { PlatformService } from '../../framework/services/platform.service';
 import { AbiModule } from '../../framework/support/EVM/AbiModule/abi.module';
 import { CurveAssetsManager } from '../../framework/support/assets/curve.assets.manager';
 import { MicroservicesModule } from '../microservices/microservices.module';
+import { RpcService } from '../microservices/rpc.service';
 import { ProtocolModule } from '../protocols/protocol.module';
 import { ProjectsInfoEntity } from './entities/projectsInfo.entity';
 import { FeaturesService } from './features.service';
@@ -41,7 +44,7 @@ import { IntegrationsServiceV3Decorator } from './integrations.service.v3.decora
     ProtocolModule,
     AbiModule,
     TypeOrmModule.forFeature([ProjectsInfoEntity]),
-  ].sort(),
+  ],
   providers: [
     IntegrationsService,
     FeaturesService,
@@ -51,7 +54,13 @@ import { IntegrationsServiceV3Decorator } from './integrations.service.v3.decora
     Web3SolanaProviderService,
     IntegrationsServiceV3Decorator,
     CurveAssetsManager,
-  ].sort(),
-  controllers: [IntegrationsController, IntegrationsControllerV2, IntegrationsControllerV3],
+    RpcService,
+  ],
+  controllers: [
+    IntegrationsController,
+    IntegrationsControllerV2,
+    IntegrationsControllerV3,
+    IntegrationsDebugController,
+  ],
 })
 export class IntegrationsModule {}

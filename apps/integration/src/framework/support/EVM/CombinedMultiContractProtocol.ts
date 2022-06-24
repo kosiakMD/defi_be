@@ -1,7 +1,6 @@
-import { HttpService } from '@nestjs/common';
-
 import { Address } from '@app/common';
 import { DynamicContract } from '@app/common/web3provider/contracts/DynamicContract';
+import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
 import {
   INamedFunctionPredicates,
@@ -27,9 +26,9 @@ export abstract class CombinedMultiContractProtocol<
   TProtocolMeta extends CombinedMultiContractProtocolMeta = CombinedMultiContractProtocolMeta,
 > extends EVMCore<TMinimalType, TOpportunityType, TUserEntryType, TProtocolMeta> {
   protected abstract abiService: AbiService;
-  protected abstract httpService: HttpService;
   // User Defined
   protected abstract functionPredicates: INamedFunctionPredicates;
+  protected abstract multicall: MulticallAggregator;
 
   functions: INamedFunctions = {};
   functionsPerPool: Map<string, INamedFunctions> = new Map<string, INamedFunctions>();
@@ -47,9 +46,9 @@ export abstract class CombinedMultiContractProtocol<
   ): TOpportunityType | void;
 
   // TODO: Type. The output on this, is the 'data' input on formatUserData
-  protected abstract fetchUserData(addresses: Address[], pools: TOpportunityType[]);
+  protected abstract fetchUsersData(addresses: Address[], pools: TOpportunityType[]);
 
-  // TODO: type; data: any is the return value from getAsyncUserData
+  // TODO: type; data: any is the return value from fetchUserData
   protected abstract formatUserData(
     address: Address,
     pool: TOpportunityType,
@@ -57,19 +56,8 @@ export abstract class CombinedMultiContractProtocol<
   ): TUserEntryType;
 
   async initialize() {
-    const addresses = await this.fetchPoolList();
-
-    this.logger.log(
-      `Initializing: ${this.meta.name} ${this.meta.chain}/${addresses}`,
-      `CombinedMultiContractProtocol/${this.constructor.name}`,
-    );
-
-    this.logger.log(
-      `${this.meta.chain}/${addresses} found ${Object.keys(this.functions).length}/${
-        Object.keys(this.functionPredicates).length
-      } functions`,
-      `CombinedMultiContractProtocol/${this.constructor.name}`,
-    );
+    // TODO: cleanup side-effects
+    await this.fetchPoolList();
   }
 
   async getCacheableOpportunityData(): Promise<TMinimalType[]> {

@@ -1,7 +1,9 @@
+import { FakeAssetService } from 'apps/integration/src/modules/microservices/fake.asset.service';
 import { Cache } from 'cache-manager';
 import { firstValueFrom, map } from 'rxjs';
 
-import { CACHE_MANAGER, HttpService, Inject } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import { CACHE_MANAGER, Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '@app/common';
@@ -9,8 +11,6 @@ import { normalizeDecimals } from '@app/common/utils';
 import { DynamicContract } from '@app/common/web3provider/contracts/DynamicContract';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
-import { AccountService } from '../../../../../modules/microservices/account.service';
-import { PriceService } from '../../../../../modules/microservices/price.service';
 import { FeatureEnum } from '../../../enums';
 import { MissingTokenException } from '../../../exceptions';
 import {
@@ -87,8 +87,7 @@ export class YetiFinanceLending
     protected multicall: MulticallAggregator,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected logger: Logger,
     @Inject(CACHE_MANAGER) protected cache: Cache,
-    protected accountService: AccountService,
-    protected priceService: PriceService,
+    protected assetService: FakeAssetService,
     protected httpService: HttpService,
   ) {
     super();
@@ -206,7 +205,11 @@ export class YetiFinanceLending
   }
 
   protected formatSupplyApy(supplied: ISupplyTokenMinimal): any {
-    return { supplyApy: supplied.rate?.apy || 0 };
+    return {
+      supplyApy: {
+        year: supplied.rate?.apy || 0,
+      },
+    };
   }
 
   protected async fetchUserData(
@@ -246,7 +249,9 @@ export class YetiFinanceLending
     }
 
     let ltv = 0;
-
+    /**
+     * TODO: split curve supply with different positions
+     */
     for (const { supply, meta } of pools) {
       const supplied: ISupplyTokenUserEntry = { amount: 0, value: 0, ...supply };
       const amountRow = supplyMap.get(supplied.token.address);

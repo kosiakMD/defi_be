@@ -2,7 +2,8 @@ import { CurrentPricesPayload, PriceResponseDto } from 'apps/integration/src/com
 import { MILK_REWARDS_TOKEN } from 'apps/integration/src/modules/protocols/helpers/cardano/cardano.constants';
 import { firstValueFrom, map } from 'rxjs';
 
-import { HttpService, Injectable } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import { Injectable } from '@nestjs/common';
 
 import { Address, ChainIdEnum } from '@app/common';
 import { CARDANO_COIN_ADDRESS } from '@app/common/constant';

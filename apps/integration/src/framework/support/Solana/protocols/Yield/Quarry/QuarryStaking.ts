@@ -1,9 +1,11 @@
 /* eslint-disable max-classes-per-file */
 import { AccountInfo, PublicKey } from '@solana/web3.js';
+import { SonarAssetService } from 'apps/integration/src/modules/microservices/sonar.asset.service';
 import { Cache } from 'cache-manager';
 import { filter, firstValueFrom, mergeMap, toArray } from 'rxjs';
 
-import { CACHE_MANAGER, HttpService, Inject } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import { CACHE_MANAGER, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
@@ -11,8 +13,6 @@ import { Logger } from '@app/common';
 import { toChunkedArray } from '@app/common/utils/transform';
 import { Web3SolanaProviderService } from '@app/common/web3provider';
 
-import { AccountService } from '../../../../../../modules/microservices/account.service';
-import { PriceService } from '../../../../../../modules/microservices/price.service';
 import { IRootProtocol, TokenMap } from '../../../../interfaces';
 import { IStakingFeatureUserEntry } from '../../../../interfaces/feature.staking.interface';
 import { QUARRY_QUARRY_LAYOUT } from '../../../Schemas/Quarry';
@@ -38,8 +38,7 @@ export class QuarryStaking
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected logger: Logger,
     @Inject(CACHE_MANAGER) protected cache: Cache,
-    protected accountService: AccountService,
-    protected priceService: PriceService,
+    protected assetService: SonarAssetService,
     protected web3Service: Web3SolanaProviderService,
     protected httpService: HttpService,
     protected configService: ConfigService,
@@ -112,44 +111,40 @@ export class QuarryStaking
     opportunity: IQuarryStakingFeatureMinimal,
     tokens: TokenMap,
   ): IQuarryStakingFeatureOpportunity {
-    const token = tokens.get(opportunity.id);
-
-    const base: any = {
+    const base: Partial<IQuarryStakingFeatureOpportunity> = {
       feature: opportunity.feature,
       id: opportunity.id,
       chain: opportunity.chain,
       links: this.generateLinks(opportunity),
       token: this.formatOpportunityReceiptToken(opportunity, tokens.get(opportunity.id), tokens),
+
+      // additional
+      extra: opportunity.extra,
+      replicaMint: opportunity.replicaMint,
     };
 
-    if ('supplied' in opportunity) {
-      if (!tokens.has(opportunity.id)) {
-        return;
-      }
+    if (!opportunity.supplied.every((t) => tokens.has(t.token.address))) {
+      return;
+    }
 
-      base.supplied = opportunity.supplied?.map((poolToken) =>
-        this.formatOpportunitySuppliedToken(poolToken, token),
+    base.supplied = opportunity.supplied?.map((poolToken) => {
+      const token = tokens.get(poolToken.token.address);
+      return this.formatOpportunitySuppliedToken(poolToken, token);
+    });
+
+    if (!opportunity.rewarded.every((t) => tokens.has(t.token.address))) {
+      return;
+    }
+
+    base.rewarded = opportunity.rewarded?.map((poolToken) => {
+      return this.formatOpportunityRewardedToken(
+        poolToken,
+        tokens.get(poolToken.token.address),
+        base.supplied.reduce((acc, cur) => acc + cur.tvl, 0),
       );
-    }
+    });
 
-    if ('rewarded' in opportunity) {
-      if (!opportunity.rewarded.every((t) => tokens.has(t.token.address))) {
-        return;
-      }
-      base.rewarded = opportunity.rewarded?.map((poolToken) =>
-        this.formatOpportunityRewardedToken(
-          poolToken,
-          tokens.get(poolToken.token.address),
-          token.value,
-        ),
-      );
-    }
-    if ('extra' in opportunity) {
-      base.extra = opportunity.extra;
-      base.replicaMint = opportunity.replicaMint;
-    }
-
-    return base;
+    return base as IQuarryStakingFeatureOpportunity;
   }
 
   private toFeatureEntryMinimal(protocol: IQuarryProtocol): IQuarryStakingFeatureMinimal[] {

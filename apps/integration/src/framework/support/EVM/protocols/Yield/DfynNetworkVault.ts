@@ -1,6 +1,8 @@
+import { UniswapV2AssetService } from 'apps/integration/src/modules/microservices/uniswap.asset.service';
 import { Cache } from 'cache-manager';
 
-import { CACHE_MANAGER, HttpService, Inject } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import { CACHE_MANAGER, Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, Logger } from '@app/common';
@@ -10,8 +12,6 @@ import { DynamicContract } from '@app/common/web3provider/contracts/DynamicContr
 import { ERC20 } from '@app/common/web3provider/contracts/ERC20';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
-import { AccountService } from '../../../../../modules/microservices/account.service';
-import { PriceService } from '../../../../../modules/microservices/price.service';
 import { INamedFunctionPredicates } from '../../../interfaces';
 import {
   IStakingFeatureMinimal,
@@ -38,8 +38,7 @@ export class DfynNetworkVault extends MultiContractProtocol<
     protected multicall: MulticallAggregator,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected logger: Logger,
     @Inject(CACHE_MANAGER) protected cache: Cache,
-    protected accountService: AccountService,
-    protected priceService: PriceService,
+    protected assetService: UniswapV2AssetService,
     protected httpService: HttpService,
   ) {
     super();
@@ -99,7 +98,7 @@ export class DfynNetworkVault extends MultiContractProtocol<
   }
 
   // different from masterchef
-  protected async fetchUserData(
+  protected async fetchUsersData(
     addresses: string[],
     pools: IStakingFeatureOpportunity[],
   ): Promise<any> {

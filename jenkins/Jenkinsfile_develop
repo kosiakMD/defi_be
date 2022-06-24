@@ -5,7 +5,7 @@ pipeline {
     parameters {
         string(name: "BRANCH_NAME", description: "Git branch to build Docker image", defaultValue: "develop", trim: true)
         string(name: "REPLICAS", description: "Default amount of replicas", defaultValue: "8", trim: true)
-        string(name: "TEMPLATE", description: "Default chart template", defaultValue: "1.0.5", trim: true)
+        string(name: "TEMPLATE", description: "Default chart template", defaultValue: "1.1.0", trim: true)
     }
     options {
         buildDiscarder(

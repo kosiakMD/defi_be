@@ -1,9 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import { FakeAssetService } from 'apps/integration/src/modules/microservices/fake.asset.service';
 import BN from 'bignumber.js';
 import { Cache } from 'cache-manager';
 import { firstValueFrom, map, mergeMap, toArray } from 'rxjs';
 
-import { CACHE_MANAGER, HttpService, Inject } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import { CACHE_MANAGER, Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '@app/common';
@@ -66,8 +68,7 @@ export class KavaLending
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected logger: Logger,
     @Inject(CACHE_MANAGER) protected cache: Cache,
-    protected accountService: AccountService,
-    protected priceService: PriceService,
+    protected assetService: FakeAssetService,
     protected httpService: HttpService,
   ) {
     super();
@@ -130,7 +131,7 @@ export class KavaLending
       opportunity.supplied.forEach((token) => {
         const address = token.token.address;
         const data = realTimeDataMap.get(token.token.address);
-        token.rate = { supplyApy: data.supplyAPR };
+        token.rate = { year: data.supplyAPR };
         token.ltv = data.ltv;
 
         opportunity.rewarded.push(
@@ -152,7 +153,7 @@ export class KavaLending
     return opportunities;
   }
 
-  protected async fetchUserData(addresses: string[]): Promise<UserLendingMap> {
+  protected async fetchUsersData(addresses: string[]): Promise<UserLendingMap> {
     const result = await Promise.all([
       ...addresses.map((address) => this.userLendingRequest(address, this.hardUserDeposited)),
       ...addresses.map((address) => this.userLendingRequest(address, this.hardUserBorrowed)),
@@ -215,20 +216,20 @@ export class KavaLending
     token: ERC20Token,
   ): ISupplyTokenOpportunity {
     const totalSupplied = normalizeDecimals(supplied.totalSupplied, token.decimals);
-    const variableApy = Number(supplied.rate.supplyApy) * 100;
+    const year = Number(supplied.rate.supplyApy);
     const ltv = Number(supplied.ltv);
     return {
       token,
       tvl: totalSupplied * token.price,
-      apy: { variableApy },
+      apy: { year },
       ltv,
     };
   }
 
   protected formatBorrowApy(borrowed: IBorrowTokenMinimal) {
-    const borrowApy = Number(borrowed.rate.borrowApy) * 100;
+    const year = Number(borrowed.rate.borrowApy);
 
-    return { borrowApy };
+    return { year };
   }
 
   private async hardDepositedBorrowedList(link: string): Promise<IKavaDenomAmount[]> {

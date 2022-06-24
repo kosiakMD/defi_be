@@ -1,18 +1,5 @@
-ingress:
-  enabled: true
-  host: devcategorization.defiyield.app
-
-configMaps:
-  logs:
-    LOG_AWS_ENABLED: true
-    LOG_LEVEL: debug
-    NODE_ENV: development
-  config:
-    SCREENSHOTS_ENABLED: false
-    DIR_SAVE_SCREENSHOTS: none
-    TENDERLY_API_URL: https://api.tenderly.co/api
-    TEST_RUN: false
-    DB_LOGGING: false
+configMapsAWS:
+  - categorization
 
 resources:
   requests:
@@ -23,7 +10,7 @@ resources:
     memory: 4Gi
 
 secrets:
-- redis-stage
+- redis
 - databasecategorization
 - logs
 - etherscan
@@ -35,3 +22,15 @@ initContainer:
   image: ""
   spec:
     command: [ "node", "./node_modules/typeorm/cli.js", "migration:run", "-f", "dist/apps/categorization/src/ormconfig.js" ]
+
+#configMaps:
+#  logs:
+#    LOG_AWS_ENABLED: true
+#    LOG_LEVEL: debug
+#    NODE_ENV: development
+#  config:
+#    SCREENSHOTS_ENABLED: false
+#    DIR_SAVE_SCREENSHOTS: none
+#    TENDERLY_API_URL: https://api.tenderly.co/api
+#    TEST_RUN: false
+#    DB_LOGGING: false

@@ -1,8 +1,10 @@
 /* eslint-disable camelcase */
 import { CoinGeckoClient } from 'coingecko-api-v3';
 
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+
+import { ChainIdEnum, Logger } from '@app/common';
 
 import { ChainService } from '../../../../common/services/chain.service';
 
@@ -34,7 +36,7 @@ export class CoingeckoAssetsProvider implements TrackedAssetsProvider {
     for (const { id, platforms } of coingeckoCoins) {
       for (const [chain, address] of Object.entries(platforms)) {
         const chainId = chainIdMap.get(chain);
-        if (chainId && address) {
+        if (chainId && chainId !== ChainIdEnum.cardano && address) {
           // TODO: We do not include coingeko rank here, could be issue
           candidates.push({ chainId, address, metadata: { coingeckoId: id } });
         }

@@ -3,17 +3,14 @@ import {
   PangolinProtocolEnum,
   PancakeProtocolEnum,
   AlpacaProtocolEnum,
-  AaveProtocolEnum,
   SushiSwapProtocolEnum,
   UniswapProtocolEnum,
   YearnProtocolEnum,
   EllipsisProtocolEnum,
-  AutofarmProtocolEnum,
   QuickswapProtocolEnum,
 } from '@app/common';
 
 export type ProtocolName =
-  | AutofarmProtocolEnum
   | PancakeProtocolEnum
   | PangolinProtocolEnum
   | QuickswapProtocolEnum
@@ -21,6 +18,5 @@ export type ProtocolName =
   | SushiSwapProtocolEnum
   | UniswapProtocolEnum
   | AlpacaProtocolEnum
-  | AaveProtocolEnum
   | YearnProtocolEnum
   | EllipsisProtocolEnum;

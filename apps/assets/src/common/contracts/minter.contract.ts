@@ -1,16 +1,16 @@
 import Web3 from 'web3';
 import { AbiItem } from 'web3-utils';
 
-import { Logger } from '@app/common/Logger/Logger.service';
+import { Logger } from '@app/common';
 import { CURVE_MAIN_COIN_ADDRESS, ZERO_ADDRESS } from '@app/common/constant';
 
 import { MinterAbi } from '../abis/minter.abi';
 
-export class MINTER {
+export class MinterContract {
   protected contract;
 
-  constructor(protected address: string, web3Provider: Web3, protected logger: Logger) {
-    this.contract = new web3Provider.eth.Contract([MinterAbi.coins] as AbiItem[], address);
+  constructor(protected address: string, web3: Web3, protected logger: Logger) {
+    this.contract = new web3.eth.Contract([MinterAbi.coins] as AbiItem[], address);
   }
 
   async coins(index: number): Promise<string> {

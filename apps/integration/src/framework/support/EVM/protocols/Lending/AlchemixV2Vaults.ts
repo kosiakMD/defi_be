@@ -1,8 +1,10 @@
+import { FakeAssetService } from 'apps/integration/src/modules/microservices/fake.asset.service';
 import BigNumber from 'bignumber.js';
 import { Cache } from 'cache-manager';
 import { firstValueFrom, map } from 'rxjs';
 
-import { CACHE_MANAGER, HttpService, Inject } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import { CACHE_MANAGER, Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, FeatureEnum, Logger } from '@app/common';
@@ -11,8 +13,6 @@ import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregat
 
 import { toDecimals } from '../../../../../common/utils/util';
 
-import { AccountService } from '../../../../../modules/microservices/account.service';
-import { PriceService } from '../../../../../modules/microservices/price.service';
 import { INamedFunctionPredicates, IRootProtocol, TokenMap } from '../../../interfaces';
 import { ILendingFeatureUserEntry } from '../../../interfaces/feature.lending.interface';
 import { BaseWithTokens } from '../../../interfaces/new.interfaces';
@@ -78,8 +78,7 @@ export class AlchemixV2Vaults
     protected multicall: MulticallAggregator,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected logger: Logger,
     @Inject(CACHE_MANAGER) protected cache: Cache,
-    protected accountService: AccountService,
-    protected priceService: PriceService,
+    protected assetService: FakeAssetService,
     protected httpService: HttpService,
   ) {
     super();
@@ -258,12 +257,15 @@ export class AlchemixV2Vaults
         totalSupplied,
         tvl,
         pricePerShare: pricePerShare,
-        apy: { supplyApy: apy },
+        apy: { year: apy },
       },
     };
   }
 
-  protected async fetchUserData(addresses: Address[], pools: IAlchemixLendingFeatureOpportunity[]) {
+  protected async fetchUsersData(
+    addresses: Address[],
+    pools: IAlchemixLendingFeatureOpportunity[],
+  ) {
     const contract = this.getMainContract();
     const calls = new Map();
 
@@ -298,7 +300,7 @@ export class AlchemixV2Vaults
     );
 
     try {
-      const multicallResults = await this.fetchUserData(addresses, pools);
+      const multicallResults = await this.fetchUsersData(addresses, pools);
 
       addresses.forEach((address) => {
         const supplyTokens: ISupplyTokenUserEntry[] = [];
@@ -332,6 +334,8 @@ export class AlchemixV2Vaults
             suppliedOpportunity.token.decimals,
           );
 
+          this.logger.log(`Alchemix, pool: ${pool.id}, supplied: ${tokensSupplied}`);
+
           if (tokensSupplied === 0) return;
 
           const suppliedTotal = this.tryCalculateBalanceForTokenSupplied(
@@ -347,7 +351,7 @@ export class AlchemixV2Vaults
 
           const suppliedEntity: ISupplyTokenUserEntry = {
             tvl: suppliedOpportunity.tvl,
-            apy: { supplyApy: suppliedOpportunity.apy?.supplyApy * 100 },
+            apy: { year: suppliedOpportunity.apy.year },
             token: suppliedOpportunity.token,
             totalSupplied: suppliedOpportunity.totalSupplied,
             amount: tokensSupplied,

@@ -1,27 +1,24 @@
-import {
-  IBaseApy,
-  ITokenMinimal,
-  ITokenOpportunity,
-  ITokenUserEntry,
-} from './tokens.common.interface';
+import { IRewardRates } from './rewards.interface';
+import { ITokenMinimal, ITokenOpportunity, ITokenUserEntry } from './tokens.common.interface';
 
 export interface IBorrowTokenMinimal<TExtra = unknown> extends ITokenMinimal<TExtra> {
+  // TODO: totalBorrowed and rate should live in the integrations that require them
   totalBorrowed: string;
   rate?: { [key: string]: string };
 }
 
-// TODO: Review if this makes sense. no current lending/borrowing protocols
 export interface IBorrowTokenOpportunity<TExtra = unknown> extends ITokenOpportunity<TExtra> {
+  // TODO totalBorrowed can be removed, and just TVL used
   totalBorrowed?: number;
   tvl: number;
-  apy?: IBorrowApy;
+  // TODO: can probably remove apy
+  apy?: IRewardRates;
+  apr?: IRewardRates;
 }
 
 export interface IBorrowTokenUserEntity<TExtra = unknown> extends ITokenUserEntry<TExtra> {
   tvl: number;
-  apy?: IBorrowApy;
-}
-
-interface IBorrowApy extends IBaseApy {
-  borrowApy?: number;
+  // TODO: can probably remove apy
+  apy?: IRewardRates;
+  apr?: IRewardRates;
 }

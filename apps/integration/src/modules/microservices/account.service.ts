@@ -1,21 +1,20 @@
 import { Cache } from 'cache-manager';
 import { firstValueFrom } from 'rxjs';
 
-import { CACHE_MANAGER, HttpService, Inject, Injectable, LoggerService } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { IAssetResponseDto } from '@app/common';
+import { IAssetResponseDto, Logger } from '@app/common';
 import { DetailedResponseDto } from '@app/common/dto';
-import LiquidityPoolTokenDto from '@app/common/dto/LiquidityPoolToken.dto';
 import { ChainIdEnum } from '@app/common/enum';
 import { Address, BalancesResponse } from '@app/common/types';
-import { chunk } from '@app/common/utils';
+import { chunk, logExecutionTime } from '@app/common/utils';
 
 import { Asset } from '../../common/interfaces/transactions.interfaces';
 
 import { AccountServiceInterface } from './account.service.interface';
-import { logExecutionTime } from './utils';
 
 @Injectable()
 export class AccountService implements AccountServiceInterface {
@@ -27,7 +26,7 @@ export class AccountService implements AccountServiceInterface {
   protected saveAssetsUnderlyingUrl: string;
 
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: LoggerService,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
     protected httpService: HttpService,
     protected configService: ConfigService,
     @Inject(CACHE_MANAGER) protected readonly cache: Cache,
@@ -79,7 +78,7 @@ export class AccountService implements AccountServiceInterface {
     addresses: Address[],
     chainIds?: ChainIdEnum[],
   ): Promise<DetailedResponseDto<Asset[]>> {
-    const cacheKey = `getAssets_${addresses.join(',')}_${chainIds.join(',')}_1`;
+    const cacheKey = `getAssets_${addresses.join(',')}_${chainIds.join(',')}`;
 
     return this.getOrSet(this.cacheTTLInSeconds, cacheKey, async () => {
       const dataArray = await Promise.all(
@@ -87,7 +86,7 @@ export class AccountService implements AccountServiceInterface {
         chunk(addresses, 250).map(async (addressChunk) => {
           const { data } = await logExecutionTime(
             this.logger,
-            `Get Assets for ${addresses.length} assets, ${chainIds.length} chain`,
+            `Get Assets for ${addressChunk.length} assets, ${chainIds.length} chain`,
             () =>
               firstValueFrom(
                 this.httpService.get(this.getAssetsUrl, {
@@ -126,25 +125,6 @@ export class AccountService implements AccountServiceInterface {
 
       return data;
     }
-  }
-
-  async saveAssetsAndUnderlying(asset: Partial<Asset>): Promise<LiquidityPoolTokenDto> {
-    const { chainId, ...other } = asset;
-    const data = await this.httpService
-      .post(this.saveAssetsUrl, {
-        ...other,
-        chain: chainId,
-      })
-      .toPromise();
-
-    const dataWithUnderlying = await this.httpService
-      .post<LiquidityPoolTokenDto>(this.saveAssetsUnderlyingUrl, {
-        ...data.data,
-        pairs: asset.address.split(':'),
-      })
-      .toPromise();
-
-    return dataWithUnderlying.data;
   }
 
   /**

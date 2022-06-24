@@ -10,6 +10,7 @@ import {
   initContext,
   initListening,
   initLogger,
+  initMiddlewares,
   initSentry,
   initSwagger,
 } from '@app/common/bootstrap';
@@ -29,6 +30,7 @@ async function bootstrap() {
   });
 
   initSentry();
+  initMiddlewares(app);
   initContext(app);
   initLogger(app);
 

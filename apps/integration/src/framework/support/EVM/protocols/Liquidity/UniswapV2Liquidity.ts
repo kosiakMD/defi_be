@@ -1,15 +1,15 @@
+import { UniswapV2AssetService } from 'apps/integration/src/modules/microservices/uniswap.asset.service';
 import { Cache } from 'cache-manager';
 import { cloneDeep } from 'lodash';
 import { firstValueFrom, map, mergeMap, toArray } from 'rxjs';
 
-import { CACHE_MANAGER, HttpService, Inject } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import { CACHE_MANAGER, Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { FeatureEnum, Logger } from '@app/common';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
-import { AccountService } from '../../../../../modules/microservices/account.service';
-import { PriceService } from '../../../../../modules/microservices/price.service';
 import { MissingTokenException, MissingUnderlyingException } from '../../../exceptions';
 import {
   IProtocolMeta,
@@ -45,8 +45,7 @@ export class UniswapV2Liquidity
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected logger: Logger,
     @Inject(CACHE_MANAGER) protected cache: Cache,
-    protected accountService: AccountService,
-    protected priceService: PriceService,
+    protected assetService: UniswapV2AssetService,
     protected httpService: HttpService,
     // only used to get totalSupply
     protected multicall: MulticallAggregator,
@@ -133,7 +132,6 @@ export class UniswapV2Liquidity
     const wallets = new Map();
     const poolsMap = new Map(pools.map((p) => [p.id, p]));
     try {
-      // TODO: pass poolsMap.keys to only check balances for these pools?
       const balances = await this.getSubgraphAccountBalances(addresses);
       for (const balance of balances) {
         if (!poolsMap.has(balance.pair)) {

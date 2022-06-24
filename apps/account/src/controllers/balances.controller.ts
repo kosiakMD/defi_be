@@ -5,6 +5,7 @@ import { getUniqList, notEmpty } from '@app/common/utils';
 
 import { BalancesResponse } from '../modules/balances/balances.interfaces';
 import { BalancesService } from '../modules/balances/balances.service';
+import { DelegationsService } from '../modules/balances/delegations.service';
 import {
   BalancesPostQueryDto,
   BalancesQueryDto,
@@ -15,7 +16,10 @@ import {
 @ApiTags('Balances')
 @Controller('balances')
 export class BalancesController {
-  constructor(private readonly balancesService: BalancesService) {}
+  constructor(
+    private readonly balancesService: BalancesService,
+    private readonly delegationsService: DelegationsService,
+  ) {}
 
   @Get('')
   @ApiQuery({
@@ -95,6 +99,6 @@ export class BalancesController {
   })
   // TODO: DTO should be declared here
   getUserDelegations(@Query() query) {
-    return this.balancesService.getUserDelegations(notEmpty(getUniqList(query.addresses)));
+    return this.delegationsService.getUserDelegations(notEmpty(getUniqList(query.addresses)));
   }
 }

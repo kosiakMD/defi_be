@@ -1,13 +1,13 @@
+import { UniswapV2AssetService } from 'apps/integration/src/modules/microservices/uniswap.asset.service';
 import { Cache } from 'cache-manager';
 
-import { CACHE_MANAGER, HttpService, Inject } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import { CACHE_MANAGER, Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '@app/common';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
-import { AccountService } from '../../../../../modules/microservices/account.service';
-import { PriceService } from '../../../../../modules/microservices/price.service';
 import { INamedFunctionPredicates } from '../../../interfaces';
 import { AbiService } from '../../AbiModule/AbiService';
 import { LpFactoryLiquidity } from './LpFactoryLiquidity';
@@ -18,11 +18,10 @@ export class CryptoComDefiSwapLiquidity extends LpFactoryLiquidity {
     @Inject(CACHE_MANAGER) protected cache: Cache,
     protected abiService: AbiService,
     protected multicall: MulticallAggregator,
-    protected accountService: AccountService,
-    protected priceService: PriceService,
+    protected assetService: UniswapV2AssetService,
     protected httpService: HttpService,
   ) {
-    super(logger, cache, abiService, multicall, accountService, priceService, httpService);
+    super();
   }
 
   functionPredicates: INamedFunctionPredicates = {

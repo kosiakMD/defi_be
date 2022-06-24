@@ -1,48 +1,5 @@
-ingress:
-  enabled: true
-  host: gateway.staging.defyield.xyz
-  annotations: { }
-  certificate_arn: arn:aws:acm:us-west-2:625623467395:certificate/a19eacc1-004c-4ce4-ab7f-fcb0f3d911b8
-  wafv2_acl_arn: arn:aws:wafv2:us-west-2:625623467395:regional/webacl/defiyield-backend-staging/fc7890fc-a9e4-45e7-a0b3-a926eb624d3d
-
-configMaps:
-  common:
-    PRICE_SERVICE_MAIN_COIN_ADDRESS: "0x0000000000000000000000000000000000000000"
-    MAIL_HIRE_FROM: mail@defiyield.app
-    MAIL_HIRE_TO: hr@defiyield.app
-    MAIL_QUESTION_FROM: mail@defiyield.app
-    MAIL_QUESTION_TO: hr@defiyield.app
-  portal:
-    DEFIYIELD_INFO_2_URL: https://api2.defiyield.info
-    DEFIYIELD_INFO_MAIN_URL: https://apimain.defiyield.info
-    ETH_URL: https://eth-trace.gateway.pokt.network/v1/lb/619fad2eb2d0dd003950f26b
-    SOL_URL: https://solana-api.projectserum.com
-  endpoints:
-    PRICE_SERVICE_HOST: http://price
-    PRICE_SERVICE_PORT: 80
-    PRICES_PATH: v1/prices
-    INTEGRATION_SERVICE_HOST: http://integration
-    INTEGRATION_SERVICE_PORT: 80
-    ACCOUNT_SERVICE_HOST: http://account
-    ACCOUNT_SERVICE_PORT: 80
-    ASSETS_SERVICE_HOST: http://assets
-    ASSETS_SERVICE_PORT: 80
-    POOLS_SERVICE_URL: https://integration
-    VAULTS_SERVICE_URL: https://integration
-    IL_CALCULATOR: https://ilapi1.defiyield.info/api/v2/calc
-    SAFE_PROXY_SERVICE_HOST: http://safe.proxy.dfyield.xyz
-    SAFE_PROXY_SERVICE_PORT: 80
-    OPPORTUNITIES_SERVICE_HOST: http://opportunities
-    OPPORTUNITIES_SERVICE_PORT: 80
-    RPC_SERVICE_HOST: http://rpc
-    ASSETS_SERVICE_HOST: http://assets
-    ASSETS_SERVICE_PORT: 80
-  logs:
-    LOG_AWS_ENABLED: true
-    LOG_LEVEL: debug
-    NODE_ENV: staging
-  config:
-    AWS_XRAY_DAEMON_ADDRESS: xray-service.default:2000
+configMapsAWS:
+  - gateway
 
 resources:
   requests:
@@ -54,10 +11,47 @@ resources:
 
 secrets:
 - mailer
-- redis_stage
+- redis
 - bscscan
 - etherscan
 - logs
 - sentry
 - solana
 - gas
+
+#configMaps:
+#  common:
+#    PRICE_SERVICE_MAIN_COIN_ADDRESS: "0x0000000000000000000000000000000000000000"
+#    MAIL_HIRE_FROM: mail@defiyield.app
+#    MAIL_HIRE_TO: hr@defiyield.app
+#    MAIL_QUESTION_FROM: mail@defiyield.app
+#    MAIL_QUESTION_TO: hr@defiyield.app
+#  portal:
+#    DEFIYIELD_INFO_2_URL: https://api2.defiyield.info
+#    DEFIYIELD_INFO_MAIN_URL: https://apimain.defiyield.info
+#    ETH_URL: https://eth-trace.gateway.pokt.network/v1/lb/619fad2eb2d0dd003950f26b
+#    SOL_URL: https://solana-api.projectserum.com
+#  endpoints:
+#    PRICE_SERVICE_HOST: http://price
+#    PRICE_SERVICE_PORT: 80
+#    PRICES_PATH: v1/prices
+#    INTEGRATION_SERVICE_HOST: http://integration
+#    INTEGRATION_SERVICE_PORT: 80
+#    ACCOUNT_SERVICE_HOST: http://account
+#    ACCOUNT_SERVICE_PORT: 80
+#    ASSETS_SERVICE_HOST: http://assets
+#    ASSETS_SERVICE_PORT: 80
+#    POOLS_SERVICE_URL: https://integration
+#    VAULTS_SERVICE_URL: https://integration
+#    IL_CALCULATOR: https://ilapi1.defiyield.info/api/v2/calc
+#    SAFE_PROXY_SERVICE_HOST: http://safe.proxy.dfyield.xyz
+#    SAFE_PROXY_SERVICE_PORT: 80
+#    OPPORTUNITIES_SERVICE_HOST: http://opportunities
+#    OPPORTUNITIES_SERVICE_PORT: 80
+#    RPC_SERVICE_HOST: http://rpc
+#  logs:
+#    LOG_AWS_ENABLED: true
+#    LOG_LEVEL: debug
+#    NODE_ENV: development
+#  config:
+#    AWS_XRAY_DAEMON_ADDRESS: xray-service.default:2000

@@ -10,6 +10,7 @@ import {
 import { rpcValidation } from '@app/common/config/components/rpcs.config';
 
 import { blockscanConfig } from './components/blockscan';
+import { blockscoutConfig } from './components/blockscout';
 import { dataSourceConfig } from './components/dataSources';
 
 export const validationSchema = Joi.object({
@@ -30,11 +31,16 @@ export const validationSchema = Joi.object({
   // Internal Services
   PRICE_SERVICE_URL: Joi.string().required(),
   ACCOUNT_SERVICE_URL: Joi.string().required(),
+  ASSETS_SERVICE_URL: Joi.string().required(),
+  RPC_SERVICE_URL: Joi.string().required(),
+
   COVALENT_URL: Joi.string().required(),
   COVALENT_KEY: Joi.string().required(),
+  TENDERLY_API_KEY: Joi.string().optional(),
 
   ...dataSourceConfig,
   ...blockscanConfig,
+  ...blockscoutConfig,
 });
 
 export const validationOptions = {

@@ -23,18 +23,19 @@ export class AssetsCategoryRepository extends Repository<AssetCategoryEntity> {
     const unknownCodes = codes.filter((code) =>
       categories.every((category) => category.code !== code),
     );
+
     if (!unknownCodes.length) {
       return categories;
     }
 
-    const newCategories = await this.save(
-      unknownCodes.map((code) => {
-        const category = new AssetCategoryEntity();
-        category.code = code;
-        category.name = getDefaultCategoryName(code);
-        return category;
-      }),
-    );
+    let newCategories = unknownCodes.map((code) => {
+      const category = new AssetCategoryEntity();
+      category.code = code;
+      category.name = getDefaultCategoryName(code);
+      return category;
+    });
+
+    newCategories = await this.save(newCategories);
 
     return categories.concat(newCategories);
   }

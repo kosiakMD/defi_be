@@ -1,9 +1,7 @@
 import {
-  AaveProtocolEnum,
   AaveV3ProtocolEnum,
   AlpacaProtocolEnum,
   AnchorProtocolEnum,
-  AutofarmProtocolEnum,
   ChainIdEnum,
   CurveProtocolEnum,
   EllipsisProtocolEnum,
@@ -32,10 +30,8 @@ export type ProtocolName =
   | PancakeProtocolEnum
   | SushiSwapProtocolEnum
   | UniswapProtocolEnum
-  | AutofarmProtocolEnum
   | QuickswapProtocolEnum
   | AlpacaProtocolEnum
-  | AaveProtocolEnum
   | EllipsisProtocolEnum
   | CurveProtocolEnum
   | AnchorProtocolEnum

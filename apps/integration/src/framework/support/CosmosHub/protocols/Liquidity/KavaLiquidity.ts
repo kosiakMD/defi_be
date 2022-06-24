@@ -1,16 +1,16 @@
+import { FakeAssetService } from 'apps/integration/src/modules/microservices/fake.asset.service';
 import BN from 'bignumber.js';
 import { Cache } from 'cache-manager';
 import { cloneDeep } from 'lodash';
 import { firstValueFrom, mergeMap, toArray } from 'rxjs';
 
-import { CACHE_MANAGER, HttpService, Inject } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import { CACHE_MANAGER, Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '@app/common';
 import { normalizeDecimals } from '@app/common/utils';
 
-import { AccountService } from '../../../../../modules/microservices/account.service';
-import { PriceService } from '../../../../../modules/microservices/price.service';
 import { IRootProtocol } from '../../../interfaces';
 import {
   IPoolFeatureEntryOpportunity,
@@ -59,8 +59,7 @@ export class KavaLiquidity
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected logger: Logger,
     @Inject(CACHE_MANAGER) protected cache: Cache,
-    protected accountService: AccountService,
-    protected priceService: PriceService,
+    protected assetService: FakeAssetService,
     protected httpService: HttpService,
   ) {
     super();
@@ -100,12 +99,10 @@ export class KavaLiquidity
       );
     const pools = await firstValueFrom($data);
 
-    await Promise.all(pools.map((pool) => this.saveAssetsAndUnderlying(pool)));
-
     return pools.map((pool) => this.toFeatureEntryMinimal(pool));
   }
 
-  protected async fetchUserData(addresses: string[]): Promise<Map<string, IKavaDeposits[]>> {
+  protected async fetchUsersData(addresses: string[]): Promise<Map<string, IKavaDeposits[]>> {
     const deposits = await Promise.all(
       addresses.map((address) => this.accountLiquidityDeposits(address)),
     );
@@ -204,16 +201,5 @@ export class KavaLiquidity
         },
       ],
     };
-  }
-
-  private saveAssetsAndUnderlying(pool: IKavaPool) {
-    return this.accountService.saveAssetsAndUnderlying({
-      address: pool.name,
-      name: pool.name,
-      symbol: pool.name,
-      decimals: this.LIQUIDITY_DECIMALS,
-      isLp: true,
-      chainId: this.meta.chain,
-    });
   }
 }

@@ -1,9 +1,11 @@
+import { FakeAssetService } from 'apps/integration/src/modules/microservices/fake.asset.service';
 import { BigNumber as BN } from 'bignumber.js';
 import { Cache } from 'cache-manager';
 import { equals } from 'class-validator';
 import { firstValueFrom } from 'rxjs';
 
-import { CACHE_MANAGER, HttpService, Inject } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import { CACHE_MANAGER, Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { ChainIdEnum, FeatureEnum, Logger } from '@app/common';
@@ -11,8 +13,6 @@ import { normalizeDecimals } from '@app/common/utils';
 import { DynamicContract } from '@app/common/web3provider/contracts/DynamicContract';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
-import { AccountService } from '../../../../../modules/microservices/account.service';
-import { PriceService } from '../../../../../modules/microservices/price.service';
 import {
   INamedFunctionPredicates,
   IProtocolMeta,
@@ -51,8 +51,7 @@ export class IronBankLending
     protected multicall: MulticallAggregator,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected logger: Logger,
     @Inject(CACHE_MANAGER) protected cache: Cache,
-    protected accountService: AccountService,
-    protected priceService: PriceService,
+    protected assetService: FakeAssetService,
     protected httpService: HttpService,
   ) {
     super();
@@ -137,7 +136,7 @@ export class IronBankLending
         return 'fantom';
       }
       case ChainIdEnum.eth: {
-        return 'eth';
+        return '  ';
       }
       default: {
         this.logger.log('Unsupported chain' + this.meta.chain);

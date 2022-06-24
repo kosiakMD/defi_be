@@ -5,9 +5,8 @@ import {
   Address,
   AddressesArray,
   ChainIdEnum,
-  ChainsArray,
   ErrorResponseDto,
-  ProtocolNameEnum,
+  OptionalChainsArray,
   ProtocolParams,
   ProtocolV3NameEnum,
 } from '@app/common';
@@ -22,6 +21,7 @@ import {
 import { IntegrationsResponseV2Dto } from '../modules/integrations/dto/integrations.dto';
 
 const SortedProtocolNames = sortKeys(ProtocolV3NameEnum);
+const ExampleProtocol = SortedProtocolNames[Object.keys(SortedProtocolNames)[0]]; // just grab the first
 
 @ApiTags('Protocols')
 @Controller('v3/protocols')
@@ -44,7 +44,7 @@ export class IntegrationsControllerV3 {
   @ApiParam({
     name: 'protocolName',
     enum: SortedProtocolNames,
-    example: ProtocolNameEnum.SpookySwap,
+    example: ExampleProtocol,
   })
   @ApiQuery({
     name: 'chains',
@@ -59,7 +59,7 @@ export class IntegrationsControllerV3 {
   @Get('/:protocolName/')
   async getUserPositionsForProtocol(
     @Param() { protocolName }: ProtocolParams,
-    @ChainsArray('chains') chains: ChainIdEnum[],
+    @OptionalChainsArray('chains') chains: ChainIdEnum[],
     @AddressesArray('addresses') addresses: Address[],
   ): Promise<IUserEntryResponse> {
     return this.platformService.getUserPositionsForPlatform(protocolName, chains, addresses);
@@ -68,7 +68,7 @@ export class IntegrationsControllerV3 {
   @ApiParam({
     name: 'protocolName',
     enum: SortedProtocolNames,
-    example: ProtocolNameEnum.SpookySwap,
+    example: ExampleProtocol,
   })
   @ApiQuery({
     name: 'chains',
@@ -78,7 +78,7 @@ export class IntegrationsControllerV3 {
   @Get('/:protocolName/opportunities')
   async getOpportunitiesForProtocol(
     @Param() { protocolName }: ProtocolParams,
-    @ChainsArray('chains') chains: ChainIdEnum[],
+    @OptionalChainsArray('chains') chains: ChainIdEnum[],
   ): Promise<IOpportunityResponse> {
     return this.platformService.getOpportunitiesForPlatform(protocolName, chains);
   }
@@ -86,7 +86,7 @@ export class IntegrationsControllerV3 {
   @ApiParam({
     name: 'protocolName',
     enum: SortedProtocolNames,
-    example: ProtocolNameEnum.SpookySwap,
+    example: ExampleProtocol,
   })
   @ApiQuery({
     name: 'debug',
@@ -102,7 +102,7 @@ export class IntegrationsControllerV3 {
   @Get('/:protocolName/sync')
   async cacheAvailablePools(
     @Param() { protocolName }: ProtocolParams,
-    @ChainsArray('chains') chains: ChainIdEnum[],
+    @OptionalChainsArray('chains') chains: ChainIdEnum[],
     @Query() { debug }: { debug?: string },
   ): Promise<any> {
     return this.platformService.cacheOpportunitiesForPlatform(

@@ -1,12 +1,5 @@
-ingress:
-  enabled: true
-  host: devscheduler.defiyield.app
-
-configMaps:
-  logs:
-    LOG_AWS_ENABLED: true
-    LOG_LEVEL: debug
-    NODE_ENV: development
+configMapsAWS:
+  - scheduler
 
 resources:
   requests:
@@ -19,3 +12,9 @@ resources:
 secrets:
   - database
   - redis
+
+#configMaps:
+#  logs:
+#    LOG_AWS_ENABLED: true
+#    LOG_LEVEL: debug
+#    NODE_ENV: development

@@ -1,8 +1,9 @@
 import * as redisStore from 'cache-manager-redis-store';
 
-import { CacheModule, HttpModule, Module } from '@nestjs/common';
+import { CacheModule, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
+import { HttpModule } from '@app/common';
 import { Web3ProviderService } from '@app/common/web3provider';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
@@ -28,12 +29,8 @@ import { AstroportLockdrop } from './protocols/astroport/astroport.lockdrop';
 import { AstroportPools } from './protocols/astroport/astroport.pools';
 import { AstroportProtocol } from './protocols/astroport/astroport.protocol';
 import { AstroportStaking } from './protocols/astroport/astroport.staking';
-import { AutofarmApiService } from './protocols/autofarm/autofarm.api.service';
-import { AutofarmStaking } from './protocols/autofarm/autofarm.staking';
-import AutofarmProtocol from './protocols/autofarmProtocol';
 import BadgerProtocol from './protocols/badger/badger.protocol';
 import { BadgerStaking } from './protocols/badger/badger.staking';
-import { BeefyProtocol } from './protocols/beefyProtocol';
 import { CompoundProtocol } from './protocols/compoundProtocol';
 import { ConvexCurveLpStaking } from './protocols/convex/convex.curveLP.staking';
 import { ConvexCvxStaking } from './protocols/convex/convex.cvx.staking';
@@ -145,7 +142,7 @@ const TraderJoe = [
 ];
 const Pancake = [PancakeProtocol, PancakeV2Staking, PancakeProtocolV1, EtherscanService, ScanApi];
 const Alpaca = [AlpacaProtocol, AlpacaApiService];
-const Autofarm = [AutofarmProtocol, AutofarmStaking, AutofarmApiService];
+
 const Badger = [BadgerProtocol, BadgerStaking];
 const Curve = [CurveProtocol, CurvePools, CurveStaking];
 const DefiKingdoms = [
@@ -181,7 +178,6 @@ const WingRiders = [WingRidersProtocol, WingRidersPools, WingRidersFarms];
 // TODO to add a new Protocol just add it here and at ProtocolService constructor
 const ProtocolList = [
   AlpacaProtocol,
-  BeefyProtocol,
   CompoundProtocol,
   PangolinProtocol,
   RaydiumProtocol,
@@ -200,7 +196,6 @@ const ProtocolList = [
   ...Alpaca,
   ...Anchor,
   ...Astroport,
-  ...Autofarm,
   ...Badger,
   ...Convex,
   ...Curve,

@@ -1,26 +1,21 @@
 import { Cache } from 'cache-manager';
 
-import { CACHE_MANAGER, HttpService, Inject } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import { CACHE_MANAGER, Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Address, ChainIdEnum, FeatureEnum, Logger } from '@app/common';
+import { Address, FeatureEnum, Logger } from '@app/common';
 import { normalizeDecimals } from '@app/common/utils';
-import { DynamicContract } from '@app/common/web3provider/contracts/DynamicContract';
 import { ERC20 } from '@app/common/web3provider/contracts/ERC20';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
-import { CurrentPricesPayload } from '../../../../../common/dto';
-import { toDecimals } from '../../../../../common/utils/util';
-
-import { AccountService } from '../../../../../modules/microservices/account.service';
-import { PriceService } from '../../../../../modules/microservices/price.service';
+import { StargateAssetService } from '../../../../../modules/microservices/stargate.asset.service';
 import { INamedFunctionPredicates } from '../../../interfaces';
 import {
   IPoolFeatureMinimal,
   IPoolFeatureOpportunity,
   IPoolFeatureUser,
 } from '../../../interfaces/feature.pool.interface';
-import { ERC20Token } from '../../../interfaces/tokens.common.interface';
 import { ISupplyTokenUserEntry } from '../../../interfaces/tokens.supplied.interface';
 import { AbiService } from '../../AbiModule/AbiService';
 import { SingleContractProtocol } from '../../SingleContractProtocol';
@@ -33,8 +28,7 @@ export class StargateLiquidity extends SingleContractProtocol<
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected logger: Logger,
     @Inject(CACHE_MANAGER) protected cache: Cache,
-    protected accountService: AccountService,
-    protected priceService: PriceService,
+    protected assetService: StargateAssetService,
     protected httpService: HttpService,
     protected abiService: AbiService,
     protected multicall: MulticallAggregator,
@@ -100,24 +94,6 @@ export class StargateLiquidity extends SingleContractProtocol<
     });
   }
 
-  protected async updateTokenData(
-    tokens: any[],
-    prices: CurrentPricesPayload,
-  ): Promise<ERC20Token[]> {
-    try {
-      return updateStargateLpTokens(
-        tokens,
-        prices,
-        this.multicall,
-        this.abiService,
-        this.meta.chain,
-      );
-    } catch (err) {
-      this.logger.error(err.message, err.stack, 'StargateLiquidity');
-      return tokens;
-    }
-  }
-
   protected formatPoolsOpportunityMinimal(
     poolInfo: { pool; poolId },
     totalLiquidity: string,
@@ -167,36 +143,3 @@ export class StargateLiquidity extends SingleContractProtocol<
     };
   }
 }
-
-export const updateStargateLpTokens = async (
-  tokens: any[],
-  prices: CurrentPricesPayload,
-  multiCall: MulticallAggregator,
-  abiService: AbiService,
-  chain: ChainIdEnum,
-) => {
-  const calls = new Map();
-  const lp = tokens.find((token) => token.isLp);
-  const lpAbi = await abiService.fetchAbi(lp.address, chain);
-  const amountLpToLDAbi = lpAbi.find((item) => item.name === 'amountLPtoLD');
-
-  tokens.forEach((token: any) => {
-    if (token.isLp) {
-      const contract = new DynamicContract(token.address);
-      calls.set(
-        `${token.address}.amount`,
-        contract.createCall(amountLpToLDAbi, 10 ** token.decimals),
-      );
-    }
-  });
-  const results = await multiCall.handleInBatches(calls, chain);
-  tokens.forEach((token: any) => {
-    if (token.isLp) {
-      prices[token.address] = toDecimals(
-        results.get(`${token.address}.amount`).output.data,
-        token.underlyingAssets[0]?.decimals,
-      );
-    }
-  });
-  return tokens;
-};

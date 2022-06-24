@@ -1,3 +1,4 @@
+import { FakeAssetService } from 'apps/integration/src/modules/microservices/fake.asset.service';
 import BigNumber from 'bignumber.js';
 import { Cache } from 'cache-manager';
 
@@ -12,8 +13,6 @@ import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregat
 
 import { toDecimals } from '../../../../../common/utils/util';
 
-import { AccountService } from '../../../../../modules/microservices/account.service';
-import { PriceService } from '../../../../../modules/microservices/price.service';
 import { FeatureEnum } from '../../../enums';
 import {
   INamedFunctionPredicates,
@@ -70,8 +69,7 @@ export class BenqiLending
     protected multicall: MulticallAggregator,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected logger: Logger,
     @Inject(CACHE_MANAGER) protected cache: Cache,
-    protected accountService: AccountService,
-    protected priceService: PriceService,
+    protected assetService: FakeAssetService,
   ) {
     super();
   }
@@ -190,7 +188,7 @@ export class BenqiLending
     const tvl =
       (totalSupply - toDecimals(supplied.rate.borrowSupply, token.underlying[0]?.decimals)) *
       token.underlying[0]?.price;
-    const apy = this.formatApy?.(supplied, 'supplyApy');
+    const apy = this.formatApy?.(supplied);
     return {
       totalSupply,
       token,
@@ -205,7 +203,7 @@ export class BenqiLending
   ): IBorrowTokenOpportunity {
     const totalBorrowed = normalizeDecimals(borrowed.totalBorrowed, token.underlying[0].decimals);
     const tvl = totalBorrowed * token.underlying[0].price;
-    const apy = this.formatApy?.(borrowed, 'borrowApy');
+    const apy = this.formatApy?.(borrowed);
     return {
       totalBorrowed,
       token,
@@ -215,14 +213,9 @@ export class BenqiLending
   }
 
   async initialize() {
-    this.logger.log(
-      `Initializing: ${this.meta.name} ${this.meta.chain}/${this.meta.address}`,
-      `SingleContractProtocol/${this.constructor.name}`,
-    );
-
     this.functions = await this.abiService.parseFunctionsFromAddress(
       this.meta.address,
-      this.meta.chain, // TODO: update to this.meta.chain once they are verified
+      this.meta.chain,
       this.functionPredicates,
     );
 
@@ -230,13 +223,6 @@ export class BenqiLending
       this.meta.market,
       this.meta.chain,
       this.qiMarketFunctionPredicates,
-    );
-
-    this.logger.log(
-      `${this.meta.chain}/${this.meta.address} found ${Object.keys(this.functions).length}/${
-        Object.keys(this.functionPredicates).length
-      } functions`,
-      `SingleContractProtocol/${this.constructor.name}`,
     );
   }
 
@@ -396,7 +382,7 @@ export class BenqiLending
       }
       if (borrowBalance > 0) {
         flag = true;
-        pool.borrowed[0].apy.borrowApy = -pool.borrowed[0].apy.borrowApy;
+        pool.borrowed[0].apy.year = -pool.borrowed[0].apy.year;
         const userBorrow = this.formatLendingUserData(
           pool.borrowed[0],
           borrowBalance,
@@ -525,7 +511,7 @@ export class BenqiLending
     return rewardBalancesMap;
   }
 
-  protected formatApy(opportunity: ISupplyTokenMinimal, field: string) {
+  protected formatApy(opportunity: ISupplyTokenMinimal) {
     const apy = new BigNumber(opportunity.rate.borrowRate || opportunity.rate.supplyRate)
       .div(10 ** 18)
       .times(86400)
@@ -535,7 +521,7 @@ export class BenqiLending
       // .times(100)
       .toNumber();
     return {
-      [field]: apy,
+      year: apy,
     };
   }
 
@@ -547,16 +533,7 @@ export class BenqiLending
   ) {
     const userBalance =
       toDecimals(balance, pool.token.underlying[0].decimals) * toDecimals(exchangeRate, 18);
-    let apy = null;
-    if (pool.apy) {
-      const variants = ['supplyApy', 'borrowApy'];
-      for (const variant of variants) {
-        if (pool.apy[variant]) {
-          apy = pool.apy[variant] + distributionApy / 100;
-          break;
-        }
-      }
-    }
+    const apy = pool.apy?.year ? pool.apy.year + distributionApy / 100 : null;
 
     const breakdown = {
       day: apy / 365,

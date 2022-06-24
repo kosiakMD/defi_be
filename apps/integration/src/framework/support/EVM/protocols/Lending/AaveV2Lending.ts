@@ -1,3 +1,4 @@
+import { AssetService } from 'apps/integration/src/modules/microservices/asset.service';
 import BigNumber from 'bignumber.js';
 import { Cache } from 'cache-manager';
 
@@ -10,8 +11,6 @@ import { DynamicContract } from '@app/common/web3provider/contracts/DynamicContr
 import { ERC20 } from '@app/common/web3provider/contracts/ERC20';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
-import { AccountService } from '../../../../../modules/microservices/account.service';
-import { PriceService } from '../../../../../modules/microservices/price.service';
 import { FeatureEnum } from '../../../enums';
 import { MissingTokenException } from '../../../exceptions';
 import {
@@ -83,8 +82,7 @@ export class AaveV2Lending
     protected multicall: MulticallAggregator,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected logger: Logger,
     @Inject(CACHE_MANAGER) protected cache: Cache,
-    protected accountService: AccountService,
-    protected priceService: PriceService,
+    protected assetService: AssetService,
   ) {
     super();
   }
@@ -220,11 +218,6 @@ export class AaveV2Lending
   }
 
   async initialize() {
-    this.logger.log(
-      `Initializing: ${this.meta.name} ${this.meta.chain}/${this.meta.address}`,
-      `SingleContractProtocol/${this.constructor.name}`,
-    );
-
     this.poolFunctions = await this.abiService.parseFunctionsFromAddress(
       '0x7d2768de32b0b80b7a3454c06bdac94a69ddc7a9',
       ChainIdEnum.eth,
@@ -238,13 +231,6 @@ export class AaveV2Lending
         this.incentivesFunctionsPredicates,
       );
     }
-
-    this.logger.log(
-      `${this.meta.chain}/${this.meta.address} found ${Object.keys(this.poolFunctions).length}/${
-        Object.keys(this.poolFunctionPredicates).length
-      } functions`,
-      `EVMCore/${this.constructor.name}`,
-    );
   }
 
   protected updateBorrowRateField(field: string, rate: string, debtValue: string, borrowRate: any) {

@@ -1,35 +1,34 @@
 import * as redisStore from 'cache-manager-redis-store';
 import { RequestContextModule } from 'nestjs-request-context';
 
-import { CacheModule, HttpModule, Module } from '@nestjs/common';
+import { CacheModule, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+
+import { HttpModule } from '@app/common';
+import { CacheService } from '@app/common/services/cache.service';
 
 import { CardanoService } from '../../common/providers/3rdparty/cardano.service';
 import { CovalentService } from '../../common/providers/3rdparty/covalent.service';
 import { RoninService } from '../../common/providers/3rdparty/ronin.service';
+import { AssetService } from '../../common/providers/microservices/assets/asset.service';
 import { PriceService } from '../../common/providers/microservices/price/price.service';
+import { BlocktimeService } from '../../common/services/blocktime.service';
 
 import { BalancesController } from '../../controllers/balances.controller';
+import { BalancesV2Controller } from '../../controllers/balances.controller.v2';
 import { AssetsModule } from '../assets/assets.module';
 import { AssetsEntity } from '../assets/entities/assets.entity';
 import { BlacklistModule } from '../blacklists/blacklist.module';
 import { ChainsModule } from '../chains/chains.module';
 import { MulticallModule } from '../multicall/multicall.module';
+import { BalancesV2Service } from './balances-v2.service';
 import { BalancesService } from './balances.service';
-import { CardanoBalancesStrategy } from './strategies/cardano.balances.strategy';
-import { CosmosBalancesStrategy } from './strategies/cosmos.balances.strategy';
-import { CovalentBalancesStrategy } from './strategies/covalent.strategy';
+import { DelegationsService } from './delegations.service';
 import { CardanoDelegationsStrategy } from './strategies/delegations/cardano-delegations.strategy';
 import { SolanaDelegationsStrategy } from './strategies/delegations/solana-delegations.strategy';
 import { TerraDelegationsStrategy } from './strategies/delegations/terra-delegations.strategy';
-import { KavaBalancesStrategy } from './strategies/kava.balances.strategy';
-import { NetworkBalancesStrategy } from './strategies/network.strategy';
-import { OsmosisBalancesStrategy } from './strategies/osmosis.balances.strategy';
-import { RoninBalancesStrategy } from './strategies/ronin.balances.strategy';
-import { SecretBalancesStrategy } from './strategies/secret.balances.strategy';
-import { SolanaBalancesStrategy } from './strategies/solana.balances.strategy';
-import { TerraBalancesStrategy } from './strategies/terra.balances.strategy';
+import { balanceStrategies } from './strategies/registry';
 
 @Module({
   imports: [
@@ -53,23 +52,19 @@ import { TerraBalancesStrategy } from './strategies/terra.balances.strategy';
       inject: [ConfigService],
     }),
   ],
-  controllers: [BalancesController],
+  controllers: [BalancesController, BalancesV2Controller],
   providers: [
+    ...balanceStrategies,
+    CacheService,
     PriceService,
+    AssetService,
     CardanoService,
     CovalentService,
+    BlocktimeService,
     BalancesService,
+    BalancesV2Service,
+    DelegationsService,
     RoninService,
-    CovalentBalancesStrategy,
-    NetworkBalancesStrategy,
-    SolanaBalancesStrategy,
-    TerraBalancesStrategy,
-    CardanoBalancesStrategy,
-    CosmosBalancesStrategy,
-    KavaBalancesStrategy,
-    SecretBalancesStrategy,
-    OsmosisBalancesStrategy,
-    RoninBalancesStrategy,
     TerraDelegationsStrategy,
     CardanoDelegationsStrategy,
     SolanaDelegationsStrategy,

@@ -1,8 +1,10 @@
+import { EllipsisAssetService } from 'apps/integration/src/modules/microservices/ellipsis.asset.service';
 import { BigNumber as BN } from 'bignumber.js';
 import { Cache } from 'cache-manager';
 import { plainToClass } from 'class-transformer';
 
-import { CACHE_MANAGER, HttpService, Inject } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import { CACHE_MANAGER, Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, Logger } from '@app/common';
@@ -11,8 +13,6 @@ import { concatStrings, dataFrom, equals, normalizeDecimals, startsWith } from '
 import { ERC20 } from '@app/common/web3provider/contracts/ERC20';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
-import { AccountService } from '../../../../../modules/microservices/account.service';
-import { PriceService } from '../../../../../modules/microservices/price.service';
 import { CurveAssetsManager } from '../../../assets/curve.assets.manager';
 import { FeatureEnum } from '../../../enums';
 import {
@@ -70,8 +70,7 @@ export class EllipsisLiquidity
     @Inject(CACHE_MANAGER) protected cache: Cache,
     protected abiService: AbiService,
     protected multicall: MulticallAggregator,
-    protected accountService: AccountService,
-    protected priceService: PriceService,
+    protected assetService: EllipsisAssetService,
     protected assetsManager: CurveAssetsManager,
     protected httpService: HttpService,
   ) {
@@ -156,10 +155,6 @@ export class EllipsisLiquidity
     );
     const registeredTokens = await this.multicall.callArray(registeredTokensCalls, this.meta.chain);
     return registeredTokens.map((tAddress) => tAddress.toLowerCase());
-  }
-
-  protected async getTokens(addresses: Address[]): Promise<[Address, ERC20Token][]> {
-    return await this.assetsManager.getTokens(addresses, this.meta.chain);
   }
 
   protected async fetchUserData(address: Address, pools: IPoolFeatureOpportunity[]): Promise<any> {

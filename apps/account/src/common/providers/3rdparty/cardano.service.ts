@@ -1,4 +1,5 @@
 import { BlockFrostAPI } from '@blockfrost/blockfrost-js';
+import { PaginationOptions } from '@blockfrost/blockfrost-js/lib/types';
 import { components } from '@blockfrost/blockfrost-js/lib/types/OpenApi';
 import { Address, BaseAddress, RewardAddress } from '@emurgo/cardano-serialization-lib-nodejs';
 
@@ -40,8 +41,11 @@ export class CardanoService {
    * @link https://docs.blockfrost.io/#tag/Cardano-Accounts/paths/~1accounts~1{stake_address}~1addresses~1assets/get
    * @returns Assets associated with the account addresses
    */
-  public async assetsFromStakeAddress(stakeAddress: string): Promise<AssetsBalance> {
-    return this.blockfrost.accountsAddressesAssets(stakeAddress);
+  public async assetsFromStakeAddress(
+    stakeAddress: string,
+    pagination?: PaginationOptions,
+  ): Promise<AssetsBalance> {
+    return this.blockfrost.accountsAddressesAssets(stakeAddress, pagination);
   }
 
   /**

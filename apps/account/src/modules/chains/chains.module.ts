@@ -1,8 +1,10 @@
 import * as redisStore from 'cache-manager-redis-store';
 
-import { CacheModule, forwardRef, HttpModule, Module } from '@nestjs/common';
+import { CacheModule, forwardRef, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+
+import { HttpModule } from '@app/common';
 
 import { Web3Provider } from '../../common/providers/chainRelated/web3.provider';
 import { PriceService } from '../../common/providers/microservices/price/price.service';

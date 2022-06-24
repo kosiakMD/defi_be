@@ -1,18 +1,11 @@
-import { Cache } from 'cache-manager';
 import { cloneDeep } from 'lodash';
 import { AbiItem } from 'web3-utils';
 
-import { CACHE_MANAGER, Inject } from '@nestjs/common';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-
-import { Address, Logger } from '@app/common';
+import { Address } from '@app/common';
 import { CallData } from '@app/common/dto/CallData';
 import { concatStrings, normalizeDecimals } from '@app/common/utils';
-import { DynamicContract } from '@app/common/web3provider/contracts/DynamicContract';
-import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
+import { SpiritSwapGauge } from '@app/common/web3provider/contracts/protocols/spiritSwap/spiritSwapGauge';
 
-import { AccountService } from '../../../../../modules/microservices/account.service';
-import { PriceService } from '../../../../../modules/microservices/price.service';
 import { INamedFunctionPredicates } from '../../../interfaces';
 import {
   IStakingFeatureMinimal,
@@ -20,27 +13,15 @@ import {
   IStakingFeatureUserEntry,
 } from '../../../interfaces/feature.staking.interface';
 import { ERC20Token } from '../../../interfaces/tokens.common.interface';
-import { AbiService } from '../../AbiModule/AbiService';
 import { MasterChef } from './MasterChef';
 
 export class SpiritStaking extends MasterChef {
-  constructor(
-    protected abiService: AbiService,
-    protected multicall: MulticallAggregator,
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) protected logger: Logger,
-    @Inject(CACHE_MANAGER) protected cache: Cache,
-    protected accountService: AccountService,
-    protected priceService: PriceService,
-  ) {
-    super(abiService, multicall, logger, cache, accountService, priceService);
-  }
-
   functionPredicates: INamedFunctionPredicates = {
     tokens: () => (item) => item.name === 'tokens',
     length: () => (item) => item.name === 'length',
     gauges: () => (item) => item.name === 'gauges',
   };
-
+  interactiveFunctionPredicates: INamedFunctionPredicates = {};
   protected incentivesFunctionsPredicates: INamedFunctionPredicates = {
     balanceOf: () => (item) => item.name === 'balanceOf',
     earned: () => (item) => item.name === 'earned',
@@ -59,13 +40,10 @@ export class SpiritStaking extends MasterChef {
     });
     const registeredTokens = await this.multicall.callArray(calls, this.meta.chain);
 
-    this.abiQauges = await this.abiService.fetchAbi(registeredTokens[0], this.meta.chain);
-    const abiTotalSupply = this.abiQauges.find((item) => item.name === 'totalSupply');
-
     const callsQ = new Map(
       registeredTokens.flatMap((r) => {
-        const contract = new DynamicContract(r);
-        return [[this.totalSupplyLabel(r), contract.createCall(abiTotalSupply)]];
+        const contract = new SpiritSwapGauge(r);
+        return [[this.totalSupplyLabel(r), contract.totalSupply()]];
       }),
     );
 
@@ -99,15 +77,12 @@ export class SpiritStaking extends MasterChef {
     address: Address,
     pools: IStakingFeatureOpportunity[],
   ): Promise<any> {
-    const abiBalanceOf = this.abiQauges.find((item) => item.name === 'balanceOf');
-    const abiEarned = this.abiQauges.find((item) => item.name === 'earned');
-
     const calls = new Map(
       pools.flatMap((p) => {
-        const contract = new DynamicContract(p.id);
+        const contract = new SpiritSwapGauge(p.id);
         return [
-          [this.earnedInfoLabel(p.id, address), contract.createCall(abiEarned, address)],
-          [this.balanceInfoLabel(p.id, address), contract.createCall(abiBalanceOf, address)],
+          [this.earnedInfoLabel(p.id, address), contract.earned(address)],
+          [this.balanceInfoLabel(p.id, address), contract.balanceOf(address)],
         ];
       }),
     );

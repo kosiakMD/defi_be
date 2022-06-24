@@ -16,6 +16,7 @@ import {
   ProtocolNameEnum,
   TrisolarisProtocolEnum,
 } from '@app/common';
+import { ZERO_ADDRESS } from '@app/common/constant';
 import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
 import { FeatureEnum, ProjectEnum, ProtocolTypeEnum } from '@app/common/enum';
 import { NotifyStaking } from '@app/common/jobs/notify.dto';
@@ -70,6 +71,21 @@ export class TrisolarisStaking {
   }
 
   private async getDataWithMulticall(addresses: Address[], pools: NotifyStaking) {
+    //get address double rewarder
+    const callsRewarderList = new Map<string, ICallData>();
+    addresses.forEach((address) => {
+      pools.items.forEach((pool) => {
+        const trisolarisAbi = new TrisolarisAbi(pool.address);
+        callsRewarderList.set(
+          `${address} ${pool.address} ${pool.poolId}`,
+          trisolarisAbi.rewarder(pool.poolId),
+        );
+      });
+    });
+
+    const listRewarderAdresses: Map<string, ICallData> =
+      await this.multicallService.handleInBatches(callsRewarderList);
+
     const calls = new Map<string, ICallData>();
     addresses.forEach((address) => {
       pools.items.forEach((pool) => {
@@ -89,6 +105,7 @@ export class TrisolarisStaking {
       balance: string;
       contract: string;
       pendingTri?: BigNumber;
+      pendingDouble?: BigNumber;
       user: {
         address: string;
       };
@@ -116,6 +133,16 @@ export class TrisolarisStaking {
         this.contractCallLabel(b.user.address, b.contract, b.poolId),
         trisolarisAbi.pendingTri(b.poolId, b.user.address),
       );
+      const rewarderAddress = listRewarderAdresses.get(
+        `${b.user.address} ${b.contract} ${b.poolId}`,
+      ).output.data;
+      if (rewarderAddress !== ZERO_ADDRESS) {
+        const trisolarisAbiRewarder = new TrisolarisAbi(rewarderAddress);
+        pendingTokensCalls.set(
+          `${this.contractCallLabel(b.user.address, b.contract, b.poolId)}_double_reward`,
+          trisolarisAbiRewarder.pendingTokens(b.poolId, b.user.address, b.poolId),
+        );
+      }
     });
 
     const claimableRewardsRsp: Map<string, ICallData> = await this.multicallService.handleInBatches(
@@ -126,7 +153,13 @@ export class TrisolarisStaking {
       const claimableReward = claimableRewardsRsp.get(
         this.contractCallLabel(b.user.address, b.contract, b.poolId),
       ).output.data;
+      const claimableDoubleReward = claimableRewardsRsp.get(
+        `${this.contractCallLabel(b.user.address, b.contract, b.poolId)}_double_reward`,
+      )?.output.data;
       b.pendingTri = new BigNumber(claimableReward.toString());
+      if (claimableDoubleReward) {
+        b.pendingDouble = new BigNumber(claimableDoubleReward.rewardAmounts.toString());
+      }
     });
 
     return balances;
@@ -167,6 +200,13 @@ export class TrisolarisStaking {
         stakingPosition.rewards[0].claimableData = plainToClass(ClaimableDto, {});
         stakingPosition.rewards[0].claimableData.balance = b.pendingTri
           .div(decimalsDivider(stakingPosition.rewards[0].decimals))
+          .toString();
+      }
+
+      if (b.pendingDouble) {
+        stakingPosition.rewards[1].claimableData = plainToClass(ClaimableDto, {});
+        stakingPosition.rewards[1].claimableData.balance = b.pendingDouble
+          .div(decimalsDivider(stakingPosition.rewards[1].decimals))
           .toString();
       }
 

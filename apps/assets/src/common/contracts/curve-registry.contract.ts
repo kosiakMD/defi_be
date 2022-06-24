@@ -7,15 +7,15 @@ import { Address } from '@app/common';
 import { CURVE_MAIN_COIN_ADDRESS, ZERO_ADDRESS } from '@app/common/constant';
 import { MulticallMethodsEnum } from '@app/common/jobs/multicall.methods.enum';
 
-export class CURVE_REGISTRY_CONTRACT {
+export class CurveRegistryContract {
   protected abi: JsonFragment[];
   protected address: string;
   protected multicall: MultiCall;
 
-  constructor(address: string, web3Provider: Web3, abi: AbiItem[]) {
+  constructor(address: string, web3: Web3, abi: AbiItem[]) {
     this.abi = JSON.parse(abi.toString());
     this.address = address;
-    this.multicall = new MultiCall(web3Provider);
+    this.multicall = new MultiCall(web3);
   }
 
   async getCoinsForLpToken(poolAddress: string): Promise<Address[]> {

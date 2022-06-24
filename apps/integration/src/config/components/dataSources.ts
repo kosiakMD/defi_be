@@ -1,7 +1,7 @@
 import Joi from 'joi';
 
 export const dataSourceConfig = {
-  // Third Part Subgraphs & Data Fetching API's
+  // Third Party Subgraphs & Data Fetching API's
   AMM_UNISWAP_V3_ETH_SUBGRAPH_URL: Joi.string().required(),
   AMM_UNISWAP_V3_ARBI_SUBGRAPH_URL: Joi.string().required(),
   AMM_UNISWAP_V3_OPT_SUBGRAPH_URL: Joi.string().required(),
@@ -15,7 +15,6 @@ export const dataSourceConfig = {
   AMM_PANCAKE_SUBGRAPH_URL: Joi.string().required(),
   SPOOKYSWAP_FARM_SUBGRAPH_URL: Joi.string().required(),
   SPOOKYSWAP_ACELAB_SUBGRAPH_URL: Joi.string().required(),
-  AUTOFARM_SUBGRAPH_URL: Joi.string().required(),
   QUICKSWAP_SUBGRAPH_URL: Joi.string().required(),
   SUSHISWAP_ARBI_EXCHANGE_SUBGRAPH_URL: Joi.string().required(),
   COMPOUND_ETH_SUBGRAPH_URL: Joi.string().required(),
@@ -46,7 +45,6 @@ export const dataSourceConfig = {
   SUNDAESWAP_URL: Joi.string().required(),
   ALPACA_SUBGRAPH_URL: Joi.string().required(),
   ALPACA_API_URL: Joi.string().required(),
-  AUTOFARM_API_URL: Joi.string().required(),
   PANCAKEV2_MAIN_STAKING_SUBGRAPH_URL: Joi.string().required(),
   YEARN_ETH_SUBGRAPH_URL: Joi.string().required(),
   YEARN_FTM_SUBGRAPH_URL: Joi.string().required(),

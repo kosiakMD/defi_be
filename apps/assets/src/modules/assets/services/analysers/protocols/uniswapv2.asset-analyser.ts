@@ -1,10 +1,11 @@
 import { AbiItem } from 'web3-utils';
 
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+import { Logger } from '@app/common';
 import { CallData } from '@app/common/dto/CallData';
-import { decimalsDivider, toBN } from '@app/common/utils';
+import { chunkRunAsync, decimalsDivider, toBN } from '@app/common/utils';
 import { DynamicContract } from '@app/common/web3provider/contracts/DynamicContract';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
@@ -12,11 +13,15 @@ import { UNIV2LP_ABI } from '../../../../../common/abis/univ2-lp.abi';
 import { AssetReference } from '../../../../../common/types';
 
 import { AssetCategory } from '../../../enums/asset-category.enum';
+import { findAbiItemByName } from '../../../utils/abi';
 import { AssetAnalyser, AssetAnalysisResult } from '../core/asset.analyser';
 import { EVMAssetAnalyser } from '../core/evm.asset-analyser';
-import { AssetPrice, AssetPriceProvider, ComplexAsset } from '../core/price.provider';
+import {
+  AssetPriceProvider,
+  AssetPriceWithUnderlyingReserves,
+  ComplexAsset,
+} from '../core/price.provider';
 
-// TODO: Fix error crash here
 @Injectable()
 export class UniswapV2AssetAnalyser
   extends EVMAssetAnalyser
@@ -45,43 +50,70 @@ export class UniswapV2AssetAnalyser
     };
   }
 
-  canHandleCategory(code: string): boolean {
-    return code === AssetCategory.UniSwapV2LikeLP;
+  canHandleCategories(codes: string[]): boolean {
+    return codes.includes(AssetCategory.UniSwapV2LikeLP);
   }
 
-  async getPrices(chainId: number, assets: ComplexAsset[]): Promise<AssetPrice[]> {
-    const getReservesAbi: AbiItem = this.findAbiItem(UNIV2LP_ABI, 'getReserves');
-    const totalSupplyAbi: AbiItem = this.findAbiItem(UNIV2LP_ABI, 'totalSupply');
+  async getPrices(
+    chainId: number,
+    assets: ComplexAsset[],
+  ): Promise<AssetPriceWithUnderlyingReserves[]> {
+    const getReservesAbi: AbiItem = findAbiItemByName(UNIV2LP_ABI, 'getReserves');
+    const totalSupplyAbi: AbiItem = findAbiItemByName(UNIV2LP_ABI, 'totalSupply');
 
     const calls = assets.reduce((all, asset) => {
       const contract = new DynamicContract(asset.address);
       return all.concat([contract.createCall(getReservesAbi), contract.createCall(totalSupplyAbi)]);
     }, new Array<CallData>());
 
-    const responses = await this.multicall.callArray(calls, chainId);
+    const responses = await chunkRunAsync(calls, 500, (chunk) =>
+      this.multicall.callArray(chunk, chainId),
+    );
 
-    const prices: AssetPrice[] = [];
+    const prices: AssetPriceWithUnderlyingReserves[] = [];
 
     for (let index = 0; index < assets.length; index++) {
       const asset = assets[index];
       const [asset0, asset1] = asset.underlying;
+
+      if (!asset0 || !asset1) {
+        this.logger.error(
+          `Error to get Uni-v2-like asset price (address: ${asset.address} chainId: ${chainId}, asset0: ${asset0} asset1: ${asset1}`,
+        );
+        continue;
+      }
+
       const { _reserve0, _reserve1 } = responses[2 * index];
       const totalSupply = responses[2 * index + 1];
 
-      const asset0Value = toBN(_reserve0)
-        .dividedBy(decimalsDivider(asset0.decimals))
-        .multipliedBy(asset0.price);
+      const assetReference = { chainId, address: asset.address };
 
-      const asset1Value = toBN(_reserve1)
-        .dividedBy(decimalsDivider(asset1.decimals))
-        .multipliedBy(asset1.price);
+      if (!asset0.price && !asset1.price) {
+        prices.push({
+          asset: assetReference,
+          price: null,
+          reserves: [_reserve0, _reserve1],
+        });
+        continue;
+      }
 
-      const totalValue = asset0Value.plus(asset1Value);
-      const price = totalValue.multipliedBy(decimalsDivider(asset.decimals)).dividedBy(totalSupply);
+      const oneTokenPoolValue = asset0.price
+        ? toBN(_reserve0) //
+            .dividedBy(decimalsDivider(asset0.decimals))
+            .multipliedBy(asset0.price)
+        : toBN(_reserve1) //
+            .dividedBy(decimalsDivider(asset1.decimals))
+            .multipliedBy(asset1.price);
+
+      const totalPoolValue = oneTokenPoolValue.multipliedBy(2);
+      const price = totalPoolValue
+        .multipliedBy(decimalsDivider(asset.decimals))
+        .dividedBy(totalSupply);
 
       prices.push({
-        asset: { chainId, address: asset.address },
+        asset: assetReference,
         price: price.toNumber(),
+        reserves: [_reserve0, _reserve1],
       });
     }
 
@@ -89,9 +121,9 @@ export class UniswapV2AssetAnalyser
   }
 
   private async fetchAssetData(asset: AssetReference) {
-    const token0Abi: AbiItem = this.findAbiItem(UNIV2LP_ABI, 'token0');
-    const token1Abi: AbiItem = this.findAbiItem(UNIV2LP_ABI, 'token1');
-    const factoryAbi: AbiItem = this.findAbiItem(UNIV2LP_ABI, 'factory');
+    const token0Abi: AbiItem = findAbiItemByName(UNIV2LP_ABI, 'token0');
+    const token1Abi: AbiItem = findAbiItemByName(UNIV2LP_ABI, 'token1');
+    const factoryAbi: AbiItem = findAbiItemByName(UNIV2LP_ABI, 'factory');
 
     const contract = new DynamicContract(asset.address);
     try {

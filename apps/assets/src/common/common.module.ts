@@ -1,18 +1,19 @@
 import * as redisStore from 'cache-manager-redis-store';
 
-import { HttpModule } from '@nestjs/axios';
 import { BullModule } from '@nestjs/bull';
 import { CacheModule, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TerminusModule } from '@nestjs/terminus';
 import { WinstonModule } from 'nest-winston';
 
+import { HttpModule } from '@app/common';
 import { getWinstonParams } from '@app/common/Logger/logger.config';
 import { CacheService } from '@app/common/services/cache.service';
 import { Web3ProviderService, Web3SolanaProviderService } from '@app/common/web3provider';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
 import { HealthController } from '../controllers/health.controller';
+import { BullQueueService } from './services/bull-queue.service';
 import { ChainService } from './services/chain.service';
 
 @Module({
@@ -63,6 +64,7 @@ import { ChainService } from './services/chain.service';
     Web3SolanaProviderService,
     Web3ProviderService,
     MulticallAggregator,
+    BullQueueService,
   ],
   exports: [
     CacheService,
@@ -71,6 +73,7 @@ import { ChainService } from './services/chain.service';
     Web3SolanaProviderService,
     Web3ProviderService,
     MulticallAggregator,
+    BullQueueService,
   ],
 })
 export class CommonModule {}

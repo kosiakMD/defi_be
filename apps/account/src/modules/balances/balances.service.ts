@@ -2,7 +2,6 @@ import BigNumber from 'bignumber.js';
 import { Cache } from 'cache-manager';
 import { plainToClass } from 'class-transformer';
 import { In, Raw, Repository } from 'typeorm';
-import Web3 from 'web3';
 
 import { CACHE_MANAGER, HttpStatus, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -10,36 +9,27 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, Logger } from '@app/common';
-import { handlePromiseAllSettled } from '@app/common/helpers/promises';
 import { getUniqList } from '@app/common/utils';
 import { unifyAddresses } from '@app/common/utils/addresses';
 import { roundToNearestHour } from '@app/common/utils/dates';
-import { retry } from '@app/common/utils/retry';
 
 import { BLACKLISTED_TOKENS } from '../../common/constant';
 import { BalancesLoadingStrategy } from '../../common/interfaces';
 import { Web3Provider } from '../../common/providers/chainRelated/web3.provider';
+import { AssetService } from '../../common/providers/microservices/assets/asset.service';
 import { PriceService } from '../../common/providers/microservices/price/price.service';
+import { BlocktimeService, BlockTimestamp } from '../../common/services/blocktime.service';
 import { excludeSecondArray } from '../../common/utils';
 
 import { AssetsEntity } from '../assets/entities/assets.entity';
 import { BlacklistService } from '../blacklists/blacklist.service';
 import { ChainsService } from '../chains/chains.service';
 import { getBalancesSafe } from './balances.helpers';
-import {
-  BalancesResponse,
-  BlockTimestamp,
-  ErrorMessage,
-  TokenBalance,
-} from './balances.interfaces';
+import { BalancesResponse, ErrorMessage, TokenBalance } from './balances.interfaces';
 import { AccountReturns, ReturnsResponse, TokenChange } from './dto/balance.dto';
 import { CardanoBalancesStrategy } from './strategies/cardano.balances.strategy';
 import { CosmosBalancesStrategy } from './strategies/cosmos.balances.strategy';
 import { CovalentBalancesStrategy } from './strategies/covalent.strategy';
-import { CardanoDelegationsStrategy } from './strategies/delegations/cardano-delegations.strategy';
-import { DelegationsStrategy } from './strategies/delegations/delegation.strategy';
-import { SolanaDelegationsStrategy } from './strategies/delegations/solana-delegations.strategy';
-import { TerraDelegationsStrategy } from './strategies/delegations/terra-delegations.strategy';
 import { KavaBalancesStrategy } from './strategies/kava.balances.strategy';
 import { NetworkBalancesStrategy } from './strategies/network.strategy';
 import { OsmosisBalancesStrategy } from './strategies/osmosis.balances.strategy';
@@ -54,6 +44,7 @@ type PartialBalancesResponse = {
   balances: TokenBalance[];
 };
 
+// TODO: This one should be removed as soon as V2 fully working
 export class BalancesService {
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
@@ -62,8 +53,10 @@ export class BalancesService {
     @InjectRepository(AssetsEntity)
     private readonly assetsRepository: Repository<AssetsEntity>,
     private readonly priceService: PriceService,
+    private readonly assetService: AssetService,
     private readonly blacklistService: BlacklistService,
     private readonly web3Provider: Web3Provider,
+    private readonly blocktimeService: BlocktimeService,
     private readonly networkBalancesStrategy: NetworkBalancesStrategy,
     private readonly covalentBalancesStrategy: CovalentBalancesStrategy,
     private readonly solanaBalancesStrategy: SolanaBalancesStrategy,
@@ -75,9 +68,6 @@ export class BalancesService {
     private readonly secretBalancesStrategy: SecretBalancesStrategy,
     private readonly roninBalancesStrategy: RoninBalancesStrategy,
     private readonly chainsService: ChainsService,
-    private readonly solanaDelegationsStrategy: SolanaDelegationsStrategy,
-    private readonly cardanoDelegationsStrategy: CardanoDelegationsStrategy,
-    private readonly terraDelegationsStrategy: TerraDelegationsStrategy,
   ) {}
 
   balanceStrategies = [
@@ -89,13 +79,6 @@ export class BalancesService {
     this.osmosisBalancesStrategy,
     this.secretBalancesStrategy,
     this.roninBalancesStrategy,
-  ];
-
-  // TODO: Move to another service and controller
-  delegationStrategies: DelegationsStrategy[] = [
-    this.solanaDelegationsStrategy,
-    this.cardanoDelegationsStrategy,
-    this.terraDelegationsStrategy,
   ];
 
   public async getBalance(
@@ -116,9 +99,7 @@ export class BalancesService {
 
       const balances = await this.getRawBalances(chainsToHandle, addressesToHandle, assets, blocks);
 
-      const results = this.mapResults(balances);
-
-      return results;
+      return this.mapResults(balances);
     } catch (e) {
       // TODO: This should be handled with global error handler
       this.logger.error(
@@ -139,7 +120,7 @@ export class BalancesService {
   ): Promise<ReturnsResponse> {
     const offset = 86400; // seconds ago from now 86400 = 1 day
     const date = this.getPastDate(offset);
-    const blocks = await this.getChainBlocksAtDate(chains, date);
+    const blocks = await this.blocktimeService.getChainBlocksAtDate(chains, date);
 
     // Get current & past balances & prices
     const [now, then] = await Promise.all([
@@ -148,59 +129,6 @@ export class BalancesService {
     ]);
 
     return this.calculate24HourReturns(now, then);
-  }
-
-  public async getUserDelegations(addresses: Address[]): Promise<Record<Address, any>[]> {
-    return Promise.all(addresses.map(this.getDelegationsForAddress, this));
-  }
-
-  async getBlockFromDate(target: Date, web3: Web3): Promise<BlockTimestamp> {
-    const latestBlock = await retry(() => web3.eth.getBlock('latest'));
-    // skip the first 3/4 of blocks for performance,
-    // we only need past 24 hours & old blocks can have wildly different block times than recent blocks
-    const earlyBlock = await retry(() => web3.eth.getBlock(Math.floor(latestBlock.number * 0.75)));
-    const avgBlockTime =
-      (Number(latestBlock.timestamp) - Number(earlyBlock.timestamp)) /
-      (latestBlock.number - earlyBlock.number);
-
-    const secondsInADay = 86400;
-    const secondsIn15Minutes = 900;
-    const guessedBlocksIn24Hours = Math.floor(secondsInADay / avgBlockTime);
-
-    return this.estimateBlockTimes(
-      latestBlock.number - guessedBlocksIn24Hours,
-      target,
-      avgBlockTime,
-      secondsIn15Minutes,
-      web3,
-    );
-  }
-
-  async estimateBlockTimes(
-    guess: number,
-    target: Date,
-    avgBlockTime: number,
-    tolerance: number,
-    web3: Web3,
-  ): Promise<BlockTimestamp> {
-    const guessedBlock = await retry(() => web3.eth.getBlock(guess));
-    const guessedTime = new Date(Number(guessedBlock.timestamp) * 1000);
-    const difference = Math.floor((guessedTime.getTime() - target.getTime()) / 1000); // difference in seconds
-    if (Math.abs(difference) < tolerance) {
-      return {
-        date: guessedTime,
-        block: guessedBlock.number,
-        timestamp: (guessedTime.getTime() / 1000) >> 0,
-      };
-    }
-
-    return this.estimateBlockTimes(
-      guessedBlock.number - Math.floor(difference / avgBlockTime),
-      target,
-      avgBlockTime,
-      tolerance,
-      web3,
-    );
   }
 
   private getTokenKey(token: TokenBalance): string {
@@ -309,41 +237,6 @@ export class BalancesService {
     }
   }
 
-  private async getChainBlocksAtDate(
-    chains: number[],
-    date: Date,
-  ): Promise<Map<number, BlockTimestamp>> {
-    const blockMap = new Map<number, BlockTimestamp>();
-
-    await Promise.all(
-      chains.map(async (chain) => {
-        const block = await this.getBlockAtDate(chain, date);
-        blockMap.set(chain, block);
-      }),
-    );
-
-    return blockMap;
-  }
-
-  async getBlockAtDate(chain: number, date: Date) {
-    const cacheTTL = 65 * 60; // 1 hour 5 minutes to ensure a little overlap (block is rounded to the nearest hour)
-    const cacheKey = `24hour_ago_block_${chain}_${date.getTime()}`;
-
-    return this.getOrSetCache(cacheKey, cacheTTL, async () => {
-      try {
-        return await this.getBlockFromDate(
-          date,
-          await this.web3Provider.getInstanceByChainId(chain),
-        );
-      } catch (e) {
-        this.logger.error(
-          `Failed to find historic block for chain ${chain}. Is the RPC an archive node?`,
-        );
-        this.logger.error(e);
-      }
-    });
-  }
-
   private getPastDate(seconds) {
     const past = new Date(new Date().setSeconds(new Date().getSeconds() - seconds));
     return roundToNearestHour(past);
@@ -352,20 +245,6 @@ export class BalancesService {
   private async excludeBlacklisted(addresses: Address[]): Promise<Address[]> {
     const blacklistedAddresses = await this.blacklistService.filterIsBlacklisted(addresses);
     return excludeSecondArray(addresses, blacklistedAddresses);
-  }
-
-  async getOrSetCache<T>(cacheKey: string, ttl: number, callback: () => Promise<T>): Promise<T> {
-    const cacheValue = await this.cache.get<T>(cacheKey);
-    if (cacheValue) {
-      return cacheValue;
-    }
-
-    const response = await callback();
-    if (typeof response !== 'undefined') {
-      await this.cache.set(cacheKey, response, { ttl });
-    }
-
-    return response;
   }
 
   private async getRawBalances(
@@ -610,17 +489,5 @@ export class BalancesService {
         },
       };
     }, {});
-  }
-
-  private async getDelegationsForAddress(address: string): Promise<Record<Address, any>> {
-    const allResult = await Promise.allSettled(
-      this.delegationStrategies.map((strategy) => strategy.getDelegatedAssets(address)),
-    );
-
-    // TODO better to handle only specific error in Cardano - TBD with Artem
-    // Some Cardano delegator throw exception if address is not valid for its network and we ignore them
-    const result = handlePromiseAllSettled(allResult)[0];
-
-    return { [address]: result.flat() };
   }
 }

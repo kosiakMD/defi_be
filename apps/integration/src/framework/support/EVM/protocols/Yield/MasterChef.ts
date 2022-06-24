@@ -1,5 +1,8 @@
+import { AssetServiceInterface } from '@sdk/assets/interfaces';
+import { UniswapV2AssetService } from 'apps/integration/src/modules/microservices/uniswap.asset.service';
 import BigNumber from 'bignumber.js';
 import { Cache } from 'cache-manager';
+import { cloneDeep } from 'lodash';
 import { AbiInput } from 'web3-utils';
 
 import { CACHE_MANAGER, Inject } from '@nestjs/common';
@@ -7,12 +10,11 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, Logger } from '@app/common';
 import { averageBlockTimeByChain } from '@app/common/constant/blocktime';
+import { CallData } from '@app/common/dto/CallData';
 import { equals, normalizeDecimals, regex, startsWith } from '@app/common/utils';
 import { ERC20 } from '@app/common/web3provider/contracts/ERC20';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
-import { AccountService } from '../../../../../modules/microservices/account.service';
-import { PriceService } from '../../../../../modules/microservices/price.service';
 import { FeatureEnum } from '../../../enums';
 import { INamedFunctionPredicates, IProtocolMeta, IRootProtocol } from '../../../interfaces';
 import {
@@ -20,6 +22,7 @@ import {
   IStakingFeatureMinimal,
   IStakingFeatureUserEntry,
 } from '../../../interfaces/feature.staking.interface';
+import { InteractiveInterface } from '../../../interfaces/new.interfaces';
 import { ISupplyTokenOpportunity } from '../../../interfaces/tokens.supplied.interface';
 import { AbiService } from '../../AbiModule/AbiService';
 import { SingleContractProtocol } from '../../SingleContractProtocol';
@@ -48,26 +51,34 @@ const REWARD_REGEX = /^(\w+)(per)((block|sec(ond)?))$/;
  * Classic masterchef. Deposit a token, or LP token into
  * a pool, and receive a portion of the pool emissions
  */
-export class MasterChef
+export class MasterChef<
+    TStakingFeatureMinimal extends IStakingFeatureMinimal = IStakingFeatureMinimal,
+    TStakingFeatureOpportunity extends IStakingFeatureOpportunity = IStakingFeatureOpportunity,
+    TStakingFeatureUserEntry extends IStakingFeatureUserEntry = IStakingFeatureUserEntry,
+    TMasterChefMeta extends IMasterChefMeta = IMasterChefMeta,
+  >
   extends SingleContractProtocol<
-    IStakingFeatureMinimal,
-    IStakingFeatureOpportunity,
-    IStakingFeatureUserEntry,
-    IMasterChefMeta
+    TStakingFeatureMinimal,
+    TStakingFeatureOpportunity,
+    TStakingFeatureUserEntry,
+    TMasterChefMeta
   >
   implements IRootProtocol
 {
+  protected assetService: AssetServiceInterface;
   constructor(
     protected abiService: AbiService,
     protected multicall: MulticallAggregator,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected logger: Logger,
     @Inject(CACHE_MANAGER) protected cache: Cache,
-    protected accountService: AccountService,
-    protected priceService: PriceService,
+    assetService?: UniswapV2AssetService,
   ) {
     super();
     if (this.updateFunctionPredicates) {
       this.updateFunctionPredicates();
+    }
+    if (assetService) {
+      this.assetService = assetService;
     }
   }
 
@@ -107,7 +118,7 @@ export class MasterChef
     const avgBlockTime = averageBlockTimeByChain[this.meta.chain] || 1;
     if (!averageBlockTimeByChain[this.meta.chain]) {
       this.logger.warn(
-        `Missing Average BlockTIme for chain ${this.meta.chain}`,
+        `Missing Average BlockTime for chain ${this.meta.chain}`,
         this.constructor.name,
       );
     }
@@ -126,7 +137,7 @@ export class MasterChef
    */
   protected async fetchOpportunityData(context: {
     [key: string]: any;
-  }): Promise<IStakingFeatureMinimal[]> {
+  }): Promise<TStakingFeatureMinimal[]> {
     // parse/format the supplied context data
     const poolIds = Array.from(Array(context.poolLength).keys());
 
@@ -157,7 +168,7 @@ export class MasterChef
     poolInfo: IMasterChefPoolInfo,
     totalStaked: string,
     context: { [key: string]: any },
-  ): IStakingFeatureMinimal {
+  ): TStakingFeatureMinimal {
     const rewardShare = poolInfo.allocPoint / context.totalAllocPoint;
 
     const rewardPerSecond = new BigNumber(context.rewardPerSecond) //
@@ -183,11 +194,11 @@ export class MasterChef
         },
       ],
       interactive: this.formatOpportunityInteractiveFunctions(poolInfo),
-    };
+    } as TStakingFeatureMinimal;
   }
 
   protected formatOpportunityInteractiveFunctions(poolInfo: { poolId: number }) {
-    const formatted = [];
+    const formatted: InteractiveInterface[] = [];
 
     const claimFunctionAbi = this.interactiveFunctions.claim;
     if (claimFunctionAbi) {
@@ -227,15 +238,27 @@ export class MasterChef
 
   protected async fetchUserData(
     address: Address,
+    pools: TStakingFeatureOpportunity[],
+  ): Promise<TStakingFeatureUserEntry[]> {
+    const results = await this.getUserInfoAndRewardsFromChain(pools, address);
+    return pools.reduce((pools, pool) => {
+      const userPool = this.formatUserData(address, pool, results);
+      if (userPool) {
+        pools.push(userPool);
+      }
+
+      return pools;
+    }, []);
+  }
+
+  protected async getUserInfoAndRewardsFromChain(
     pools: IStakingFeatureOpportunity[],
-  ): Promise<IStakingFeatureUserEntry[]> {
+    address: Address,
+  ): Promise<Map<string, CallData<any>>> {
     const contract = this.getMainContract();
 
     const calls = new Map();
     pools.forEach((pool) => {
-      // TODO: include 'meta' object so we can just provide e.g. poolId on masterchefs?
-      // This works, but feels like a hack. but how to cleanly allow extra pool metadata
-      // without abuse/misuse?
       const [masterchef, poolId] = pool.id.split('::');
 
       calls.set(
@@ -248,20 +271,10 @@ export class MasterChef
       );
     });
 
-    const results = await this.multicall.handleInBatches(calls, this.meta.chain);
-
-    return pools.reduce((pools, pool) => {
-      const userPool = this.formatUserData(address, pool, results);
-      if (userPool) {
-        pools.push(userPool);
-      }
-
-      return pools;
-    }, []);
+    return await this.multicall.handleInBatches(calls, this.meta.chain);
   }
 
   protected modifyUserEntrySupplied(supplied: ISupplyTokenOpportunity, balance: number) {
-    // const poolShare = balance / supplied.token['totalSupply'];
     const poolShare = balance / supplied.token.totalSupply;
     supplied.token.underlying?.forEach((underlying) => {
       underlying.balance = underlying.reserve * poolShare;
@@ -279,22 +292,22 @@ export class MasterChef
     pool: IStakingFeatureOpportunity,
     data: any,
   ): IStakingFeatureUserEntry {
+    const poolInfo = cloneDeep(pool);
     const [masterchef, poolId] = pool.id.split('::');
 
     const {
       output: { data: userInfo },
     } = data.get(this.userInfoLabel(masterchef, poolId, address));
 
-    // TODO: Object.values(userInfo) and find index instead of assuming .amount ?
     const balance = normalizeDecimals(
       userInfo[this.getUserInfoAmountKey()].toString(),
-      pool.supplied[0].token.decimals,
+      poolInfo.supplied[0].token.decimals,
     );
 
     if (!balance) return;
 
     // Update supplied token
-    pool.supplied[0] = this.modifyUserEntrySupplied(pool.supplied[0], balance);
+    poolInfo.supplied[0] = this.modifyUserEntrySupplied(poolInfo.supplied[0], balance);
 
     const {
       output: { data: pendingRewards },
@@ -302,16 +315,16 @@ export class MasterChef
 
     const rewardBalance = normalizeDecimals(
       pendingRewards.toString(),
-      pool.rewarded[0].token.decimals,
+      poolInfo.rewarded[0].token.decimals,
     );
 
     // Update Reward Token
-    Object.assign(pool.rewarded[0], {
+    Object.assign(poolInfo.rewarded[0], {
       amount: rewardBalance,
-      value: rewardBalance * pool.rewarded[0].token.price,
+      value: rewardBalance * poolInfo.rewarded[0].token.price,
     });
 
-    return pool as IStakingFeatureUserEntry;
+    return poolInfo as IStakingFeatureUserEntry;
   }
 
   /**

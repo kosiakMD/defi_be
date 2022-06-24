@@ -1,10 +1,11 @@
 import * as redisStore from 'cache-manager-redis-store';
 
-import { CacheModule, HttpModule, Module } from '@nestjs/common';
+import { CacheModule, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
+import { HttpModule } from '@app/common';
+
 import { AlpacaSubgraph } from './subgraphs/alpaca.subgraph';
-import { AutofarmSubgraph } from './subgraphs/autofarm.subgraph';
 import { BlocksSubgraph } from './subgraphs/blocks.subgraph';
 import { MinswapSubgraph } from './subgraphs/minswap.subgraph';
 import { PancakeSubgraph } from './subgraphs/pancake.subgraph';
@@ -59,7 +60,6 @@ import { YearnV2Subgraph } from './subgraphs/yearn.v2.subgraph';
     SushiSwapBentoBoxSubgraph,
     UniswapSubgraph,
     UniswapV3Subgraph,
-    AutofarmSubgraph,
     AlpacaSubgraph,
     YearnV1Subgraph,
     YearnV2Subgraph,
@@ -83,7 +83,6 @@ import { YearnV2Subgraph } from './subgraphs/yearn.v2.subgraph';
     SushiSwapBentoBoxSubgraph,
     UniswapSubgraph,
     UniswapV3Subgraph,
-    AutofarmSubgraph,
     AlpacaSubgraph,
     YearnV1Subgraph,
     YearnV2Subgraph,

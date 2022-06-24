@@ -1,3 +1,5 @@
+import { AssembledAssetInterface } from '@sdk/assets/interfaces';
+
 export interface ERC20TokenMinimal {
   address: string;
 }
@@ -5,27 +7,16 @@ export interface ERC20TokenMinimal {
 export interface ERC20TokenWithUnderlingMinimal extends ERC20TokenMinimal {
   underlying: ERC20TokenMinimal[];
 }
-// TODO: This needs to match asset service interface
-export interface ERC20Token extends ERC20TokenMinimal {
-  // ERC20 Standard
-  address: string;
-  symbol: string;
-  name: string;
-  decimals: number;
-  totalSupply?: number;
 
-  // Extra Token Info
-  price: number;
-  chainId: number;
-
-  // User Details
-  value?: number;
+// TODO: balance/value should only be on user types
+// TODO: rename balance => amount to match base token
+type EnhancedAssembledAssetInterface = AssembledAssetInterface & {
   balance?: number;
-
-  // LP/Wrapped/Underlying token extras
-  reserve?: number;
-  position?: number;
-  underlying?: ERC20Token[];
+  value?: number;
+};
+// TODO: This needs to match asset service interface
+export interface ERC20Token extends EnhancedAssembledAssetInterface {
+  underlying: EnhancedAssembledAssetInterface[];
 }
 
 export interface ITokenMinimal<TExtra = unknown> {
@@ -39,9 +30,4 @@ export interface ITokenOpportunity<TExtra = unknown> extends ITokenMinimal<TExtr
 export interface ITokenUserEntry<TExtra = unknown> extends ITokenOpportunity<TExtra> {
   amount: number; // user balance
   value: number; // balance * price
-}
-export interface IBaseApy {
-  year?: number;
-  variableApy?: number;
-  stableApy?: number;
 }

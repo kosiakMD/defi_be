@@ -4,10 +4,8 @@ export enum ProjectEnum {
   alpaca = 'alpaca',
   anchor = 'anchor',
   terraswap = 'terraswap',
-  autofarm = 'autofarm',
   badger = 'badger',
   balancer = 'balancer',
-  beefy = 'beefy',
   compound = 'compound',
   convex = 'convex',
   curve = 'curve',
@@ -55,16 +53,8 @@ export enum YearnProtocolEnum {
   YearnV2 = 'YearnV2',
 }
 
-export enum AaveProtocolEnum {
-  AaveV2 = 'AaveV2',
-}
-
 export enum AbracadabraProtocolEnum {
   abracadabra = 'Abracadabra',
-}
-
-export enum BeefyProtocolEnum {
-  Beefy = 'Beefy',
 }
 
 export enum ConvexProtocolEnum {
@@ -86,10 +76,6 @@ export enum SushiSwapProtocolEnum {
 export enum PancakeProtocolEnum {
   pancakeV1 = 'PancakeV1',
   pancakeV2 = 'PancakeV2',
-}
-
-export enum AutofarmProtocolEnum {
-  autofarm = 'Autofarm',
 }
 
 export enum PangolinProtocolEnum {
@@ -218,48 +204,67 @@ export enum WingRidersProtocolEnum {
   wingriders = 'WingRiders',
 }
 
-export enum MuesliSwapProtocolEnum {
-  muesliswap = 'MuesliSwap',
-}
-
 // V3 Protocols can just be inlined here as they are _only_ used in the swagger docs
 // if unsure if it should be in v3 protocolEnum or v2 protocolEnum, put it in v2
 export const ProtocolV3NameEnum = {
-  aaveV3: 'AaveV3',
+  AaveV2: 'AaveV2',
+  AaveV3: 'AaveV3',
+  Arrakis: 'Arrakis',
+  AlchemixV2: 'AlchemixV2',
+  ApeSwap: 'ApeSwap',
+  BabySwap: 'BabySwap',
+  BalancerV2: 'BalancerV2',
+  Bancor: 'Bancor',
+  Belt: 'Belt',
+  Benqi: 'Benqi',
+  Biswap: 'BiSwap',
+  Blizz: 'Blizz',
+  CafeSwap: 'CafeSwap',
+  CheescakeSwap: 'CheescakeSwap',
+  CherrySwap: 'CherrySwap',
+  CryptoComDefiSwap: 'CryptoComDefiSwap',
+  CubFinance: 'CubFinance',
+  DfynNetwork: 'DfynNetwork',
+  Ellipsis: 'Ellipsis',
+  EvoDefi: 'EvoDefi',
+  Frax: 'Frax',
+  Geist: 'Geist',
+  Goose: 'Goose',
   IronBank: 'IronBank',
+  Kava: 'Kava',
+  Knightswap: 'KnightSwap',
+  KyberSwap: 'KyberSwap',
+  Lido: 'Lido',
   Liquity: 'Liquity',
   MakerDAO: 'MakerDAO',
+  MarsEcosystem: 'MarsEcosystem',
+  Mdex: 'Mdex',
+  Mojitoswap: 'Mojitoswap',
+  Moola: 'Moola',
+  MuesliSwap: 'MuesliSwap',
+  Nereus: 'Nereus',
+  Netswap: 'Netswap',
+  PaintSwap: 'PaintSwap',
   Quarry: 'Quarry',
   RocketPool: 'RocketPool',
+  RuneFarm: 'RuneFarm',
+  SpiritSwap: 'SpiritSwap',
+  TombFinance: 'TombFinance',
+  Solend: 'Solend',
   Stargate: 'Stargate',
   Synapse: 'Synapse',
-  babySwap: 'BabySwap',
-  belt: 'Belt',
-  benqi: 'Benqi',
-  biswap: 'BiSwap',
-  frax: 'Frax',
-  goose: 'Goose',
-  kava: 'Kava',
-  knightswap: 'KnightSwap',
-  lido: 'Lido',
-  marsEcosystem: 'MarsEcosystem',
-  mdex: 'Mdex',
-  solend: 'Solend',
-  yelFinance: 'YelFinance',
-  nereus: 'Nereus',
-  geist: 'Geist',
-  blizz: 'Blizz',
+  YelFinance: 'YelFinance',
+  YetiFinance: 'YetiFinance',
+  AutoFarm: 'AutoFarm',
+  BeefyFinance: 'BeefyFinance',
 };
 
 export const ProtocolNameEnum = {
-  ...AaveProtocolEnum,
   ...AbracadabraProtocolEnum,
   ...AlpacaProtocolEnum,
   ...AnchorProtocolEnum,
   ...AstroportProtocolEnum,
-  ...AutofarmProtocolEnum,
   ...BadgerProtocolEnum,
-  ...BeefyProtocolEnum,
   ...CompoundProtocolEnum,
   ...ConvexProtocolEnum,
   ...CurveProtocolEnum,
@@ -269,7 +274,6 @@ export const ProtocolNameEnum = {
   ...MinswapProtocolEnum,
   ...MirrorProtocolEnum,
   ...MojitoswapProtocolEnum,
-  ...MuesliSwapProtocolEnum,
   ...OlympusProtocolEnum,
   ...OrcaProtocolEnum,
   ...OsmosisProtocolEnum,

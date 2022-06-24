@@ -1,3 +1,4 @@
+import { YetiAssetService } from 'apps/integration/src/modules/microservices/yeti.asset.service';
 import { Cache } from 'cache-manager';
 
 import { CACHE_MANAGER, Inject } from '@nestjs/common';
@@ -8,8 +9,6 @@ import { normalizeDecimals, startsWith } from '@app/common/utils';
 import { DynamicContract } from '@app/common/web3provider/contracts/DynamicContract';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
-import { AccountService } from '../../../../../modules/microservices/account.service';
-import { PriceService } from '../../../../../modules/microservices/price.service';
 import { FeatureEnum } from '../../../enums';
 import {
   INamedFunctionPredicates,
@@ -79,8 +78,7 @@ export class YetiCurve
     protected multicall: MulticallAggregator,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected logger: Logger,
     @Inject(CACHE_MANAGER) protected cache: Cache,
-    protected accountService: AccountService,
-    protected priceService: PriceService,
+    protected assetService: YetiAssetService,
   ) {
     super();
   }

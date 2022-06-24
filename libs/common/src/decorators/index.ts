@@ -27,6 +27,25 @@ export const ChainsArray = createParamDecorator((dataField, req): number[] => {
   return output.map(Number);
 });
 
+export const OptionalChainsArray = createParamDecorator((dataField, req): number[] => {
+  const input: string | Array<number | string> = req.args[0].query[dataField];
+
+  if (!input) {
+    return [];
+  }
+
+  const output: number[] = filterByEnum(
+    Array.isArray(input) ? input.map(Number) : splitToNumberArray(input),
+    ChainIdEnum,
+  );
+
+  if (!output.length) {
+    throw new HttpException('Provided unsupported chains', HttpStatus.BAD_REQUEST);
+  }
+
+  return output.map(Number);
+});
+
 export const AddressesArray = createParamDecorator((dataField, req): Address[] => {
   const input: string | Address[] = req.args[0].query[dataField];
 

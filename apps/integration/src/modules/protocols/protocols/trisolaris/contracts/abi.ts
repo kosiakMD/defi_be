@@ -26,4 +26,26 @@ export class TrisolarisAbi extends MultiCallAbiProxy {
     stateMutability: 'view',
     type: 'function',
   };
+  static rewarder: AbiItem = {
+    inputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    name: 'rewarder',
+    outputs: [{ internalType: 'contract IRewarder', name: '', type: 'address' }],
+    stateMutability: 'view',
+    type: 'function',
+  };
+
+  static pendingTokens: AbiItem = {
+    inputs: [
+      { internalType: 'uint256', name: '', type: 'uint256' },
+      { internalType: 'address', name: '_user', type: 'address' },
+      { internalType: 'uint256', name: '', type: 'uint256' },
+    ],
+    name: 'pendingTokens',
+    outputs: [
+      { internalType: 'contract IERC20[]', name: 'rewardTokens', type: 'address[]' },
+      { internalType: 'uint256[]', name: 'rewardAmounts', type: 'uint256[]' },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  };
 }

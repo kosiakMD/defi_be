@@ -1,4 +1,3 @@
-import { AssetCategory } from 'apps/assets/src/modules/assets/enums/asset-category.enum';
 import BigNumber from 'bignumber.js';
 
 import { Inject, Injectable } from '@nestjs/common';
@@ -9,6 +8,7 @@ import { normalizeDecimals } from '@app/common/utils';
 import { ERC20 } from '@app/common/web3provider/contracts/ERC20';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
+import { AssetCategory } from '../../../../../enums/asset-category.enum';
 import {
   AssetPriceProvider,
   AssetPriceWithUnderlyingReserves,

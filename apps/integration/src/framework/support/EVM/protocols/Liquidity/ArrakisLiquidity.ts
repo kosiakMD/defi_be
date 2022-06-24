@@ -28,7 +28,7 @@ import {
 } from '../../../interfaces/tokens.supplied.interface';
 import { AbiService } from '../../AbiModule/AbiService';
 import { EVMCore } from '../../EVMCore';
-import { ArrakisPool, ARRAKIS_POOLS_QUERY } from '../../Subgraphs/ArrakisSubgraph';
+import { ARRAKIS_POOLS_QUERY, ArrakisPool } from '../../Subgraphs/ArrakisSubgraph';
 
 const WORKING_PLG_GAUGE_ADDRESS_FOR_ABI_FETCHING = '0x16bb396868cc76d179533a18ed6b11a1ec8bd49a';
 
@@ -58,6 +58,7 @@ export type IArrakisMeta = IProtocolMeta & {
   subgraphUrl: string;
   gaugeMapperAddress?: string;
 };
+
 export class ArrakisLiquidity
   extends EVMCore<
     ArrakisPoolFeatureEntryMinimal,
@@ -79,6 +80,7 @@ export class ArrakisLiquidity
   ) {
     super();
   }
+
   private gaugeFunctions;
   private gaugeMapperFunctions;
 
@@ -103,6 +105,7 @@ export class ArrakisLiquidity
       );
     }
   }
+
   async getUsersData(
     addresses: string[],
   ): Promise<{ data: Map<string, IPoolFeatureEntryUserEntry[]>; errors: Error[] }> {
@@ -256,6 +259,7 @@ export class ArrakisLiquidity
     ]);
     return result;
   }
+
   protected async updateRealTimeData?(
     opportunities: ArrakisPoolFeatureEntryMinimal[],
   ): Promise<ArrakisPoolFeatureEntryMinimal[]> {
@@ -281,6 +285,7 @@ export class ArrakisLiquidity
       };
     });
   }
+
   /**
    * Get longer term cacheable info
    */
@@ -397,6 +402,7 @@ export class ArrakisLiquidity
     return new Map(mapping);
   }
 }
+
 const getTotalSupplyLabel = (poolId, label: 'vault_total_supply' | 'gauge_total_supply') =>
   label + poolId;
 const getLabel = (

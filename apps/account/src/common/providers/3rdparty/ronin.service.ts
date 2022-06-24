@@ -4,10 +4,9 @@ import { Injectable } from '@nestjs/common';
 
 import { Address, ChainNameEnum } from '@app/common';
 
-import { Web3Provider } from '../../../common/providers/chainRelated/web3.provider';
-
 import { ERC20_ABI } from '../../../modules/approvals/abis/ERC20';
 import { Balance } from '../../interfaces/ronin.interface';
+import { Web3Provider } from '../chainRelated/web3.provider';
 
 @Injectable()
 export class RoninService {

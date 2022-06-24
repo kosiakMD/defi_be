@@ -1,11 +1,11 @@
 import { LCDClient } from '@terra-money/terra.js';
-import Web3 from 'web3';
 
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import { AbsoluteChainIdEnum, ChainIdEnum } from '..';
 import { MulticallContract } from './multicall.contract';
+import Web3 from './web3';
 
 export type Web3Interface = Web3;
 

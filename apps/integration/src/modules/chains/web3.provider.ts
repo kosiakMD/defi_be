@@ -1,10 +1,10 @@
 import { Connection } from '@solana/web3.js';
-import Web3 from 'web3';
 
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import { ChainAbbrEnum } from '@app/common';
+import Web3 from '@app/common/web3provider/web3';
 
 @Injectable()
 export class Web3Provider {

@@ -1,11 +1,11 @@
 import { Transform } from 'class-transformer';
 import { IsNotEmpty, IsString } from 'class-validator';
-import Web3 from 'web3';
 
 import { BadRequestException } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
 
 import { Address } from '@app/common/types';
+import Web3 from '@app/common/web3provider/web3';
 
 import { splitToArrayAndLowerCase } from '../../../common/utils/transform';
 

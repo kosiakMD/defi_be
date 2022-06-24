@@ -96,6 +96,7 @@ export class QuickswapProtocol extends BasicProtocol implements AbstractProtocol
   }
 
   static LocalCachedPairData: Promise<PairDto[]> | null = null;
+
   private async getSubgraphPairs(pairsAddresses: Address[], chunkSize = 100): Promise<PairDto[]> {
     // Cache Shared pool data statically so that staking+pools only need 1 request
     if (QuickswapProtocol.LocalCachedPairData) {

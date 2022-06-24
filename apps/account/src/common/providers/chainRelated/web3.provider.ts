@@ -1,12 +1,12 @@
 import { Connection } from '@solana/web3.js';
 import { LCDClient } from '@terra-money/terra.js';
 import { ChainsService } from 'apps/account/src/modules/chains/chains.service';
-import Web3 from 'web3';
 
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import { AbsoluteChainIdEnum, ChainNameEnum } from '@app/common/enum';
+import Web3 from '@app/common/web3provider/web3';
 
 @Injectable()
 export class Web3Provider implements OnModuleInit {

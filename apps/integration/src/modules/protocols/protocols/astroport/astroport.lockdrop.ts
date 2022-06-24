@@ -36,6 +36,7 @@ export class AstroportLockdrop {
     private readonly web3Provider: Web3ProviderService,
     private readonly accountService: AccountService,
   ) {}
+
   public async getData(addresses: Address[], chain: ChainDto): Promise<BaseData[]> {
     const addressesLowerCase = addresses.map((address) => address.toLowerCase());
     const cacheKeyTerraswap = `${chain.id}_${TerraswapProtocolEnum.terraswap}_${FeatureEnum.pools}`;

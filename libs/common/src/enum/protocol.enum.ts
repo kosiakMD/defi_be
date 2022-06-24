@@ -38,7 +38,6 @@ export enum ProjectEnum {
   stader = 'stader',
   osmosis = 'osmosis',
   aaveV3 = 'aaveV3',
-  kava = 'kava',
   solend = 'solend',
   wingriders = 'wingriders',
   ironbank = 'ironbank',
@@ -231,7 +230,6 @@ export const ProtocolV3NameEnum = {
   Geist: 'Geist',
   Goose: 'Goose',
   IronBank: 'IronBank',
-  Kava: 'Kava',
   Knightswap: 'KnightSwap',
   KyberSwap: 'KyberSwap',
   Lido: 'Lido',
@@ -257,6 +255,8 @@ export const ProtocolV3NameEnum = {
   YetiFinance: 'YetiFinance',
   AutoFarm: 'AutoFarm',
   BeefyFinance: 'BeefyFinance',
+  KavaSwap: 'KavaSwap',
+  KavaLend: 'KavaLend',
 };
 
 export const ProtocolNameEnum = {

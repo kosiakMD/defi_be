@@ -497,7 +497,9 @@ export class IntegrationsServiceV3Decorator {
   }
 
   static claimableToV2(claimableV3: any): IntegrationClaimableTokenDto {
-    const supplied = 'supplied' in claimableV3 ? claimableV3.supplied[0] : claimableV3.rewarded[0];
+    const supplied = claimableV3.supplied?.length
+      ? claimableV3.supplied[0]
+      : claimableV3.rewarded[0];
 
     const claimableV2 = plainToClass(IntegrationClaimableTokenDto, supplied.token);
 

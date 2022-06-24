@@ -144,7 +144,7 @@ export class UniswapV2AssetAnalyser
         throw e;
       }
       this.logger.warn(
-        `could not fetch token data, error: [${e.message}], analysis will be skipped`,
+        `could not fetch token data, error: [${e.message}], analysis will be skipped, address=${asset.address}`,
       );
     }
   }

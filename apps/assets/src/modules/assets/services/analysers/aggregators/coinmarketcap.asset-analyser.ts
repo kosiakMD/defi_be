@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import axios from 'axios';
 import { firstValueFrom } from 'rxjs';
 
@@ -9,9 +10,11 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { Address, ChainId, Logger } from '@app/common';
 import { CoinSymbols, isZeroAddress, retry } from '@app/common/utils';
 
+import { ChainService } from '../../../../../common/services/chain.service';
 import { AssetReference } from '../../../../../common/types';
 
 import { AssetCategory } from '../../../enums/asset-category.enum';
+import { areStringEqualsIgnoreCase } from '../../../utils/strings';
 import { AssetAnalyser, AssetAnalysisResult } from '../core/asset.analyser';
 
 @Injectable()
@@ -20,6 +23,7 @@ export class CoinmarketcapAssetAnalyser implements AssetAnalyser {
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     private readonly config: ConfigService,
     private readonly httpService: HttpService,
+    private readonly chainService: ChainService,
   ) {}
 
   canAnalyseAsset() {
@@ -41,7 +45,16 @@ export class CoinmarketcapAssetAnalyser implements AssetAnalyser {
     const firstEntry = data[firstEntryKey];
     const coinmarketcapCoin = isZeroAddress(address) ? firstEntry[0] : firstEntry;
 
-    const { id, name, symbol, logo, category } = coinmarketcapCoin as CoinmarketcapAsset;
+    const { id, name, symbol, logo, category, contract_address } =
+      coinmarketcapCoin as CoinmarketcapAsset;
+    const chains = await this.chainService.getChains();
+    const { coinmarketcapPlatformName } = chains.find(({ id }) => id === chainId).metadata;
+    const platformFound = contract_address?.find(({ platform: { name } }) =>
+      areStringEqualsIgnoreCase(name, coinmarketcapPlatformName),
+    );
+    if (!platformFound) {
+      return;
+    }
 
     const categories: AssetCategory[] = [];
 
@@ -99,6 +112,11 @@ type CoinmarketcapAsset = {
   category?: string;
   tags?: string[];
   logo?: string;
+  contract_address?: {
+    platform: {
+      name: string;
+    };
+  }[];
 };
 
 type CoinmarketcapResponse = {

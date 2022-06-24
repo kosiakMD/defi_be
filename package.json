@@ -48,6 +48,7 @@
     "assets-migration:revert-dev": "ts-node --project ./apps/assets/tsconfig.app.json -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:revert -f 'apps/assets/ormconfig-dev.ts'",
     "assets-migration:run": "node ./node_modules/typeorm/cli.js migration:run -f 'dist/apps/assets/src/ormconfig.js'",
     "assets-migration:revert": "node ./node_modules/typeorm/cli.js migration:revert -f 'dist/apps/assets/src/ormconfig.js'",
+    "assets-test": "yarn run jest ./apps/assets/test/* --config ./apps/assets/test/jest.config.js",
     "integration-format": "yarn --cwd ./apps/integration run format",
     "integration-lint": "eslint \"./apps/integration/{src,config}/**/*.ts\"",
     "integration-prebuild": "yarn yarn --cwd ./apps/integration run prebuild",

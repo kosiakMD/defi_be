@@ -12,6 +12,7 @@ import { NonEvmCoinAssetAnalyser } from './coins/non-evm-coin.asset-analyser';
 import { OneToOneUnderlyingExchangeRatePriceProvider } from './core/single-underlying/price-providers/one-to-one-exchange-rate.price-provider';
 import { SingleUnderlyingGenericPriceProvider } from './core/single-underlying/price-providers/single-underlying-generic.price-provider';
 import { SingleUnderlyingAssetAnalyser } from './core/single-underlying/single-underlying.asset-analyzer';
+import { MuesliSwaIconsAnalyser } from './icons/muesli-swap.icons-analyser';
 import { TrustWalletAssetAnalyser } from './icons/trust-wallet.asset-analyser';
 import { MinSwapAssetAnalyser } from './protocols/minswap.asset-analyser';
 import { SaberAssetAnalyser } from './protocols/saber.asset-analyser';
@@ -34,6 +35,7 @@ export const assetAnalysers = [
   NonEvmCoinAssetAnalyser,
 
   TrustWalletAssetAnalyser,
+  MuesliSwaIconsAnalyser,
 
   SaberAssetAnalyser,
   UniswapV2AssetAnalyser,

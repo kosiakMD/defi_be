@@ -9,7 +9,7 @@ import { ChainIdEnum, ChainNameEnum, Logger } from '@app/common';
 
 import { AssetReference } from '../../../../../common/types';
 
-import { AssetAnalyser, AssetAnalysisResult } from '../core/asset.analyser';
+import { AssetAnalyser, AssetAnalysisResult, IconSource } from '../core/asset.analyser';
 
 @Injectable()
 export class TrustWalletAssetAnalyser implements AssetAnalyser {
@@ -36,7 +36,7 @@ export class TrustWalletAssetAnalyser implements AssetAnalyser {
     return {
       icons: [
         {
-          source: 'trust-wallet',
+          source: IconSource.trustWallet,
           url,
         },
       ],

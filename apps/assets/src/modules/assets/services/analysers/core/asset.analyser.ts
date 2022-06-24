@@ -7,6 +7,13 @@ export interface AssetAnalyser {
   analyseAsset(asset: AssetReference): ObjectOrPromise<AssetAnalysisResult>;
 }
 
+export enum IconSource {
+  trustWallet = 'trust-wallet',
+  muesliSwapOverbookV2 = 'muesliswap-overbookv2',
+  muesliSwapCardano = 'muesliswap-cardano',
+  muesliSwapMilkomeda = 'muesliswap-milkomeda',
+}
+
 export type AssetIcon = {
   url: string;
   source: string;

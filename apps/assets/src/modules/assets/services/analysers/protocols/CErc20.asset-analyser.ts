@@ -4,6 +4,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '@app/common';
+import { ZERO_ADDRESS } from '@app/common/constant';
 import { DynamicContract } from '@app/common/web3provider/contracts/DynamicContract';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
@@ -25,8 +26,8 @@ export class CErc20AssetAnalyser extends EVMAssetAnalyser implements AssetAnalys
   }
 
   async analyseAsset(asset: AssetReference): Promise<AssetAnalysisResult> {
-    const [token0, isCToken] = await this.fetchAssetData(asset);
-    if (!token0 || !isCToken) {
+    const token0 = await this.fetchAssetData(asset);
+    if (!token0) {
       return;
     }
 
@@ -46,10 +47,15 @@ export class CErc20AssetAnalyser extends EVMAssetAnalyser implements AssetAnalys
 
     const contract = new DynamicContract(asset.address);
     try {
-      return await this.multicall.callArray(
-        [contract.createCall(underlyingAbi), contract.createCall(isCTokenAbi)],
-        asset.chainId,
-      );
+      const isCtoken = await this.multicall.call(contract.createCall(isCTokenAbi), asset.chainId);
+      if (isCtoken) {
+        try {
+          return await this.multicall.call(contract.createCall(underlyingAbi), asset.chainId);
+        } catch (error) {
+          return ZERO_ADDRESS;
+        }
+      }
+      return null;
     } catch (e) {
       if (
         e.message.indexOf('execution reverted') < 0 &&

@@ -25,8 +25,8 @@ export class CErc20AssetAnalyser extends EVMAssetAnalyser implements AssetAnalys
   }
 
   async analyseAsset(asset: AssetReference): Promise<AssetAnalysisResult> {
-    const token0 = await this.fetchAssetData(asset);
-    if (!token0) {
+    const [token0, isCToken] = await this.fetchAssetData(asset);
+    if (!token0 || !isCToken) {
       return;
     }
 
@@ -42,10 +42,14 @@ export class CErc20AssetAnalyser extends EVMAssetAnalyser implements AssetAnalys
 
   private async fetchAssetData(asset: AssetReference) {
     const underlyingAbi: AbiItem = findAbiItemByName(CERC20_ABI, 'underlying');
+    const isCTokenAbi: AbiItem = findAbiItemByName(CERC20_ABI, 'isCToken');
 
     const contract = new DynamicContract(asset.address);
     try {
-      return await this.multicall.call(contract.createCall(underlyingAbi), asset.chainId);
+      return await this.multicall.callArray(
+        [contract.createCall(underlyingAbi), contract.createCall(isCTokenAbi)],
+        asset.chainId,
+      );
     } catch (e) {
       if (
         e.message.indexOf('execution reverted') < 0 &&

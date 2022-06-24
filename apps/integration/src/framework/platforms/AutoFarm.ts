@@ -94,6 +94,9 @@ export class AutoFarm extends RootPlatform {
       name: 'AutoFarmV2 - OLD',
       feature: FeatureEnum.staking,
       address: '0xb09a88956730b6b842d9f1cf6f72dd682c2f36f9',
+      context: {
+        badPools: [0, 1],
+      },
     });
 
     await this.registerProtocol<IMasterChefMeta>(AutoFarmV2CrossChain, {

@@ -174,7 +174,7 @@ function mergeAssetAnalysis(
   return {
     // TODO: Refactor this one
     name: getNotEmpty(one.name, two.name),
-    symbol: getNotEmpty(one.symbol, two.symbol),
+    symbol: getBestSymbolName(one.symbol, two.symbol),
     displayName: getNotEmpty(one.displayName, two.displayName),
     decimals: getNotEmpty(one.decimals, two.decimals),
     // TODO: This one is wrong we should sum them up
@@ -196,4 +196,14 @@ function getNotEmptyArray<T = any>(one: T[], two: T[]): T[] {
 
 function mergeArrays<T = any>(one: T[], two: T[]): T[] {
   return [...(one || []), ...(two || [])];
+}
+
+function isInLowerCase(str: string): boolean {
+  return str === str.toLowerCase();
+}
+
+export function getBestSymbolName(one?: string, two?: string): string {
+  if (!!one && !isInLowerCase(one)) return one;
+  if (!!two && !isInLowerCase(two)) return two;
+  return getNotEmpty(one, two);
 }

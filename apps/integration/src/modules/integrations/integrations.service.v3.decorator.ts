@@ -26,7 +26,6 @@ import { getUniqList } from '@app/common/utils';
 
 import { FeatureEnum } from '../../../../gateway/src/common/enum/feature.enum';
 import { PlatformService } from '../../framework/services/platform.service';
-import { IClaimableFeatureUser } from '../../framework/support/interfaces/feature.claimable.interface';
 import { IPoolFeatureEntryUserEntry } from '../../framework/support/interfaces/feature.pool.interface';
 import { IStakingFeatureUserEntry } from '../../framework/support/interfaces/feature.staking.interface';
 import { IUserEntryResponse } from '../../framework/support/interfaces/responses.interface';
@@ -497,12 +496,11 @@ export class IntegrationsServiceV3Decorator {
     return v2Item;
   }
 
-  static claimableToV2(claimableV3: IClaimableFeatureUser): IntegrationClaimableTokenDto {
-    // in fact it is not correct when reward/claimable token saved as 'supplied'
-    let supplied = claimableV3.supplied[0];
-    if (!supplied) {
-      supplied = claimableV3.rewarded[0];
-    }
+  static claimableToV2(claimableV3: any): IntegrationClaimableTokenDto {
+    const supplied = claimableV3.supplied?.length
+      ? claimableV3.supplied[0]
+      : claimableV3.rewarded[0];
+
     const claimableV2 = plainToClass(IntegrationClaimableTokenDto, supplied.token);
 
     claimableV2.claimableData = {

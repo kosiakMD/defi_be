@@ -195,7 +195,8 @@ export class BeefyVault
     balance: number,
     pricePerFullShare: number,
   ): ISupplyTokenUserEntry {
-    const poolShare = balance / supplied.token.totalSupply;
+    const poolShare = supplied.token.totalSupply ? balance / supplied.token.totalSupply : 0;
+
     supplied.token.underlying?.forEach((underlying) => {
       underlying.balance = underlying.reserve * poolShare;
       underlying.value = underlying.balance * underlying.price;

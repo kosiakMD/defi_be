@@ -13,10 +13,10 @@ import { normalizeDecimals } from '@app/common/utils';
 import { IRootProtocol } from '../../../interfaces';
 import { BaseWithTokens } from '../../../interfaces/new.interfaces';
 import {
-  ISupplyTokenMinimal,
-  ISupplyTokenOpportunity,
-  ISupplyTokenUserEntry,
-} from '../../../interfaces/tokens.supplied.interface';
+  IRewardTokenMinimal,
+  IRewardTokenOpportunity,
+  IRewardTokenUserEntry,
+} from '../../../interfaces/tokens.rewarded.interface';
 import { SingleContractProtocol } from '../../SingleContractProtocol';
 import {
   IKavaClaimable,
@@ -25,14 +25,14 @@ import {
   IKavaUserRewards,
 } from '../interfaces/Kava/KavaClaimable';
 
-export type IClaimableFeatureEntryMinimal = BaseWithTokens<ISupplyTokenMinimal, void, void, void>;
+export type IClaimableFeatureEntryMinimal = BaseWithTokens<void, IRewardTokenMinimal, void, void>;
 export type IClaimableFeatureEntryOpportunity = BaseWithTokens<
-  ISupplyTokenOpportunity,
   void,
+  IRewardTokenOpportunity,
   void,
   void
 >;
-export type IClaimableFeatureEntryUser = BaseWithTokens<ISupplyTokenUserEntry, void, void, void>;
+export type IClaimableFeatureEntryUser = BaseWithTokens<void, IRewardTokenUserEntry, void, void>;
 
 export class KavaSwapClaimable
   extends SingleContractProtocol<
@@ -115,18 +115,18 @@ export class KavaSwapClaimable
     data: Map<string, IKavaUserRewards[]>,
   ): IClaimableFeatureEntryUser[] {
     return data.get(address).map((rewards) => {
-      const opportunity = pools.find((x) => x.supply.token.address === rewards.denom);
+      const opportunity = pools.find((x) => x.reward.token.address === rewards.denom);
       if (!opportunity) return;
 
-      const { supply, ...other } = opportunity;
-      const normalizedAmount = normalizeDecimals(rewards.amount, supply.token.decimals);
+      const { reward, ...other } = opportunity;
+      const normalizedAmount = normalizeDecimals(rewards.amount, reward.token.decimals);
 
       const cloneOpportunity: IClaimableFeatureEntryUser = {
         ...other,
-        supply: {
-          ...supply,
+        reward: {
+          ...reward,
           amount: normalizedAmount,
-          value: normalizedAmount * supply.token.price,
+          value: normalizedAmount * reward.token.price,
         },
       };
 
@@ -139,11 +139,10 @@ export class KavaSwapClaimable
       id: tokenAddresses + '::' + 'swap-claimable',
       chain: this.meta.chain,
       feature: this.meta.feature,
-      supply: {
+      reward: {
         token: {
           address: tokenAddresses,
         },
-        totalSupplied: '0',
       },
     };
   }

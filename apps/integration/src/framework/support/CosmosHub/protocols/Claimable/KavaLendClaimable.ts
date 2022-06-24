@@ -1,23 +1,8 @@
 import { firstValueFrom, map, mergeMap, toArray } from 'rxjs';
 
 import { IRootProtocol } from '../../../interfaces';
-import { BaseWithTokens } from '../../../interfaces/new.interfaces';
-import {
-  ISupplyTokenMinimal,
-  ISupplyTokenOpportunity,
-  ISupplyTokenUserEntry,
-} from '../../../interfaces/tokens.supplied.interface';
 import { IKavaClaimable, IKavaClaimableResponse } from '../interfaces/Kava/KavaClaimable';
-import { KavaSwapClaimable } from './KavaSwapClaimable';
-
-export type IClaimableFeatureEntryMinimal = BaseWithTokens<ISupplyTokenMinimal, void, void, void>;
-export type IClaimableFeatureEntryOpportunity = BaseWithTokens<
-  ISupplyTokenOpportunity,
-  void,
-  void,
-  void
->;
-export type IClaimableFeatureEntryUser = BaseWithTokens<ISupplyTokenUserEntry, void, void, void>;
+import { IClaimableFeatureEntryMinimal, KavaSwapClaimable } from './KavaSwapClaimable';
 
 export class KavaLendClaimable extends KavaSwapClaimable implements IRootProtocol {
   async getCacheableOpportunityData(): Promise<IClaimableFeatureEntryMinimal[]> {
@@ -42,11 +27,10 @@ export class KavaLendClaimable extends KavaSwapClaimable implements IRootProtoco
       id: tokenAddresses + '::' + 'lend-claimable',
       chain: this.meta.chain,
       feature: this.meta.feature,
-      supply: {
+      reward: {
         token: {
           address: tokenAddresses,
         },
-        totalSupplied: '0',
       },
     };
   }
